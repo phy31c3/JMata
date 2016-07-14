@@ -4,46 +4,28 @@ import java.util.function.*;
 
 public interface JMata
 {
-	default Machine createMachine(String name)
+	/**
+	 * 머신이 이미 존재 할 경우 'getMachine()'과 동일한 역할을 함
+	 */
+	default <T> JMMachine createMachine(Class<T> tag)
 	{
 		// TODO
 		return null;
 	}
 	
-	default Machine getMachine(String name)
+	default <T> MachineOptional getMachine(Class<T> tag)
 	{
 		// TODO
 		return null;
 	}
 	
-	default void runMachine(String name)
+	public interface MachineOptional
 	{
-		// TODO
-	}
-	
-	default void stopMachine(String name)
-	{
-		// TODO
-	}
-	
-	default void terminateMachine(String name)
-	{
-		// TODO
-	}
-	
-	default InputTo input(Object signal)
-	{
-		// TODO
-		return null;
-	}
-	
-	public interface InputTo
-	{
-		IfNull to(String machineName);
-	}
-	
-	public interface IfNull
-	{
-		void ifNull(VoidConsumer f);
+		/**
+		 * @return null 일 수 있음.
+		 */
+		JMMachine takeAnyway();
+		
+		void ifPresent(Consumer<JMMachine> func);
 	}
 }
