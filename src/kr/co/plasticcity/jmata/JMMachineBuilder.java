@@ -6,12 +6,12 @@ import kr.co.plasticcity.jmata.JMMachine.*;
 
 public interface JMMachineBuilder
 {
-	/************************** ↓ State-related **************************/
-	
 	void addState(Class<?> state, Consumer<StateBuilder> func);
 	
 	public interface StateBuilder
 	{
+		StateBuilder setGroup(Class<?> group);
+		
 		<S> EnterWork<S> whenFrom(Class<S> signal);
 		
 		<S> SwitchTo<S> whenInput(Class<S> signal);
@@ -37,6 +37,4 @@ public interface JMMachineBuilder
 		
 		StateBuilder AndDoNothing();
 	}
-	
-	/************************** ↑ State-related **************************/
 }

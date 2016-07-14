@@ -55,29 +55,28 @@ class JMataImpl implements JMata
 		}
 	}
 	
-	public JMMachine createMachine(Class<?> tag)
-	{
-		// TODO
-		return null;
-	}
-	
 	public MachineBuilderOptional buildMachine(Class<?> tag)
 	{
 		// TODO
 		return null;
 	}
 	
-	private class MachineOptionalImpl implements MachineBuilderOptional
+	private class MachineBuilderOptionalImpl implements MachineBuilderOptional
 	{
 		@Override
-		public JMMachine takeAnyway()
+		public void ifCreated(Consumer<JMMachineBuilder> func)
 		{
 			// TODO
-			return null;
 		}
 		
 		@Override
-		public void ifPresent(Consumer<JMMachine> func)
+		public void ifPresent(Consumer<JMMachineBuilder> func)
+		{
+			// TODO
+		}
+		
+		@Override
+		public void ifAnyway(Consumer<JMMachineBuilder> func)
 		{
 			// TODO
 		}
