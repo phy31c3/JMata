@@ -5,27 +5,24 @@ import java.util.function.*;
 public interface JMata
 {
 	/**
-	 * 머신이 이미 존재 할 경우 'getMachine()'과 동일한 역할을 함
+	 * 어플리케이션 시작 시 반드시 호출.
 	 */
-	default <T> JMMachine createMachine(Class<T> tag)
+	default void initialize()
 	{
-		// TODO
-		return null;
+		JMataImpl.init();
 	}
 	
-	default <T> MachineOptional getMachine(Class<T> tag)
+	default MachineBuilderOptional buildMachine(Class<?> tag)
 	{
-		// TODO
-		return null;
+		return JMataImpl.get().buildMachine(tag);
 	}
 	
-	public interface MachineOptional
+	public interface MachineBuilderOptional
 	{
-		/**
-		 * @return null 일 수 있음.
-		 */
-		JMMachine takeAnyway();
+		void ifCreated(Consumer<JMMachineBuilder> func);
 		
-		void ifPresent(Consumer<JMMachine> func);
+		void ifPresent(Consumer<JMMachineBuilder> func);
+		
+		void ifAnyway(Consumer<JMMachineBuilder> func);
 	}
 }
