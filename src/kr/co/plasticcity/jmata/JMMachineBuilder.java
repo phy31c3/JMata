@@ -2,39 +2,65 @@ package kr.co.plasticcity.jmata;
 
 import java.util.function.*;
 
-import kr.co.plasticcity.jmata.JMMachine.*;
+import kr.co.plasticcity.jmata.function.*;
 
 public interface JMMachineBuilder
 {
-	void addState(Class<?> state, Consumer<StateBuilder> func);
+	StateBuilder defineState(Class<?> state);
+	
+	GroupBuilder defineGroup(Class<?> group);
+	
+	Optional commit();
 	
 	public interface StateBuilder
 	{
-		StateBuilder setGroup(Class<?> group);
+		StateBuilder whenEnter(JMVoidConsumer defaultWork);
 		
-		<S> EnterWork<S> whenFrom(Class<S> signal);
+		StateBuilder whenExit(JMVoidConsumer defaultWork);
 		
-		<S> SwitchTo<S> whenInput(Class<S> signal);
+		<S> WhenEnter<S> whenEnterFrom(Class<S> signal);
 		
-		void commit();
+		WhenEnter<?> whenEnterFrom(Class<?>... signals);
+		
+		<S> SwitchTo<S, StateBuilder> whenInput(Class<S> signal);
+		
+		SwitchTo<?, StateBuilder> whenInput(Class<?>... signals);
+		
+		JMMachineBuilder apply();
 	}
 	
-	public interface EnterWork<S>
+	public interface GroupBuilder
 	{
-		StateBuilder doThat(Consumer<S> func);
+		GroupBuilder putStates(Class<?>... states);
+		
+		<S> SwitchTo<S, GroupBuilder> whenInput(Class<S> signal);
+		
+		JMMachineBuilder apply();
+	}
+	
+	public interface WhenEnter<S>
+	{
+		StateBuilder doThis(Consumer<S> workOnEnter);
 		
 		StateBuilder doNothing();
 	}
 	
-	public interface SwitchTo<S>
+	public interface SwitchTo<S, T>
 	{
-		ExitWork<S> switchTo(Class<?> state);
+		StateBuilder justSwitchTo(Class<?> state);
+		
+		WhenExit<S, T> switchTo(Class<?> state);
 	}
 	
-	public interface ExitWork<S>
+	public interface WhenExit<S, T>
 	{
-		StateBuilder AndDo(Consumer<S> func);
+		T AndDo(Consumer<S> workOnExit);
 		
-		StateBuilder AndDoNothing();
+		T AndDoNothing();
+	}
+	
+	public interface Optional
+	{
+		void ifReplaced(JMVoidConsumer func);
 	}
 }

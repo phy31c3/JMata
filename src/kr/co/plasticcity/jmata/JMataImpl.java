@@ -12,7 +12,7 @@ class JMataImpl implements JMata
 	
 	private volatile static JMataImpl instance;
 	
-	static synchronized void init()
+	static synchronized void initialize()
 	{
 		if (instance != null)
 		{
@@ -21,7 +21,7 @@ class JMataImpl implements JMata
 		}
 	}
 	
-	static JMata get()
+	static JMataImpl get()
 	{
 		if (instance == null)
 		{
@@ -46,39 +46,9 @@ class JMataImpl implements JMata
 		machineMap = new ConcurrentHashMap<Class<?>, JMMachine>();
 	}
 	
-	public void initialize()
-	{
-		synchronized (JMataImpl.class)
-		{
-			instance = null;
-			get();
-		}
-	}
-	
-	public MachineBuilderOptional buildMachine(Class<?> tag)
+	public JMMachineBuilder buildMachine(Class<?> machineTag)
 	{
 		// TODO
 		return null;
-	}
-	
-	private class MachineBuilderOptionalImpl implements MachineBuilderOptional
-	{
-		@Override
-		public void ifCreated(Consumer<JMMachineBuilder> func)
-		{
-			// TODO
-		}
-		
-		@Override
-		public void ifPresent(Consumer<JMMachineBuilder> func)
-		{
-			// TODO
-		}
-		
-		@Override
-		public void ifAnyway(Consumer<JMMachineBuilder> func)
-		{
-			// TODO
-		}
 	}
 }
