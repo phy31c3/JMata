@@ -20,6 +20,7 @@ public interface JMMachineBuilder
 	
 	// TODO think - 동일한 머신을 여러개 fork 시키고 싶을 때 어떤 인터페이스로 할 지.
 	// TODO think - State lambda에 머신 파라미터를 추가할 건지.
+	// TODO think - 동적 상태 추가 및 수정 허용 할 건지.
 	
 	public interface StateBuilder
 	{

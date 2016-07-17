@@ -1,16 +1,16 @@
 package test;
 
 import kr.co.plasticcity.jmata.*;
-import test.MyMachine.Group.*;
-import test.MyMachine.Signal.*;
-import test.MyMachine.State.*;
+import test.TestMachine.Group.*;
+import test.TestMachine.Signal.*;
+import test.TestMachine.State.*;
 
-public class MyMachine
+public class TestMachine
 {
-	public MyMachine()
+	public TestMachine()
 	{
 		JMata.initialize();
-		JMata.buildMachine(MyMachine.class)
+		JMata.buildMachine(TestMachine.class)
 			
 			.defineState(A.class)
 			.whenEnter(A::enter)
