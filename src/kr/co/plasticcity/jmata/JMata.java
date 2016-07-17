@@ -18,4 +18,6 @@ public interface JMata
 	{
 		return JMataImpl.get().buildMachine(machineTag);
 	}
+	
+	// TODO 머신 조작 인터페이스
 }

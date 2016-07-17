@@ -41,8 +41,8 @@ public class MyMachine
 			.putStates(B.class, C.class, D.class)
 			.apply()
 			
-			.commit()
-			.ifReplaced(() -> System.out.println(MyMachine.class.getSimpleName() + " 수정 됨"));
+			.ifPresentThenModify(() -> System.out.println("머신 중복 됨 => 수정 처리"))
+			.buildAndRun();
 	}
 	
 	/******************************************
