@@ -6,7 +6,7 @@ import javax.swing.undo.*;
 
 import kr.co.plasticcity.jmata.JMata.*;
 
-interface JMMachine
+public interface JMMachine
 {
 	enum MachineState
 	{
@@ -28,7 +28,7 @@ interface JMMachine
 	void stop();
 	
 	/**
-	 * 머신 완전 종료(폐기). 이 메소드가 호출 된 뒤에는 머신의 재사용이 불가능하며 getMachine()을 통해 얻을수도 없음.
+	 * 머신 완전 종료 후 폐기. 이 메소드가 호출 된 뒤에는 머신의 재사용이 불가능하며 getMachine()을 통해 얻을수도 없음.
 	 */
 	void terminate();
 }

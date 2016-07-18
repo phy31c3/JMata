@@ -41,8 +41,8 @@ public class TestMachine
 			.putStates(B.class, C.class, D.class)
 			.apply()
 			
-			.ifPresentThenModify(() -> System.out.println("머신 중복 됨 => 수정 처리"))
-			.buildAndRun();
+			.ifPresentThenReplace(() -> System.out.println("머신 중복 됨 => 수정 처리"))
+			.buildAndRun(1);
 	}
 	
 	/******************************************

@@ -10,13 +10,13 @@ public interface JMMachineBuilder
 	
 	GroupBuilder defineGroup(Class<?> group);
 	
-	JMMachineBuilder ifPresentThenReplace(JMVoidConsumer funcForLog);
+	JMMachineBuilder ifPresentThenIgnore(JMVoidConsumer funcForException);
 	
-	JMMachineBuilder ifPresentThenModify(JMVoidConsumer funcForLog);
+	JMMachineBuilder ifPresentThenReplace(JMVoidConsumer funcForException);
 	
-	void build();
+	void build(int numMachine);
 	
-	void buildAndRun();
+	void buildAndRun(int numMachine);
 	
 	// TODO think - 동일한 머신을 여러개 fork 시키고 싶을 때 어떤 인터페이스로 할 지.
 	// TODO think - State lambda에 머신 파라미터를 추가할 건지.
