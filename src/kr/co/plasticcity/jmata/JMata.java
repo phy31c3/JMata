@@ -11,7 +11,22 @@ public interface JMata
 	 */
 	static void initialize()
 	{
-		JMataImpl.initialize();
+		JMataImpl.initialize(Runtime.getRuntime().availableProcessors() * 2);
+	}
+	
+	/**
+	 * 어플리케이션 시작 시 반드시 호출.
+	 */
+	static void initialize(int numThreads)
+	{
+		if (numThreads < 1)
+		{
+			initialize();
+		}
+		else
+		{
+			JMataImpl.initialize(numThreads);
+		}
 	}
 	
 	static JMMachineBuilder buildMachine(Class<?> machineTag)
@@ -19,5 +34,33 @@ public interface JMata
 		return JMataImpl.get().buildMachine(machineTag);
 	}
 	
-	// TODO 머신 조작 인터페이스
+	static void runMachine(Class<?> machineTag)
+	{
+		JMataImpl.get().runMachine(machineTag, 0);
+	}
+	
+	static void runMachine(Class<?> machineTag, int machineIdx)
+	{
+		JMataImpl.get().runMachine(machineTag, machineIdx);
+	}
+	
+	static void stopMachine(Class<?> machineTag)
+	{
+		JMataImpl.get().stopMachine(machineTag, 0);
+	}
+	
+	static void stopMachine(Class<?> machineTag, int machineIdx)
+	{
+		JMataImpl.get().stopMachine(machineTag, machineIdx);
+	}
+	
+	static void terminateMachine(Class<?> machineTag)
+	{
+		JMataImpl.get().terminateMachine(machineTag, 0);
+	}
+	
+	static void terminateMachine(Class<?> machineTag, int machineIdx)
+	{
+		JMataImpl.get().terminateMachine(machineTag, machineIdx);
+	}
 }

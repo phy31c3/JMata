@@ -12,7 +12,7 @@ class JMataImpl implements JMata
 	
 	private volatile static JMataImpl instance;
 	
-	static synchronized void initialize()
+	static synchronized void initialize(int numThreads)
 	{
 		if (instance != null)
 		{
@@ -50,5 +50,20 @@ class JMataImpl implements JMata
 	{
 		// TODO
 		return null;
+	}
+	
+	void runMachine(Class<?> machineTag, int machineIdx)
+	{
+		// TODO
+	}
+	
+	void stopMachine(Class<?> machineTag, int machineIdx)
+	{
+		// TODO
+	}
+	
+	void terminateMachine(Class<?> machineTag, int machineIdx)
+	{
+		// TODO
 	}
 }

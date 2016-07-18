@@ -6,27 +6,34 @@ import kr.co.plasticcity.jmata.function.*;
 
 public interface JMMachineBuilder
 {
-	StateBuilder defineState(Class<?> state);
+	MachineBuilder ifPresentThenIgnoreThis(JMVoidConsumer funcForException);
 	
-	GroupBuilder defineGroup(Class<?> group);
+	MachineBuilder ifPresentThenReplaceToThis(JMVoidConsumer funcForException);
 	
-	JMMachineBuilder ifPresentThenIgnore(JMVoidConsumer funcForException);
-	
-	JMMachineBuilder ifPresentThenReplace(JMVoidConsumer funcForException);
-	
-	void build(int numMachine);
-	
-	void buildAndRun(int numMachine);
-	
-	// TODO think - 동일한 머신을 여러개 fork 시키고 싶을 때 어떤 인터페이스로 할 지.
-	// TODO think - State lambda에 머신 파라미터를 추가할 건지.
-	// TODO think - 동적 상태 추가 및 수정 허용 할 건지.
+	public interface MachineBuilder
+	{
+		StateBuilder defineState(Class<?> state);
+		
+		GroupBuilder defineGroup(Class<?> group);
+		
+		void build();
+		
+		void build(int numMachines);
+		
+		void buildAndRun();
+		
+		void buildAndRun(int numMachines);
+	}
 	
 	public interface StateBuilder
 	{
 		StateBuilder whenEnter(JMVoidConsumer defaultWork);
 		
+		StateBuilder whenEnter(Consumer<Integer> defaultWork);
+		
 		StateBuilder whenExit(JMVoidConsumer defaultWork);
+		
+		StateBuilder whenExit(Consumer<Integer> defaultWork);
 		
 		<S> WhenEnter<S> whenEnterFrom(Class<S> signal);
 		
@@ -36,7 +43,7 @@ public interface JMMachineBuilder
 		
 		SwitchTo<?, StateBuilder> whenInput(Class<?>... signals);
 		
-		JMMachineBuilder apply();
+		MachineBuilder apply();
 	}
 	
 	public interface GroupBuilder
@@ -45,12 +52,14 @@ public interface JMMachineBuilder
 		
 		<S> SwitchTo<S, GroupBuilder> whenInput(Class<S> signal);
 		
-		JMMachineBuilder apply();
+		MachineBuilder apply();
 	}
 	
 	public interface WhenEnter<S>
 	{
 		StateBuilder doThis(Consumer<S> workOnEnter);
+		
+		StateBuilder doThis(BiConsumer<S, Integer> workOnEnter);
 		
 		StateBuilder doNothing();
 	}
@@ -65,6 +74,8 @@ public interface JMMachineBuilder
 	public interface WhenExit<S, T>
 	{
 		T AndDo(Consumer<S> workOnExit);
+		
+		T AndDo(BiConsumer<S, Integer> workOnExit);
 		
 		T AndDoNothing();
 	}
