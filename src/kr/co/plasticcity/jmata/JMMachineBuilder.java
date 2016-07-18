@@ -6,9 +6,9 @@ import kr.co.plasticcity.jmata.function.*;
 
 public interface JMMachineBuilder
 {
-	MachineBuilder ifPresentThenIgnoreThis(JMVoidConsumer funcForException);
+	void ifPresentThenIgnoreThis(Consumer<MachineBuilder> machineBuilder);
 	
-	MachineBuilder ifPresentThenReplaceToThis(JMVoidConsumer funcForException);
+	void ifPresentThenReplaceToThis(Consumer<MachineBuilder> machineBuilder);
 	
 	public interface MachineBuilder
 	{

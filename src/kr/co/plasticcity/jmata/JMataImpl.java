@@ -48,8 +48,7 @@ class JMataImpl implements JMata
 	
 	public JMMachineBuilder buildMachine(Class<?> machineTag)
 	{
-		// TODO
-		return null;
+		return new JMMachineBuilderImpl(this, machineMap.containsKey(machineTag));
 	}
 	
 	void runMachine(Class<?> machineTag, int machineIdx)
