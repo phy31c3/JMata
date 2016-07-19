@@ -12,7 +12,7 @@ class JMataImpl implements JMata
 	
 	private volatile static JMataImpl instance;
 	
-	static synchronized void initialize(int numThreads)
+	static synchronized void initialize()
 	{
 		if (instance != null)
 		{
@@ -46,9 +46,9 @@ class JMataImpl implements JMata
 		machineMap = new ConcurrentHashMap<Class<?>, JMMachine>();
 	}
 	
-	public JMMachineBuilder buildMachine(Class<?> machineTag)
+	public void buildMachine(Class<?> machineTag, Consumer<JMMachineBuilder> builder)
 	{
-		return new JMMachineBuilderImpl(this, machineMap.containsKey(machineTag));
+		// TODO
 	}
 	
 	void runMachine(Class<?> machineTag, int machineIdx)

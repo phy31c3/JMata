@@ -10,42 +10,46 @@ public class TestMachine
 	public TestMachine()
 	{
 		JMata.initialize();
-		JMata.buildMachine(TestMachine.class).ifPresentThenIgnoreThis(mb -> {
-			mb.defineState(A.class)
-				.whenEnter(A::enter)
-				.whenEnterFrom(S5.class).doThis(A::enter)
-				.whenInput(S0.class).justSwitchTo(B.class)
-				.whenInput(S1.class).justSwitchTo(C.class)
-				.whenExit(A::exit)
-				.apply()
-				
-				.defineState(B.class)
-				.whenEnter(B::enter)
-				.whenInput(S1.class).justSwitchTo(C.class)
-				.whenInput(S2.class).justSwitchTo(D.class)
-				.whenExit(B::exit)
-				.apply()
-				
-				.defineState(C.class)
-				.whenEnter(C::enter)
-				.whenInput(S1.class).justSwitchTo(C.class)
-				.whenInput(S3.class).switchTo(D.class).AndDo(C::exit)
-				.whenInput(S4.class).switchTo(D.class).AndDo(C::exit)
-				.whenExit(C::exit)
-				.apply()
-				
-				.defineState(D.class)
-				.whenEnter(D::enter)
-				.whenExit(D::exit)
-				.apply()
-				
-				.defineGroup(G0.class)
-				.putStates(B.class, C.class, D.class)
-				.whenInput(S5.class).justSwitchTo(A.class)
-				.apply()
-				
-				.buildAndRun();
+		JMata.buildMachine(TestMachine.class, builder -> {
+			builder.ifPresentThenIgnoreThis(mb -> {
+				mb.defineState(A.class)
+					.whenEnter(A::enter)
+					.whenEnterFrom(S5.class).doThis(A::enter)
+					.whenInput(S0.class).justSwitchTo(B.class)
+					.whenInput(S1.class).justSwitchTo(C.class)
+					.whenExit(A::exit)
+					.apply()
+					
+					.defineState(B.class)
+					.whenEnter(B::enter)
+					.whenInput(S1.class).justSwitchTo(C.class)
+					.whenInput(S2.class).justSwitchTo(D.class)
+					.whenExit(B::exit)
+					.apply()
+					
+					.defineState(C.class)
+					.whenEnter(C::enter)
+					.whenInput(S1.class).justSwitchTo(C.class)
+					.whenInput(S3.class).switchTo(D.class).AndDo(C::exit)
+					.whenInput(S4.class).switchTo(D.class).AndDo(C::exit)
+					.whenExit(C::exit)
+					.apply()
+					
+					.defineState(D.class)
+					.whenEnter(D::enter)
+					.whenExit(D::exit)
+					.apply()
+					
+					.defineGroup(G0.class)
+					.putStates(B.class, C.class, D.class)
+					.whenInput(S5.class).justSwitchTo(A.class)
+					.apply()
+					
+					.build();
+			});
 		});
+		
+		JMata.runMachine(TestMachine.class);
 	}
 	
 	/******************************************

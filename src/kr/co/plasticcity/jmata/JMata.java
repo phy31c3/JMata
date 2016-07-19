@@ -11,27 +11,12 @@ public interface JMata
 	 */
 	static void initialize()
 	{
-		JMataImpl.initialize(Runtime.getRuntime().availableProcessors() * 2);
+		JMataImpl.initialize();
 	}
 	
-	/**
-	 * 어플리케이션 시작 시 반드시 호출.
-	 */
-	static void initialize(int numThreads)
+	static void buildMachine(Class<?> machineTag, Consumer<JMMachineBuilder> builder)
 	{
-		if (numThreads < 1)
-		{
-			initialize();
-		}
-		else
-		{
-			JMataImpl.initialize(numThreads);
-		}
-	}
-	
-	static JMMachineBuilder buildMachine(Class<?> machineTag)
-	{
-		return JMataImpl.get().buildMachine(machineTag);
+		JMataImpl.get().buildMachine(machineTag, builder);
 	}
 	
 	static void runMachine(Class<?> machineTag)

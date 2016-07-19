@@ -7,13 +7,9 @@ import kr.co.plasticcity.jmata.function.*;
 
 class JMMachineBuilderImpl implements JMMachineBuilder
 {
-	private Object jmataMonitor;
-	private boolean isPresent;
-	
-	public JMMachineBuilderImpl(Object jmataMonitor, boolean isPresent)
+	JMMachineBuilderImpl()
 	{
-		this.jmataMonitor = jmataMonitor;
-		this.isPresent = isPresent;
+		
 	}
 	
 	@Override
