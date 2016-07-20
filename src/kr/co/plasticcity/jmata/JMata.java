@@ -14,37 +14,37 @@ public interface JMata
 		JMataImpl.initialize();
 	}
 	
-	static void buildMachine(Class<?> machineTag, Consumer<JMMachineBuilder> builder)
+	static <M> void buildMachine(Class<M> machineTag, Consumer<JMMachineBuilder> builder)
 	{
 		JMataImpl.get().buildMachine(machineTag, builder);
 	}
 	
-	static void runMachine(Class<?> machineTag)
+	static <M> void runMachine(Class<M> machineTag)
 	{
-		JMataImpl.get().runMachine(machineTag, 0);
+		JMataImpl.get().runMachine(machineTag);
 	}
 	
-	static void runMachine(Class<?> machineTag, int machineIdx)
+	static <M> void runMachine(Class<M> machineTag, int machineIdx)
 	{
 		JMataImpl.get().runMachine(machineTag, machineIdx);
 	}
 	
-	static void stopMachine(Class<?> machineTag)
+	static <M> void stopMachine(Class<M> machineTag)
 	{
-		JMataImpl.get().stopMachine(machineTag, 0);
+		JMataImpl.get().stopMachine(machineTag);
 	}
 	
-	static void stopMachine(Class<?> machineTag, int machineIdx)
+	static <M> void stopMachine(Class<M> machineTag, int machineIdx)
 	{
 		JMataImpl.get().stopMachine(machineTag, machineIdx);
 	}
 	
-	static void terminateMachine(Class<?> machineTag)
+	static <M> void terminateMachine(Class<M> machineTag)
 	{
-		JMataImpl.get().terminateMachine(machineTag, 0);
+		JMataImpl.get().terminateMachine(machineTag);
 	}
 	
-	static void terminateMachine(Class<?> machineTag, int machineIdx)
+	static <M> void terminateMachine(Class<M> machineTag, int machineIdx)
 	{
 		JMataImpl.get().terminateMachine(machineTag, machineIdx);
 	}

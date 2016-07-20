@@ -6,7 +6,7 @@ import javax.swing.undo.*;
 
 import kr.co.plasticcity.jmata.JMata.*;
 
-interface JMMachine
+interface JMMachine<M>
 {
 	enum MachineState
 	{

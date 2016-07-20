@@ -4,7 +4,9 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.*;
 
+import kr.co.plasticcity.jmata.JMMachineBuilder.*;
 import kr.co.plasticcity.jmata.JMata.*;
+import kr.co.plasticcity.jmata.function.*;
 
 class JMataImpl implements JMata
 {
@@ -39,29 +41,51 @@ class JMataImpl implements JMata
 	
 	/************************** ↑ Static Part **************************/
 	
-	private Map<Class<?>, JMMachine> machineMap;
+	private Map<Class<?>, JMMachine<?>> machineMap;
+	
+	private Executor executor;
 	
 	private JMataImpl()
 	{
-		machineMap = new ConcurrentHashMap<Class<?>, JMMachine>();
+		machineMap = new ConcurrentHashMap<>();
+		executor = Executors.newSingleThreadExecutor();
 	}
 	
-	public void buildMachine(Class<?> machineTag, Consumer<JMMachineBuilder> builder)
+	<M> void buildMachine(Class<M> machineTag, Consumer<JMMachineBuilder> builder)
+	{
+		executor.execute(() -> {
+			builder.accept(new JMMachineBuilderImpl<M>(machineMap.containsKey(machineTag), machine -> {
+				machineMap.put(machineTag, machine);
+			}));
+		});
+	}
+	
+	<M> void runMachine(Class<M> machineTag)
 	{
 		// TODO
 	}
 	
-	void runMachine(Class<?> machineTag, int machineIdx)
+	<M> void runMachine(Class<M> machineTag, int machineIdx)
 	{
 		// TODO
 	}
 	
-	void stopMachine(Class<?> machineTag, int machineIdx)
+	<M> void stopMachine(Class<M> machineTag)
 	{
 		// TODO
 	}
 	
-	void terminateMachine(Class<?> machineTag, int machineIdx)
+	<M> void stopMachine(Class<M> machineTag, int machineIdx)
+	{
+		// TODO
+	}
+	
+	<M> void terminateMachine(Class<M> machineTag)
+	{
+		// TODO
+	}
+	
+	<M> void terminateMachine(Class<M> machineTag, int machineIdx)
 	{
 		// TODO
 	}

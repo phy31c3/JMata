@@ -94,7 +94,7 @@ public class TestMachine
 			{
 			}
 			
-			public static void exit(S3 signal)
+			public static void exit(S3 signal, int idx)
 			{
 			}
 			

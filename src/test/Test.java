@@ -4,6 +4,18 @@ public class Test
 {
 	public static void main(String[] args)
 	{
-		TestMachine testMachine = new TestMachine();
+		try
+		{
+			TestMachine testMachine = new TestMachine();
+			Test.class.wait();
+		}
+		catch (InterruptedException e)
+		{
+		
+		}
+		finally
+		{
+		
+		}
 	}
 }
