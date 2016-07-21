@@ -6,8 +6,13 @@ import javax.swing.undo.*;
 
 import kr.co.plasticcity.jmata.JMata.*;
 
-interface JMMachine<M>
+interface JMMachine
 {
+	static JMMachine getNew()
+	{
+		return new JMMachineImpl();
+	}
+	
 	enum MachineState
 	{
 		RUNNING, STOPPING, TERMINATED

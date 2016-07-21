@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.*;
 
-import kr.co.plasticcity.jmata.JMMachineBuilder.*;
+import kr.co.plasticcity.jmata.JMBuilder.*;
 import kr.co.plasticcity.jmata.JMata.*;
 import kr.co.plasticcity.jmata.function.*;
 
@@ -15,6 +15,16 @@ class JMataImpl implements JMata
 	private volatile static JMataImpl instance;
 	
 	static synchronized void initialize()
+	{
+		clearInstance();
+	}
+	
+	static synchronized void exit()
+	{
+		clearInstance();
+	}
+	
+	private static synchronized void clearInstance()
 	{
 		if (instance != null)
 		{
@@ -41,7 +51,7 @@ class JMataImpl implements JMata
 	
 	/************************** ↑ Static Part **************************/
 	
-	private Map<Class<?>, JMMachine<?>> machineMap;
+	private Map<Class<?>, JMMachine> machineMap;
 	
 	private Executor executor;
 	
@@ -51,41 +61,41 @@ class JMataImpl implements JMata
 		executor = Executors.newSingleThreadExecutor();
 	}
 	
-	<M> void buildMachine(Class<M> machineTag, Consumer<JMMachineBuilder> builder)
+	void buildMachine(Class<?> machineTag, Consumer<JMBuilder> builder)
 	{
 		executor.execute(() -> {
-			builder.accept(new JMMachineBuilderImpl<M>(machineMap.containsKey(machineTag), machine -> {
+			builder.accept(JMBuilder.Constructor.getNew(machineMap.containsKey(machineTag), machine -> {
 				machineMap.put(machineTag, machine);
 			}));
 		});
 	}
 	
-	<M> void runMachine(Class<M> machineTag)
+	void runMachine(Class<?> machineTag)
 	{
 		// TODO
 	}
 	
-	<M> void runMachine(Class<M> machineTag, int machineIdx)
+	void runMachine(Class<?> machineTag, int machineIdx)
 	{
 		// TODO
 	}
 	
-	<M> void stopMachine(Class<M> machineTag)
+	void stopMachine(Class<?> machineTag)
 	{
 		// TODO
 	}
 	
-	<M> void stopMachine(Class<M> machineTag, int machineIdx)
+	void stopMachine(Class<?> machineTag, int machineIdx)
 	{
 		// TODO
 	}
 	
-	<M> void terminateMachine(Class<M> machineTag)
+	void terminateMachine(Class<?> machineTag)
 	{
 		// TODO
 	}
 	
-	<M> void terminateMachine(Class<M> machineTag, int machineIdx)
+	void terminateMachine(Class<?> machineTag, int machineIdx)
 	{
 		// TODO
 	}

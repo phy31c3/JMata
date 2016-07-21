@@ -1,5 +1,7 @@
 package test;
 
+import javax.management.remote.*;
+
 import kr.co.plasticcity.jmata.*;
 import test.TestMachine.Group.*;
 import test.TestMachine.Signal.*;
@@ -10,9 +12,10 @@ public class TestMachine
 	public TestMachine()
 	{
 		JMata.initialize();
+		JMata.setLogFunction(log -> System.out.println(log));
 		JMata.buildMachine(TestMachine.class, builder -> {
-			builder.ifPresentThenIgnoreThis(mb -> {
-				mb.defineState(A.class)
+			builder.ifPresentThenIgnoreThis(mchb -> {
+				mchb.defineState(A.class)
 					.whenEnter(A::enter)
 					.whenEnterFrom(S5.class).doThis(A::enter)
 					.whenInput(S0.class).justSwitchTo(B.class)
@@ -29,19 +32,20 @@ public class TestMachine
 					
 					.defineState(C.class)
 					.whenEnter(C::enter)
-					.whenInput(S1.class).justSwitchTo(C.class)
-					.whenInput(S3.class).switchTo(D.class).AndDo(C::exit)
-					.whenInput(S4.class).switchTo(D.class).AndDo(C::exit)
+					.whenInput(S1.class).switchTo(C.class).AndDo(C::exit)
+					.whenInput(S3.class, S4.class).justSwitchTo(D.class)
 					.whenExit(C::exit)
 					.apply()
 					
 					.defineState(D.class)
 					.whenEnter(D::enter)
+					.whenEnterFrom(S2.class).doThis(D::enter)
+					.whenEnterFrom(S3.class).doThis(D::enter)
+					.whenEnterFrom(S4.class).doThis(D::enter)
 					.whenExit(D::exit)
 					.apply()
 					
-					.defineGroup(G0.class)
-					.putStates(B.class, C.class, D.class)
+					.defineGroup(B.class, C.class, D.class)
 					.whenInput(S5.class).justSwitchTo(A.class)
 					.apply()
 					
@@ -60,7 +64,7 @@ public class TestMachine
 	{
 		public static class A
 		{
-			public static void enter()
+			public static void enter(int idx)
 			{
 			}
 			
@@ -90,15 +94,11 @@ public class TestMachine
 			{
 			}
 			
+			public static void exit(S1 signal)
+			{
+			}
+			
 			public static void exit()
-			{
-			}
-			
-			public static void exit(S3 signal, int idx)
-			{
-			}
-			
-			public static void exit(S4 signal)
 			{
 			}
 		}

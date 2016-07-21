@@ -14,37 +14,48 @@ public interface JMata
 		JMataImpl.initialize();
 	}
 	
-	static <M> void buildMachine(Class<M> machineTag, Consumer<JMMachineBuilder> builder)
+	static void setLogFunction(Consumer<String> logFunc)
+	{
+		JMLog.setLogFunction(logFunc);
+	}
+	
+	static void exit()
+	{
+		JMataImpl.exit();
+		JMLog.setLogFunction(null);
+	}
+	
+	static void buildMachine(Class<?> machineTag, Consumer<JMBuilder> builder)
 	{
 		JMataImpl.get().buildMachine(machineTag, builder);
 	}
 	
-	static <M> void runMachine(Class<M> machineTag)
+	static void runMachine(Class<?> machineTag)
 	{
 		JMataImpl.get().runMachine(machineTag);
 	}
 	
-	static <M> void runMachine(Class<M> machineTag, int machineIdx)
+	static void runMachine(Class<?> machineTag, int machineIdx)
 	{
 		JMataImpl.get().runMachine(machineTag, machineIdx);
 	}
 	
-	static <M> void stopMachine(Class<M> machineTag)
+	static void stopMachine(Class<?> machineTag)
 	{
 		JMataImpl.get().stopMachine(machineTag);
 	}
 	
-	static <M> void stopMachine(Class<M> machineTag, int machineIdx)
+	static void stopMachine(Class<?> machineTag, int machineIdx)
 	{
 		JMataImpl.get().stopMachine(machineTag, machineIdx);
 	}
 	
-	static <M> void terminateMachine(Class<M> machineTag)
+	static void terminateMachine(Class<?> machineTag)
 	{
 		JMataImpl.get().terminateMachine(machineTag);
 	}
 	
-	static <M> void terminateMachine(Class<M> machineTag, int machineIdx)
+	static void terminateMachine(Class<?> machineTag, int machineIdx)
 	{
 		JMataImpl.get().terminateMachine(machineTag, machineIdx);
 	}
