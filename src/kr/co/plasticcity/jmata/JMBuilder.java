@@ -22,8 +22,6 @@ public interface JMBuilder
 	{
 		StateBuilder defineState(Class<?> stateTag);
 		
-		GroupBuilder defineGroup(Class<?>... stateTags);
-		
 		void build();
 		
 		void build(int numMachines);
@@ -77,29 +75,6 @@ public interface JMBuilder
 			StateBuilder AndDo(BiConsumer<S, Integer> workOnExit);
 			
 			StateBuilder AndDoNothing();
-		}
-	}
-	
-	public interface GroupBuilder
-	{
-		<S> SwitchTo<S> whenInput(Class<S> signal);
-		
-		MachineBuilder apply();
-		
-		public interface SwitchTo<S>
-		{
-			GroupBuilder justSwitchTo(Class<?> stateTag);
-			
-			WhenExit<S> switchTo(Class<?> stateTag);
-		}
-		
-		public interface WhenExit<S>
-		{
-			GroupBuilder AndDo(Consumer<S> workOnExit);
-			
-			GroupBuilder AndDo(BiConsumer<S, Integer> workOnExit);
-			
-			GroupBuilder AndDoNothing();
 		}
 	}
 }

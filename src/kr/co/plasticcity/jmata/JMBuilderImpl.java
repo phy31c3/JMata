@@ -3,12 +3,6 @@ package kr.co.plasticcity.jmata;
 import java.util.*;
 import java.util.function.*;
 
-import javax.swing.text.html.HTML.*;
-
-import kr.co.plasticcity.jmata.JMBuilder.*;
-import kr.co.plasticcity.jmata.JMBuilder.GroupBuilder.SwitchTo;
-import kr.co.plasticcity.jmata.JMBuilder.GroupBuilder.WhenExit;
-import kr.co.plasticcity.jmata.JMBuilder.StateBuilder.*;
 import kr.co.plasticcity.jmata.function.*;
 
 class JMBuilderImpl implements JMBuilder
@@ -61,12 +55,6 @@ class JMBuilderImpl implements JMBuilder
 		}
 		
 		@Override
-		public GroupBuilder defineGroup(Class<?>... stateTags)
-		{
-			return new GroupBuilderImpl(stateTags);
-		}
-		
-		@Override
 		public void build()
 		{
 			// TODO
@@ -98,6 +86,7 @@ class JMBuilderImpl implements JMBuilder
 			private StateBuilderImpl(Class<?> tag)
 			{
 				this.stateTag = tag;
+				this.creater = JMStateCreater.getNew();
 			}
 			
 			@Override
@@ -141,7 +130,7 @@ class JMBuilderImpl implements JMBuilder
 			}
 			
 			@Override
-			public <S> StateBuilder.SwitchTo<S> whenInput(Class<S> signal)
+			public <S> SwitchTo<S> whenInput(Class<S> signal)
 			{
 				return new SwitchToImpl<S>(signal);
 			}
@@ -179,7 +168,8 @@ class JMBuilderImpl implements JMBuilder
 				@Override
 				public StateBuilder doNothing()
 				{
-					creater.putEnterFunction(signal, p -> {
+					creater.putEnterFunction(signal, p ->
+					{
 						/* do nothing */
 					});
 					return StateBuilderImpl.this;
@@ -216,7 +206,7 @@ class JMBuilderImpl implements JMBuilder
 				}
 				
 				@Override
-				public StateBuilder.WhenExit<S> switchTo(Class<?> stateTag)
+				public WhenExit<S> switchTo(Class<?> stateTag)
 				{
 					creater.putSwitchRule(signal, stateTag);
 					return new WhenExitImpl<S>(signal);
@@ -249,76 +239,11 @@ class JMBuilderImpl implements JMBuilder
 				@Override
 				public StateBuilder AndDoNothing()
 				{
-					creater.putExitFunction(signal, p -> {
+					creater.putExitFunction(signal, p ->
+					{
 						/* do nothing */
 					});
 					return StateBuilderImpl.this;
-				}
-			}
-		}
-		
-		private class GroupBuilderImpl implements GroupBuilder
-		{
-			private Class<?>[] stateTags;
-			private JMStateCreater creater;
-			
-			private GroupBuilderImpl(Class<?>... stateTags)
-			{
-				this.stateTags = stateTags;
-			}
-			
-			@Override
-			public <S> SwitchTo<S> whenInput(Class<S> signal)
-			{
-				return new SwitchToImpl<S>(signal);
-			}
-			
-			@Override
-			public MachineBuilder apply()
-			{
-				return null;
-			}
-			
-			private class SwitchToImpl<S> implements SwitchTo<S>
-			{
-				private Class<S> signal;
-				
-				private SwitchToImpl(Class<S> signal)
-				{
-					this.signal = signal;
-				}
-				
-				@Override
-				public GroupBuilder justSwitchTo(Class<?> stateTag)
-				{
-					return null;
-				}
-				
-				@Override
-				public GroupBuilder.WhenExit<S> switchTo(Class<?> stateTag)
-				{
-					return null;
-				}
-			}
-			
-			private class WhenExitImpl<S> implements WhenExit<S>
-			{
-				@Override
-				public GroupBuilder AndDo(Consumer<S> workOnExit)
-				{
-					return null;
-				}
-				
-				@Override
-				public GroupBuilder AndDo(BiConsumer<S, Integer> workOnExit)
-				{
-					return null;
-				}
-				
-				@Override
-				public GroupBuilder AndDoNothing()
-				{
-					return null;
 				}
 			}
 		}

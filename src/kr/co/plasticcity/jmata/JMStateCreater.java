@@ -6,6 +6,11 @@ import kr.co.plasticcity.jmata.function.*;
 
 interface JMStateCreater extends JMState
 {
+	static JMStateCreater getNew()
+	{
+		return new JMStateImpl();
+	}
+	
 	void putEnterFunction(JMVoidConsumer func);
 	
 	void putEnterFunction(Consumer<Integer> func);
