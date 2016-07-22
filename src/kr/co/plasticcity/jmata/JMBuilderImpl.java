@@ -57,24 +57,26 @@ class JMBuilderImpl implements JMBuilder
 		@Override
 		public void build()
 		{
-			// TODO
+			consumer.accept(JMMachine.getNew(1, stateMap));
 		}
 		
 		@Override
 		public void build(int numMachines)
 		{
-			// TODO
+			consumer.accept(JMMachine.getNew(numMachines, stateMap));
 		}
 		
 		@Override
 		public void buildAndRun()
 		{
+			build();
 			// TODO
 		}
 		
 		@Override
 		public void buildAndRun(int numMachines)
 		{
+			build(numMachines);
 			// TODO
 		}
 		
@@ -168,7 +170,8 @@ class JMBuilderImpl implements JMBuilder
 				@Override
 				public StateBuilder doNothing()
 				{
-					creater.putEnterFunction(signal, p -> {
+					creater.putEnterFunction(signal, p ->
+					{
 						/* do nothing */
 					});
 					return StateBuilderImpl.this;
@@ -238,7 +241,8 @@ class JMBuilderImpl implements JMBuilder
 				@Override
 				public StateBuilder AndDoNothing()
 				{
-					creater.putExitFunction(signal, p -> {
+					creater.putExitFunction(signal, p ->
+					{
 						/* do nothing */
 					});
 					return StateBuilderImpl.this;

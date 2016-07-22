@@ -63,8 +63,10 @@ class JMataImpl implements JMata
 	
 	void buildMachine(Class<?> machineTag, Consumer<JMBuilder> builder)
 	{
-		executor.execute(() -> {
-			builder.accept(JMBuilder.Constructor.getNew(machineMap.containsKey(machineTag), machine -> {
+		executor.execute(() ->
+		{
+			builder.accept(JMBuilder.Constructor.getNew(machineMap.containsKey(machineTag), machine ->
+			{
 				machineMap.put(machineTag, machine);
 			}));
 		});

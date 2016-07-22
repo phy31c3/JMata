@@ -1,24 +1,24 @@
 package test;
 
+import java.io.*;
+
 public class Test
 {
 	public static void main(String[] args)
 	{
 		TestMachine testMachine = new TestMachine();
-		synchronized (TestMachine.class)
+		try
 		{
-			try
+			while (true)
 			{
-				TestMachine.class.wait();
+				System.out.print("Input Signal: ");
+				byte[] buf = new byte[256];
+				System.in.read(buf);
 			}
-			catch (InterruptedException e)
-			{
-				
-			}
-			finally
-			{
-				
-			}
+		}
+		catch (IOException e)
+		{
+		
 		}
 	}
 }
