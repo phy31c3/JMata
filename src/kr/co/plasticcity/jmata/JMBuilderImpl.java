@@ -49,7 +49,7 @@ class JMBuilderImpl implements JMBuilder
 		{
 			if (stateMap.containsKey(stateTag))
 			{
-				JMLog.out("State '%s' 재정의", stateTag.getSimpleName());
+				JMLog.out("State '%s' 중복 정의", stateTag.getSimpleName());
 			}
 			return new StateBuilderImpl(stateTag);
 		}
@@ -86,7 +86,7 @@ class JMBuilderImpl implements JMBuilder
 			private StateBuilderImpl(Class<?> tag)
 			{
 				this.stateTag = tag;
-				this.creater = JMStateCreater.getNew();
+				this.creater = JMStateCreater.getNew(tag);
 			}
 			
 			@Override
@@ -168,8 +168,7 @@ class JMBuilderImpl implements JMBuilder
 				@Override
 				public StateBuilder doNothing()
 				{
-					creater.putEnterFunction(signal, p ->
-					{
+					creater.putEnterFunction(signal, p -> {
 						/* do nothing */
 					});
 					return StateBuilderImpl.this;
@@ -239,8 +238,7 @@ class JMBuilderImpl implements JMBuilder
 				@Override
 				public StateBuilder AndDoNothing()
 				{
-					creater.putExitFunction(signal, p ->
-					{
+					creater.putExitFunction(signal, p -> {
 						/* do nothing */
 					});
 					return StateBuilderImpl.this;
