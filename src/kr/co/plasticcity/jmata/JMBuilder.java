@@ -8,15 +8,20 @@ public interface JMBuilder
 {
 	class Constructor
 	{
-		static JMBuilder getNew(boolean isPresent, Consumer<JMMachine> consumer)
+		static JMBuilder getNew(Class<?> machineTag, boolean isPresent, Consumer<JMMachine> consumer)
 		{
-			return new JMBuilderImpl(isPresent, consumer);
+			return new JMBuilderImpl(machineTag, isPresent, consumer);
 		}
 	}
 	
-	void ifPresentThenIgnoreThis(Consumer<MachineBuilder> machineBuilder);
+	void ifPresentThenIgnoreThis(Consumer<StartStateDefiner> machineBuilder);
 	
-	void ifPresentThenReplaceToThis(Consumer<MachineBuilder> machineBuilder);
+	void ifPresentThenReplaceToThis(Consumer<StartStateDefiner> machineBuilder);
+	
+	public interface StartStateDefiner
+	{
+		StateBuilder defineStartState(Class<?> stateTag);
+	}
 	
 	public interface MachineBuilder
 	{

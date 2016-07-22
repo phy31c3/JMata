@@ -11,8 +11,8 @@ class JMStateImpl implements JMStateCreater
 	
 	private JMVoidConsumer enter;
 	private Consumer<Integer> enterIdx;
-	private Map<Class<?>, Consumer<?>> enterSig;
-	private Map<Class<?>, BiConsumer<?, Integer>> enterSigIdx;
+	private Map<Class<?>, Consumer<? extends Object>> enterSig;
+	private Map<Class<?>, BiConsumer<? super Object, Integer>> enterSigIdx;
 	
 	private JMVoidConsumer exit;
 	private Consumer<Integer> exitIdx;
@@ -36,6 +36,45 @@ class JMStateImpl implements JMStateCreater
 		this.exitSigIdx = new HashMap<>();
 		
 		this.switchRule = new HashMap<>();
+	}
+	
+	@Override
+	public void runEnterFunction(int machineIdx)
+	{
+		if (enterIdx != null)
+		{
+			enterIdx.accept(machineIdx);
+		}
+		else if (enter != null)
+		{
+			enter.func();
+		}
+	}
+	
+	@Override
+	public <S> void runEnterFunction(int machineIdx, S signal)
+	{
+		if (enterSigIdx.containsKey(signal.getClass()))
+		{
+			enterSigIdx.get(signal.getClass()).accept(signal, machineIdx);
+		}
+		else if (enterSig.containsKey(signal.getClass()))
+		{
+			enterSig.get(signal.getClass()).accept(signal);
+		}
+		else if (enterIdx != null)
+		{
+		
+		}
+		else if (enter != null)
+		{
+		
+		}
+	}
+	
+	@Override
+	public <S> void runExitFunction(int machineIdx, S signal, Consumer<Class<?>> nextState)
+	{
 	}
 	
 	@Override

@@ -17,7 +17,7 @@ public class TestMachine
 		{
 			builder.ifPresentThenIgnoreThis(mbdr ->
 			{
-				mbdr.defineState(A.class)
+				mbdr.defineStartState(A.class)
 					.whenEnter(A::enter)
 					.whenEnterFrom(S5.class).doThis(A::enter)
 					.whenInput(S0.class).justSwitchTo(B.class)

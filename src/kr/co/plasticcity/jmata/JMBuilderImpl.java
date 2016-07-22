@@ -3,21 +3,24 @@ package kr.co.plasticcity.jmata;
 import java.util.*;
 import java.util.function.*;
 
+import kr.co.plasticcity.jmata.JMBuilder.*;
 import kr.co.plasticcity.jmata.function.*;
 
 class JMBuilderImpl implements JMBuilder
 {
+	private Class<?> machineTag;
 	private boolean present;
 	private Consumer<JMMachine> consumer;
 	
-	JMBuilderImpl(boolean isPresent, Consumer<JMMachine> consumer)
+	JMBuilderImpl(Class<?> machineTag, boolean isPresent, Consumer<JMMachine> consumer)
 	{
+		this.machineTag = machineTag;
 		this.present = isPresent;
 		this.consumer = consumer;
 	}
 	
 	@Override
-	public void ifPresentThenIgnoreThis(Consumer<MachineBuilder> machineBuilder)
+	public void ifPresentThenIgnoreThis(Consumer<StartStateDefiner> machineBuilder)
 	{
 		if (present)
 		{
@@ -30,18 +33,26 @@ class JMBuilderImpl implements JMBuilder
 	}
 	
 	@Override
-	public void ifPresentThenReplaceToThis(Consumer<MachineBuilder> machineBuilder)
+	public void ifPresentThenReplaceToThis(Consumer<StartStateDefiner> machineBuilder)
 	{
 		machineBuilder.accept(new MachineBuilderImpl());
 	}
 	
-	private class MachineBuilderImpl implements MachineBuilder
+	private class MachineBuilderImpl implements MachineBuilder, StartStateDefiner
 	{
+		private Class<?> startState;
 		private Map<Class<?>, JMStateCreater> stateMap;
 		
 		private MachineBuilderImpl()
 		{
 			this.stateMap = new HashMap<>();
+		}
+		
+		@Override
+		public StateBuilder defineStartState(Class<?> stateTag)
+		{
+			startState = stateTag;
+			return defineState(stateTag);
 		}
 		
 		@Override
@@ -57,27 +68,29 @@ class JMBuilderImpl implements JMBuilder
 		@Override
 		public void build()
 		{
-			consumer.accept(JMMachine.getNew(1, stateMap));
+			consumer.accept(JMMachine.getNew(machineTag, 1, startState, stateMap));
 		}
 		
 		@Override
 		public void build(int numMachines)
 		{
-			consumer.accept(JMMachine.getNew(numMachines, stateMap));
+			consumer.accept(JMMachine.getNew(machineTag, numMachines, startState, stateMap));
 		}
 		
 		@Override
 		public void buildAndRun()
 		{
-			build();
-			// TODO
+			JMMachine machine = JMMachine.getNew(machineTag, 1, startState, stateMap);
+			consumer.accept(machine);
+			machine.runAll();
 		}
 		
 		@Override
 		public void buildAndRun(int numMachines)
 		{
-			build(numMachines);
-			// TODO
+			JMMachine machine = JMMachine.getNew(machineTag, numMachines, startState, stateMap);
+			consumer.accept(machine);
+			machine.runAll();
 		}
 		
 		private class StateBuilderImpl implements StateBuilder

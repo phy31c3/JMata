@@ -28,7 +28,7 @@ class JMataImpl implements JMata
 	{
 		if (instance != null)
 		{
-			instance.machineMap.values().stream().forEach(m -> m.terminate());
+			instance.machineMap.values().stream().forEach(m -> m.terminateAll());
 			instance = null;
 		}
 	}
@@ -53,21 +53,25 @@ class JMataImpl implements JMata
 	
 	private Map<Class<?>, JMMachine> machineMap;
 	
-	private Executor executor;
+	private Executor globalQue;
 	
 	private JMataImpl()
 	{
 		machineMap = new ConcurrentHashMap<>();
-		executor = Executors.newSingleThreadExecutor();
+		globalQue = Executors.newSingleThreadExecutor();
 	}
 	
 	void buildMachine(Class<?> machineTag, Consumer<JMBuilder> builder)
 	{
-		executor.execute(() ->
+		globalQue.execute(() ->
 		{
-			builder.accept(JMBuilder.Constructor.getNew(machineMap.containsKey(machineTag), machine ->
+			builder.accept(JMBuilder.Constructor.getNew(machineTag, machineMap.containsKey(machineTag), machine ->
 			{
-				machineMap.put(machineTag, machine);
+				JMMachine oldMachine = machineMap.put(machineTag, machine);
+				if (oldMachine != null)
+				{
+					oldMachine.terminateAll();
+				}
 			}));
 		});
 	}
