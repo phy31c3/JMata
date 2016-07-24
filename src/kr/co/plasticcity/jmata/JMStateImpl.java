@@ -11,8 +11,8 @@ class JMStateImpl implements JMStateCreater
 	
 	private JMVoidConsumer enter;
 	private Consumer<Integer> enterIdx;
-	private Map<Class<?>, Consumer<? extends Object>> enterSig;
-	private Map<Class<?>, BiConsumer<? super Object, Integer>> enterSigIdx;
+	private Map<Class<?>, Consumer<?>> enterSig;
+	private Map<Class<?>, BiConsumer<?, Integer>> enterSigIdx;
 	
 	private JMVoidConsumer exit;
 	private Consumer<Integer> exitIdx;
@@ -47,34 +47,52 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (enter != null)
 		{
-			enter.func();
+			enter.accept();
 		}
 	}
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	public <S> void runEnterFunction(int machineIdx, S signal)
 	{
 		if (enterSigIdx.containsKey(signal.getClass()))
 		{
-			enterSigIdx.get(signal.getClass()).accept(signal, machineIdx);
+			((BiConsumer<S, Integer>)enterSigIdx.get(signal.getClass())).accept(signal, machineIdx);
 		}
 		else if (enterSig.containsKey(signal.getClass()))
 		{
-			enterSig.get(signal.getClass()).accept(signal);
+			((Consumer<S>)enterSig.get(signal.getClass())).accept(signal);
 		}
 		else if (enterIdx != null)
 		{
-		
+			enterIdx.accept(machineIdx);
 		}
 		else if (enter != null)
 		{
-		
+			enter.accept();
 		}
 	}
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	public <S> void runExitFunction(int machineIdx, S signal, Consumer<Class<?>> nextState)
 	{
+		if (exitSigIdx.containsKey(signal.getClass()))
+		{
+			((BiConsumer<S, Integer>)exitSigIdx.get(signal.getClass())).accept(signal, machineIdx);
+		}
+		else if (exitSig.containsKey(signal.getClass()))
+		{
+			((Consumer<S>)exitSig.get(signal.getClass())).accept(signal);
+		}
+		else if (exitIdx != null)
+		{
+			exitIdx.accept(machineIdx);
+		}
+		else if (exit != null)
+		{
+			exit.accept();
+		}
 	}
 	
 	@Override

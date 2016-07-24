@@ -31,7 +31,7 @@ class JMMachineImpl implements JMMachine
 		{
 			machineQue[idx] = Executors.newSingleThreadExecutor();
 			curStates[idx] = startState;
-			setCondOf(idx, COND.CREATED);
+			conds[idx] = COND.CREATED;
 		}
 	}
 	
