@@ -3,7 +3,6 @@ package kr.co.plasticcity.jmata;
 import java.util.*;
 import java.util.function.*;
 
-import kr.co.plasticcity.jmata.JMBuilder.*;
 import kr.co.plasticcity.jmata.function.*;
 
 class JMBuilderImpl implements JMBuilder
@@ -193,7 +192,7 @@ class JMBuilderImpl implements JMBuilder
 			
 			private class JustSwitchToImpl implements JustSwitchTo
 			{
-				private Class<?>[] signals;
+				protected Class<?>[] signals;
 				
 				private JustSwitchToImpl(Class<?>... signals)
 				{
@@ -213,18 +212,17 @@ class JMBuilderImpl implements JMBuilder
 			
 			private class SwitchToImpl<S> extends JustSwitchToImpl implements SwitchTo<S>
 			{
-				private Class<S> signal;
-				
 				private SwitchToImpl(Class<S> signal)
 				{
-					this.signal = signal;
+					this.signals = new Class<?>[] { signal };
 				}
 				
 				@Override
+				@SuppressWarnings("unchecked")
 				public WhenExit<S> switchTo(Class<?> stateTag)
 				{
-					creater.putSwitchRule(signal, stateTag);
-					return new WhenExitImpl<S>(signal);
+					creater.putSwitchRule(signals[0], stateTag);
+					return new WhenExitImpl<S>((Class<S>)signals[0]);
 				}
 			}
 			

@@ -11,9 +11,9 @@ public class Test
 		{
 			while (true)
 			{
-				System.out.print("Input Signal: ");
 				byte[] buf = new byte[256];
 				System.in.read(buf);
+				testMachine.input(new String(buf).trim());
 			}
 		}
 		catch (IOException e)

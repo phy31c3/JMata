@@ -1,9 +1,6 @@
 package test;
 
-import javax.management.remote.*;
-
 import kr.co.plasticcity.jmata.*;
-import test.TestMachine.Group.*;
 import test.TestMachine.Signal.*;
 import test.TestMachine.State.*;
 
@@ -54,6 +51,34 @@ public class TestMachine
 		JMata.runMachine(TestMachine.class);
 	}
 	
+	public void input(String s)
+	{
+		System.out.println(">> input : " + s);
+		switch (s)
+		{
+		case "0":
+			JMata.inputTo(TestMachine.class, new S0());
+			break;
+		case "1":
+			JMata.inputTo(TestMachine.class, new S1());
+			break;
+		case "2":
+			JMata.inputTo(TestMachine.class, new S2());
+			break;
+		case "3":
+			JMata.inputTo(TestMachine.class, new S3());
+			break;
+		case "4":
+			JMata.inputTo(TestMachine.class, new S4());
+			break;
+		case "5":
+			JMata.inputTo(TestMachine.class, new S5());
+			break;
+		default:
+			System.out.println("잘못된 입력");
+		}
+	}
+	
 	/******************************************
 	 * ↓ States
 	 ******************************************/
@@ -64,14 +89,17 @@ public class TestMachine
 		{
 			public static void enter(int idx)
 			{
+				System.out.println(A.class.getSimpleName() + " : enter(" + idx + ")");
 			}
 			
 			public static void enter(S5 signal)
 			{
+				System.out.println(A.class.getSimpleName() + " : enter(" + signal.getClass().getSimpleName() + ")");
 			}
 			
 			public static void exit()
 			{
+				System.out.println(A.class.getSimpleName() + " : exit()");
 			}
 		}
 		
@@ -79,10 +107,12 @@ public class TestMachine
 		{
 			public static void enter()
 			{
+				System.out.println(B.class.getSimpleName() + " : enter()");
 			}
 			
 			public static void exit()
 			{
+				System.out.println(B.class.getSimpleName() + " : exit()");
 			}
 		}
 		
@@ -90,14 +120,17 @@ public class TestMachine
 		{
 			public static void enter()
 			{
+				System.out.println(C.class.getSimpleName() + " : enter()");
 			}
 			
 			public static void exit(S1 signal)
 			{
+				System.out.println(C.class.getSimpleName() + " : exit(" + signal.getClass().getSimpleName() + ")");
 			}
 			
 			public static void exit()
 			{
+				System.out.println(C.class.getSimpleName() + " : exit()");
 			}
 		}
 		
@@ -105,22 +138,27 @@ public class TestMachine
 		{
 			public static void enter()
 			{
+				System.out.println(D.class.getSimpleName() + " : enter()");
 			}
 			
 			public static void enter(S2 signal)
 			{
+				System.out.println(D.class.getSimpleName() + " : enter(" + signal.getClass().getSimpleName() + ")");
 			}
 			
 			public static void enter(S3 signal)
 			{
+				System.out.println(D.class.getSimpleName() + " : enter(" + signal.getClass().getSimpleName() + ")");
 			}
 			
 			public static void enter(S4 signal)
 			{
+				System.out.println(D.class.getSimpleName() + " : enter(" + signal.getClass().getSimpleName() + ")");
 			}
 			
 			public static void exit()
 			{
+				System.out.println(D.class.getSimpleName() + " : exit()");
 			}
 		}
 	}
@@ -152,17 +190,6 @@ public class TestMachine
 		}
 		
 		public static class S5
-		{
-		}
-	}
-	
-	/******************************************
-	 * ↓ Groups
-	 ******************************************/
-	
-	public interface Group
-	{
-		public static class G0
 		{
 		}
 	}

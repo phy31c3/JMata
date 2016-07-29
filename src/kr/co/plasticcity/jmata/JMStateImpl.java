@@ -77,21 +77,26 @@ class JMStateImpl implements JMStateCreater
 	@SuppressWarnings("unchecked")
 	public <S> void runExitFunction(int machineIdx, S signal, Consumer<Class<?>> nextState)
 	{
-		if (exitSigIdx.containsKey(signal.getClass()))
+		if (switchRule.containsKey(signal.getClass()))
 		{
-			((BiConsumer<S, Integer>)exitSigIdx.get(signal.getClass())).accept(signal, machineIdx);
-		}
-		else if (exitSig.containsKey(signal.getClass()))
-		{
-			((Consumer<S>)exitSig.get(signal.getClass())).accept(signal);
-		}
-		else if (exitIdx != null)
-		{
-			exitIdx.accept(machineIdx);
-		}
-		else if (exit != null)
-		{
-			exit.accept();
+			if (exitSigIdx.containsKey(signal.getClass()))
+			{
+				((BiConsumer<S, Integer>)exitSigIdx.get(signal.getClass())).accept(signal, machineIdx);
+			}
+			else if (exitSig.containsKey(signal.getClass()))
+			{
+				((Consumer<S>)exitSig.get(signal.getClass())).accept(signal);
+			}
+			else if (exitIdx != null)
+			{
+				exitIdx.accept(machineIdx);
+			}
+			else if (exit != null)
+			{
+				exit.accept();
+			}
+			
+			nextState.accept(switchRule.get(signal.getClass()));
 		}
 	}
 	

@@ -2,8 +2,6 @@ package kr.co.plasticcity.jmata;
 
 import java.util.function.*;
 
-import kr.co.plasticcity.jmata.function.*;
-
 public interface JMata
 {
 	/**
@@ -58,5 +56,10 @@ public interface JMata
 	static void terminateMachine(Class<?> machineTag, int machineIdx)
 	{
 		JMataImpl.get().terminateMachine(machineTag, machineIdx);
+	}
+	
+	static <S> void inputTo(Class<?> machineTag, S inputTag)
+	{
+		JMataImpl.get().inputTo(machineTag, inputTag);
 	}
 }

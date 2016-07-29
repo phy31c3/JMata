@@ -4,10 +4,6 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.*;
 
-import kr.co.plasticcity.jmata.JMBuilder.*;
-import kr.co.plasticcity.jmata.JMata.*;
-import kr.co.plasticcity.jmata.function.*;
-
 class JMataImpl implements JMata
 {
 	/************************** ↓ Static Part **************************/
@@ -78,31 +74,106 @@ class JMataImpl implements JMata
 	
 	void runMachine(Class<?> machineTag)
 	{
-		// TODO
+		globalQue.execute(() ->
+		{
+			if (machineMap.containsKey(machineTag))
+			{
+				machineMap.get(machineTag).runAll();
+			}
+		});
 	}
 	
 	void runMachine(Class<?> machineTag, int machineIdx)
 	{
-		// TODO
+		globalQue.execute(() ->
+		{
+			if (machineMap.containsKey(machineTag))
+			{
+				try
+				{
+					machineMap.get(machineTag).run(machineIdx);
+				}
+				catch (JMException e)
+				{
+					e.printJMLog();
+				}
+			}
+		});
 	}
 	
 	void stopMachine(Class<?> machineTag)
 	{
-		// TODO
+		globalQue.execute(() ->
+		{
+			if (machineMap.containsKey(machineTag))
+			{
+				machineMap.get(machineTag).stopAll();
+			}
+		});
 	}
 	
 	void stopMachine(Class<?> machineTag, int machineIdx)
 	{
-		// TODO
+		globalQue.execute(() ->
+		{
+			if (machineMap.containsKey(machineTag))
+			{
+				try
+				{
+					machineMap.get(machineTag).stop(machineIdx);
+				}
+				catch (JMException e)
+				{
+					e.printJMLog();
+				}
+			}
+		});
 	}
 	
 	void terminateMachine(Class<?> machineTag)
 	{
-		// TODO
+		globalQue.execute(() ->
+		{
+			if (machineMap.containsKey(machineTag))
+			{
+				machineMap.get(machineTag).terminateAll();
+			}
+		});
 	}
 	
 	void terminateMachine(Class<?> machineTag, int machineIdx)
 	{
-		// TODO
+		globalQue.execute(() ->
+		{
+			if (machineMap.containsKey(machineTag))
+			{
+				try
+				{
+					machineMap.get(machineTag).terminate(machineIdx);
+				}
+				catch (JMException e)
+				{
+					e.printJMLog();
+				}
+			}
+		});
+	}
+	
+	<S> void inputTo(Class<?> machineTag, S signal)
+	{
+		globalQue.execute(() ->
+		{
+			if (machineMap.containsKey(machineTag))
+			{
+				try
+				{
+					machineMap.get(machineTag).input(0, signal);
+				}
+				catch (JMException e)
+				{
+					e.printJMLog();
+				}
+			}
+		});
 	}
 }
