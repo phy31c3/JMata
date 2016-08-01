@@ -36,24 +36,6 @@ class JMMachineImpl implements JMMachine
 	}
 	
 	@Override
-	public void run(int idx) throws JMException
-	{
-		idxTest(idx);
-		if (isCondOf(idx, COND.CREATED))
-		{
-			setCondOf(idx, COND.RUNNING);
-			machineQue[idx].execute(() ->
-			{
-				stateMap.get(startState).runEnterFunction(idx);
-			});
-		}
-		else if (isCondOf(idx, COND.STOPPED))
-		{
-			setCondOf(idx, COND.RUNNING);
-		}
-	}
-	
-	@Override
 	public void runAll()
 	{
 		for (int idx = 0; idx < machineQue.length; ++idx)
@@ -70,12 +52,20 @@ class JMMachineImpl implements JMMachine
 	}
 	
 	@Override
-	public void stop(int idx) throws JMException
+	public void run(int idx) throws JMException
 	{
 		idxTest(idx);
-		if (isCondOf(idx, COND.RUNNING))
+		if (isCondOf(idx, COND.CREATED))
 		{
-			setCondOf(idx, COND.STOPPED);
+			setCondOf(idx, COND.RUNNING);
+			machineQue[idx].execute(() ->
+			{
+				stateMap.get(startState).runEnterFunction(idx);
+			});
+		}
+		else if (isCondOf(idx, COND.STOPPED))
+		{
+			setCondOf(idx, COND.RUNNING);
 		}
 	}
 	
@@ -96,13 +86,12 @@ class JMMachineImpl implements JMMachine
 	}
 	
 	@Override
-	public void terminate(int idx) throws JMException
+	public void stop(int idx) throws JMException
 	{
 		idxTest(idx);
-		if (notCondOf(idx, COND.TERMINATED))
+		if (isCondOf(idx, COND.RUNNING))
 		{
-			setCondOf(idx, COND.TERMINATED);
-			machineQue[idx].shutdownNow();
+			setCondOf(idx, COND.STOPPED);
 		}
 	}
 	
@@ -123,22 +112,13 @@ class JMMachineImpl implements JMMachine
 	}
 	
 	@Override
-	public <S> void input(int idx, S signal) throws JMException
+	public void terminate(int idx) throws JMException
 	{
 		idxTest(idx);
-		if (isCondOf(idx, COND.RUNNING))
+		if (notCondOf(idx, COND.TERMINATED))
 		{
-			machineQue[idx].execute(() ->
-			{
-				if (isCondOf(idx, COND.RUNNING))
-				{
-					stateMap.get(curStates[idx]).runExitFunction(idx, signal, nextState ->
-					{
-						curStates[idx] = nextState;
-						stateMap.get(curStates[idx]).runEnterFunction(idx, signal);
-					});
-				}
-			});
+			setCondOf(idx, COND.TERMINATED);
+			machineQue[idx].shutdownNow();
 		}
 	}
 	
@@ -155,6 +135,26 @@ class JMMachineImpl implements JMMachine
 			{
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	@Override
+	public <S> void input(int idx, S signal) throws JMException
+	{
+		idxTest(idx);
+		if (isCondOf(idx, COND.RUNNING))
+		{
+			machineQue[idx].execute(() ->
+			{
+				if (isCondOf(idx, COND.RUNNING) && !Thread.interrupted())
+				{
+					stateMap.get(curStates[idx]).runExitFunction(idx, signal, nextState ->
+					{
+						curStates[idx] = nextState;
+						stateMap.get(curStates[idx]).runEnterFunction(idx, signal);
+					});
+				}
+			});
 		}
 	}
 	
