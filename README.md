@@ -1,5 +1,5 @@
 # JMata
-Android UI Framwork
+Java State-based Programming Library
 
 ## License
 ```

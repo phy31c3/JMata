@@ -1,0 +1,79 @@
+package kr.co.plasticcity.jmata;
+
+import java.util.function.*;
+
+public interface JMata
+{
+	/**
+	 * 어플리케이션 시작 시 반드시 호출.
+	 */
+	static void initialize()
+	{
+		JMataImpl.initialize();
+	}
+	
+	static void setLogFunction(Consumer<String> logFunc)
+	{
+		JMLog.setLogFunction(logFunc);
+	}
+	
+	static void exit()
+	{
+		JMataImpl.exit();
+		JMLog.setLogFunction(null);
+	}
+	
+	static void buildMachine(Class<?> machineTag, Consumer<JMBuilder> builder)
+	{
+		JMataImpl.get().buildMachine(machineTag, builder);
+	}
+	
+	/**
+	 * 해당 머신의 모든 인스턴스를 가동
+	 */
+	static void runMachine(Class<?> machineTag)
+	{
+		JMataImpl.get().runMachine(machineTag);
+	}
+	
+	static void runMachine(Class<?> machineTag, int machineIdx)
+	{
+		JMataImpl.get().runMachine(machineTag, machineIdx);
+	}
+	
+	/**
+	 * 해당 머신의 모든 인스턴스를 정지
+	 */
+	static void stopMachine(Class<?> machineTag)
+	{
+		JMataImpl.get().stopMachine(machineTag);
+	}
+	
+	static void stopMachine(Class<?> machineTag, int machineIdx)
+	{
+		JMataImpl.get().stopMachine(machineTag, machineIdx);
+	}
+	
+	/**
+	 * 해당 머신의 모든 인스턴스를 종료
+	 */
+	static void terminateMachine(Class<?> machineTag)
+	{
+		JMataImpl.get().terminateMachine(machineTag);
+	}
+	
+	static void terminateMachine(Class<?> machineTag, int machineIdx)
+	{
+		JMataImpl.get().terminateMachine(machineTag, machineIdx);
+	}
+	
+	static <S> void inputTo(Class<?> machineTag, S signal)
+	{
+		JMataImpl.get().inputTo(machineTag, signal);
+	}
+	
+	static <S> void inputTo(Class<?> machineTag, int machineIdx, S signal)
+	{
+		JMataImpl.get().inputTo(machineTag, signal);
+	}
+}
