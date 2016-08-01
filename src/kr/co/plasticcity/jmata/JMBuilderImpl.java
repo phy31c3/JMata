@@ -1,7 +1,6 @@
 package kr.co.plasticcity.jmata;
 
 import java.util.*;
-import java.util.function.*;
 
 import kr.co.plasticcity.jmata.function.*;
 
@@ -9,9 +8,9 @@ class JMBuilderImpl implements JMBuilder
 {
 	private Class<?> machineTag;
 	private boolean present;
-	private Consumer<JMMachine> consumer;
+	private JMConsumer<JMMachine> consumer;
 	
-	JMBuilderImpl(Class<?> machineTag, boolean isPresent, Consumer<JMMachine> consumer)
+	JMBuilderImpl(Class<?> machineTag, boolean isPresent, JMConsumer<JMMachine> consumer)
 	{
 		this.machineTag = machineTag;
 		this.present = isPresent;
@@ -19,7 +18,7 @@ class JMBuilderImpl implements JMBuilder
 	}
 	
 	@Override
-	public void ifPresentThenIgnoreThis(Consumer<StartStateDefiner> machineBuilder)
+	public void ifPresentThenIgnoreThis(JMConsumer<StartStateDefiner> machineBuilder)
 	{
 		if (present)
 		{
@@ -32,7 +31,7 @@ class JMBuilderImpl implements JMBuilder
 	}
 	
 	@Override
-	public void ifPresentThenReplaceToThis(Consumer<StartStateDefiner> machineBuilder)
+	public void ifPresentThenReplaceToThis(JMConsumer<StartStateDefiner> machineBuilder)
 	{
 		machineBuilder.accept(new MachineBuilderImpl());
 	}
@@ -67,19 +66,19 @@ class JMBuilderImpl implements JMBuilder
 		@Override
 		public void build()
 		{
-			consumer.accept(JMMachine.getNew(machineTag, 1, startState, stateMap));
+			consumer.accept(JMMachine.Constructor.getNew(machineTag, 1, startState, stateMap));
 		}
 		
 		@Override
 		public void build(int numMachines)
 		{
-			consumer.accept(JMMachine.getNew(machineTag, numMachines, startState, stateMap));
+			consumer.accept(JMMachine.Constructor.getNew(machineTag, numMachines, startState, stateMap));
 		}
 		
 		@Override
 		public void buildAndRun()
 		{
-			JMMachine machine = JMMachine.getNew(machineTag, 1, startState, stateMap);
+			JMMachine machine = JMMachine.Constructor.getNew(machineTag, 1, startState, stateMap);
 			consumer.accept(machine);
 			machine.runAll();
 		}
@@ -87,7 +86,7 @@ class JMBuilderImpl implements JMBuilder
 		@Override
 		public void buildAndRun(int numMachines)
 		{
-			JMMachine machine = JMMachine.getNew(machineTag, numMachines, startState, stateMap);
+			JMMachine machine = JMMachine.Constructor.getNew(machineTag, numMachines, startState, stateMap);
 			consumer.accept(machine);
 			machine.runAll();
 		}
@@ -100,7 +99,7 @@ class JMBuilderImpl implements JMBuilder
 			private StateBuilderImpl(Class<?> tag)
 			{
 				this.stateTag = tag;
-				this.creater = JMStateCreater.getNew(tag);
+				this.creater = JMStateCreater.Constructor.getNew(tag);
 			}
 			
 			@Override
@@ -111,7 +110,7 @@ class JMBuilderImpl implements JMBuilder
 			}
 			
 			@Override
-			public StateBuilder whenEnter(Consumer<Integer> defaultWork)
+			public StateBuilder whenEnter(JMConsumer<Integer> defaultWork)
 			{
 				creater.putEnterFunction(defaultWork);
 				return this;
@@ -125,7 +124,7 @@ class JMBuilderImpl implements JMBuilder
 			}
 			
 			@Override
-			public StateBuilder whenExit(Consumer<Integer> defaultWork)
+			public StateBuilder whenExit(JMConsumer<Integer> defaultWork)
 			{
 				creater.putExitFunction(defaultWork);
 				return this;
@@ -166,14 +165,14 @@ class JMBuilderImpl implements JMBuilder
 				}
 				
 				@Override
-				public StateBuilder doThis(Consumer<S> workOnEnter)
+				public StateBuilder doThis(JMConsumer<S> workOnEnter)
 				{
 					creater.putEnterFunction(signal, workOnEnter);
 					return StateBuilderImpl.this;
 				}
 				
 				@Override
-				public StateBuilder doThis(BiConsumer<S, Integer> workOnEnter)
+				public StateBuilder doThis(JMBiConsumer<S, Integer> workOnEnter)
 				{
 					creater.putEnterFunction(signal, workOnEnter);
 					return StateBuilderImpl.this;
@@ -236,14 +235,14 @@ class JMBuilderImpl implements JMBuilder
 				}
 				
 				@Override
-				public StateBuilder AndDo(Consumer<S> workOnExit)
+				public StateBuilder AndDo(JMConsumer<S> workOnExit)
 				{
 					creater.putExitFunction(signal, workOnExit);
 					return StateBuilderImpl.this;
 				}
 				
 				@Override
-				public StateBuilder AndDo(BiConsumer<S, Integer> workOnExit)
+				public StateBuilder AndDo(JMBiConsumer<S, Integer> workOnExit)
 				{
 					creater.putExitFunction(signal, workOnExit);
 					return StateBuilderImpl.this;

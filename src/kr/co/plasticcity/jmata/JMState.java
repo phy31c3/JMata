@@ -1,12 +1,15 @@
 package kr.co.plasticcity.jmata;
 
-import java.util.function.*;
+import kr.co.plasticcity.jmata.function.*;
 
 interface JMState
 {
-	static JMState getNew(Class<?> tag)
+	class Constructor
 	{
-		return new JMStateImpl(tag);
+		static JMState getNew(Class<?> tag)
+		{
+			return new JMStateImpl(tag);
+		}
 	}
 	
 	/**
@@ -16,5 +19,5 @@ interface JMState
 	
 	<S> void runEnterFunction(int machineIdx, S signal);
 	
-	<S> void runExitFunction(int machineIdx, S signal, Consumer<Class<?>> nextState);
+	<S> void runExitFunction(int machineIdx, S signal, JMConsumer<Class<?>> nextState);
 }

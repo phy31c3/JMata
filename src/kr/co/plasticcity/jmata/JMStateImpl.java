@@ -1,7 +1,6 @@
 package kr.co.plasticcity.jmata;
 
 import java.util.*;
-import java.util.function.*;
 
 import kr.co.plasticcity.jmata.function.*;
 
@@ -10,14 +9,14 @@ class JMStateImpl implements JMStateCreater
 	private Class<?> tag;
 	
 	private JMVoidConsumer enter;
-	private Consumer<Integer> enterIdx;
-	private Map<Class<?>, Consumer<?>> enterSig;
-	private Map<Class<?>, BiConsumer<?, Integer>> enterSigIdx;
+	private JMConsumer<Integer> enterIdx;
+	private Map<Class<?>, JMConsumer<?>> enterSig;
+	private Map<Class<?>, JMBiConsumer<?, Integer>> enterSigIdx;
 	
 	private JMVoidConsumer exit;
-	private Consumer<Integer> exitIdx;
-	private Map<Class<?>, Consumer<?>> exitSig;
-	private Map<Class<?>, BiConsumer<?, Integer>> exitSigIdx;
+	private JMConsumer<Integer> exitIdx;
+	private Map<Class<?>, JMConsumer<?>> exitSig;
+	private Map<Class<?>, JMBiConsumer<?, Integer>> exitSigIdx;
 	
 	private Map<Class<?>, Class<?>> switchRule;
 	
@@ -57,11 +56,11 @@ class JMStateImpl implements JMStateCreater
 	{
 		if (enterSigIdx.containsKey(signal.getClass()))
 		{
-			((BiConsumer<S, Integer>)enterSigIdx.get(signal.getClass())).accept(signal, machineIdx);
+			((JMBiConsumer<S, Integer>)enterSigIdx.get(signal.getClass())).accept(signal, machineIdx);
 		}
 		else if (enterSig.containsKey(signal.getClass()))
 		{
-			((Consumer<S>)enterSig.get(signal.getClass())).accept(signal);
+			((JMConsumer<S>)enterSig.get(signal.getClass())).accept(signal);
 		}
 		else if (enterIdx != null)
 		{
@@ -75,17 +74,17 @@ class JMStateImpl implements JMStateCreater
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public <S> void runExitFunction(int machineIdx, S signal, Consumer<Class<?>> nextState)
+	public <S> void runExitFunction(int machineIdx, S signal, JMConsumer<Class<?>> nextState)
 	{
 		if (switchRule.containsKey(signal.getClass()))
 		{
 			if (exitSigIdx.containsKey(signal.getClass()))
 			{
-				((BiConsumer<S, Integer>)exitSigIdx.get(signal.getClass())).accept(signal, machineIdx);
+				((JMBiConsumer<S, Integer>)exitSigIdx.get(signal.getClass())).accept(signal, machineIdx);
 			}
 			else if (exitSig.containsKey(signal.getClass()))
 			{
-				((Consumer<S>)exitSig.get(signal.getClass())).accept(signal);
+				((JMConsumer<S>)exitSig.get(signal.getClass())).accept(signal);
 			}
 			else if (exitIdx != null)
 			{
@@ -112,7 +111,7 @@ class JMStateImpl implements JMStateCreater
 	}
 	
 	@Override
-	public void putEnterFunction(Consumer<Integer> func)
+	public void putEnterFunction(JMConsumer<Integer> func)
 	{
 		if (enterIdx != null)
 		{
@@ -123,7 +122,7 @@ class JMStateImpl implements JMStateCreater
 	}
 	
 	@Override
-	public <S> void putEnterFunction(Class<S> signal, Consumer<S> func)
+	public <S> void putEnterFunction(Class<S> signal, JMConsumer<S> func)
 	{
 		if (enterSig.containsKey(signal))
 		{
@@ -134,7 +133,7 @@ class JMStateImpl implements JMStateCreater
 	}
 	
 	@Override
-	public <S> void putEnterFunction(Class<S> signal, BiConsumer<S, Integer> func)
+	public <S> void putEnterFunction(Class<S> signal, JMBiConsumer<S, Integer> func)
 	{
 		if (enterSigIdx.containsKey(signal))
 		{
@@ -156,7 +155,7 @@ class JMStateImpl implements JMStateCreater
 	}
 	
 	@Override
-	public void putExitFunction(Consumer<Integer> func)
+	public void putExitFunction(JMConsumer<Integer> func)
 	{
 		if (exitIdx != null)
 		{
@@ -167,7 +166,7 @@ class JMStateImpl implements JMStateCreater
 	}
 	
 	@Override
-	public <S> void putExitFunction(Class<S> signal, Consumer<S> func)
+	public <S> void putExitFunction(Class<S> signal, JMConsumer<S> func)
 	{
 		if (exitSig.containsKey(signal))
 		{
@@ -178,7 +177,7 @@ class JMStateImpl implements JMStateCreater
 	}
 	
 	@Override
-	public <S> void putExitFunction(Class<S> signal, BiConsumer<S, Integer> func)
+	public <S> void putExitFunction(Class<S> signal, JMBiConsumer<S, Integer> func)
 	{
 		if (exitSigIdx.containsKey(signal))
 		{

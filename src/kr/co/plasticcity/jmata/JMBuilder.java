@@ -1,22 +1,20 @@
 package kr.co.plasticcity.jmata;
 
-import java.util.function.*;
-
 import kr.co.plasticcity.jmata.function.*;
 
 public interface JMBuilder
 {
 	class Constructor
 	{
-		static JMBuilder getNew(Class<?> machineTag, boolean isPresent, Consumer<JMMachine> consumer)
+		static JMBuilder getNew(Class<?> machineTag, boolean isPresent, JMConsumer<JMMachine> consumer)
 		{
 			return new JMBuilderImpl(machineTag, isPresent, consumer);
 		}
 	}
 	
-	void ifPresentThenIgnoreThis(Consumer<StartStateDefiner> machineBuilder);
+	void ifPresentThenIgnoreThis(JMConsumer<StartStateDefiner> machineBuilder);
 	
-	void ifPresentThenReplaceToThis(Consumer<StartStateDefiner> machineBuilder);
+	void ifPresentThenReplaceToThis(JMConsumer<StartStateDefiner> machineBuilder);
 	
 	public interface StartStateDefiner
 	{
@@ -40,11 +38,11 @@ public interface JMBuilder
 	{
 		StateBuilder whenEnter(JMVoidConsumer defaultWork);
 		
-		StateBuilder whenEnter(Consumer<Integer> defaultWork);
+		StateBuilder whenEnter(JMConsumer<Integer> defaultWork);
 		
 		StateBuilder whenExit(JMVoidConsumer defaultWork);
 		
-		StateBuilder whenExit(Consumer<Integer> defaultWork);
+		StateBuilder whenExit(JMConsumer<Integer> defaultWork);
 		
 		<S> WhenEnter<S> whenEnterFrom(Class<S> signal);
 		
@@ -56,9 +54,9 @@ public interface JMBuilder
 		
 		public interface WhenEnter<S>
 		{
-			StateBuilder doThis(Consumer<S> workOnEnter);
+			StateBuilder doThis(JMConsumer<S> workOnEnter);
 			
-			StateBuilder doThis(BiConsumer<S, Integer> workOnEnter);
+			StateBuilder doThis(JMBiConsumer<S, Integer> workOnEnter);
 			
 			StateBuilder doNothing();
 		}
@@ -75,9 +73,9 @@ public interface JMBuilder
 		
 		public interface WhenExit<S>
 		{
-			StateBuilder AndDo(Consumer<S> workOnExit);
+			StateBuilder AndDo(JMConsumer<S> workOnExit);
 			
-			StateBuilder AndDo(BiConsumer<S, Integer> workOnExit);
+			StateBuilder AndDo(JMBiConsumer<S, Integer> workOnExit);
 			
 			StateBuilder AndDoNothing();
 		}

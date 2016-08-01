@@ -2,9 +2,10 @@ package kr.co.plasticcity.jmata;
 
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.function.*;
 
-class JMataImpl implements JMata
+import kr.co.plasticcity.jmata.function.*;
+
+class JMataImpl
 {
 	/************************** ↓ Static Part **************************/
 	
@@ -15,7 +16,7 @@ class JMataImpl implements JMata
 		clearInstance();
 	}
 	
-	static synchronized void exit()
+	static synchronized void release()
 	{
 		clearInstance();
 	}
@@ -57,7 +58,7 @@ class JMataImpl implements JMata
 		globalQue = Executors.newSingleThreadExecutor();
 	}
 	
-	void buildMachine(Class<?> machineTag, Consumer<JMBuilder> builder)
+	void buildMachine(Class<?> machineTag, JMConsumer<JMBuilder> builder)
 	{
 		globalQue.execute(() ->
 		{

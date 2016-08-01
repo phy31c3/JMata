@@ -4,9 +4,12 @@ import java.util.*;
 
 interface JMMachine
 {
-	static JMMachine getNew(Class<?> tag, int numInstances, Class<?> startState, Map<Class<?>, ? extends JMState> stateMap)
+	class Constructor
 	{
-		return new JMMachineImpl(tag, numInstances, startState, stateMap);
+		static JMMachine getNew(Class<?> tag, int numInstances, Class<?> startState, Map<Class<?>, ? extends JMState> stateMap)
+		{
+			return new JMMachineImpl(tag, numInstances, startState, stateMap);
+		}
 	}
 	
 	void runAll();
