@@ -12,17 +12,19 @@ interface JMMachine
 		return new JMMachineImpl(tag, numInstances, startState, stateMap);
 	}
 	
-	void runAll();
-	
 	void run(int idx) throws JMException;
 	
-	void stopAll();
+	void runAll();
 	
 	void stop(int idx) throws JMException;
 	
-	void terminateAll();
+	void stopAll();
 	
 	void terminate(int idx) throws JMException;
 	
+	void terminateAll();
+	
 	<S> void input(int idx, S signal) throws JMException;
+	
+	<S> void inputAll(S signal) throws JMException;
 }

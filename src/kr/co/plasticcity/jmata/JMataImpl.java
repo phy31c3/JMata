@@ -167,7 +167,25 @@ class JMataImpl implements JMata
 			{
 				try
 				{
-					machineMap.get(machineTag).input(0, signal);
+					machineMap.get(machineTag).inputAll(signal);
+				}
+				catch (JMException e)
+				{
+					e.printJMLog();
+				}
+			}
+		});
+	}
+	
+	<S> void inputTo(Class<?> machineTag, int machineIdx, S signal)
+	{
+		globalQue.execute(() ->
+		{
+			if (machineMap.containsKey(machineTag))
+			{
+				try
+				{
+					machineMap.get(machineTag).input(machineIdx, signal);
 				}
 				catch (JMException e)
 				{

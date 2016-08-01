@@ -10,9 +10,9 @@ class JMMachineImpl implements JMMachine
 		CREATED, RUNNING, STOPPED, TERMINATED
 	}
 	
-	private Class<?> machineTag;
-	private Class<?> startState;
-	private Map<Class<?>, ? extends JMState> stateMap;
+	private final Class<?> machineTag;
+	private final Class<?> startState;
+	private final Map<Class<?>, ? extends JMState> stateMap;
 	
 	private volatile ExecutorService[] machineQue;
 	private volatile Class<?>[] curStates;
@@ -128,11 +128,33 @@ class JMMachineImpl implements JMMachine
 		idxTest(idx);
 		if (isCondOf(idx, COND.RUNNING))
 		{
-			stateMap.get(curStates[idx]).runExitFunction(idx, signal, nextState ->
+			machineQue[idx].execute(() ->
 			{
-				curStates[idx] = nextState;
-				stateMap.get(curStates[idx]).runEnterFunction(idx, signal);
+				if (isCondOf(idx, COND.RUNNING))
+				{
+					stateMap.get(curStates[idx]).runExitFunction(idx, signal, nextState ->
+					{
+						curStates[idx] = nextState;
+						stateMap.get(curStates[idx]).runEnterFunction(idx, signal);
+					});
+				}
 			});
+		}
+	}
+	
+	@Override
+	public <S> void inputAll(S signal) throws JMException
+	{
+		for (int idx = 0; idx < machineQue.length; ++idx)
+		{
+			try
+			{
+				input(idx, signal);
+			}
+			catch (JMException e)
+			{
+				e.printStackTrace();
+			}
 		}
 	}
 	

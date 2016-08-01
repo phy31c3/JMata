@@ -28,6 +28,9 @@ public interface JMata
 		JMataImpl.get().buildMachine(machineTag, builder);
 	}
 	
+	/**
+	 * 해당 머신의 모든 인스턴스를 가동
+	 */
 	static void runMachine(Class<?> machineTag)
 	{
 		JMataImpl.get().runMachine(machineTag);
@@ -38,6 +41,9 @@ public interface JMata
 		JMataImpl.get().runMachine(machineTag, machineIdx);
 	}
 	
+	/**
+	 * 해당 머신의 모든 인스턴스를 정지
+	 */
 	static void stopMachine(Class<?> machineTag)
 	{
 		JMataImpl.get().stopMachine(machineTag);
@@ -48,6 +54,9 @@ public interface JMata
 		JMataImpl.get().stopMachine(machineTag, machineIdx);
 	}
 	
+	/**
+	 * 해당 머신의 모든 인스턴스를 종료
+	 */
 	static void terminateMachine(Class<?> machineTag)
 	{
 		JMataImpl.get().terminateMachine(machineTag);
@@ -58,8 +67,13 @@ public interface JMata
 		JMataImpl.get().terminateMachine(machineTag, machineIdx);
 	}
 	
-	static <S> void inputTo(Class<?> machineTag, S inputTag)
+	static <S> void inputTo(Class<?> machineTag, S signal)
 	{
-		JMataImpl.get().inputTo(machineTag, inputTag);
+		JMataImpl.get().inputTo(machineTag, signal);
+	}
+	
+	static <S> void inputTo(Class<?> machineTag, int machineIdx, S signal)
+	{
+		JMataImpl.get().inputTo(machineTag, signal);
 	}
 }
