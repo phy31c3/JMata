@@ -1,12 +1,12 @@
 package kr.co.plasticcity.jmata;
 
-import java.util.function.*;
+import kr.co.plasticcity.jmata.function.*;
 
 class JMLog
 {
-	private static Consumer<String> logFunc;
+	private static JMConsumer<String> logFunc;
 	
-	static void setLogFunction(Consumer<String> logFunc)
+	static void setLogFunction(JMConsumer<String> logFunc)
 	{
 		JMLog.logFunc = logFunc;
 	}
