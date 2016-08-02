@@ -18,7 +18,7 @@ class JMBuilderImpl implements JMBuilder
 	}
 	
 	@Override
-	public void ifPresentThenIgnoreThis(JMConsumer<StartStateDefiner> machineBuilder)
+	public void ifPresentThenIgnoreThis(JMConsumer<StartStateDefiner> definer)
 	{
 		if (present)
 		{
@@ -26,14 +26,14 @@ class JMBuilderImpl implements JMBuilder
 		}
 		else
 		{
-			machineBuilder.accept(new MachineBuilderImpl());
+			definer.accept(new MachineBuilderImpl());
 		}
 	}
 	
 	@Override
-	public void ifPresentThenReplaceToThis(JMConsumer<StartStateDefiner> machineBuilder)
+	public void ifPresentThenReplaceToThis(JMConsumer<StartStateDefiner> definer)
 	{
-		machineBuilder.accept(new MachineBuilderImpl());
+		definer.accept(new MachineBuilderImpl());
 	}
 	
 	private class MachineBuilderImpl implements MachineBuilder, StartStateDefiner

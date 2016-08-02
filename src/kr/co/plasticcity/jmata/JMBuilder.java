@@ -12,9 +12,9 @@ public interface JMBuilder
 		}
 	}
 	
-	void ifPresentThenIgnoreThis(JMConsumer<StartStateDefiner> machineBuilder);
+	void ifPresentThenIgnoreThis(JMConsumer<StartStateDefiner> definer);
 	
-	void ifPresentThenReplaceToThis(JMConsumer<StartStateDefiner> machineBuilder);
+	void ifPresentThenReplaceToThis(JMConsumer<StartStateDefiner> definer);
 	
 	public interface StartStateDefiner
 	{
