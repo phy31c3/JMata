@@ -25,6 +25,7 @@ class JMataImpl
 	{
 		if (instance != null)
 		{
+			instance.globalQue.shutdownNow();
 			for (JMMachine machine : instance.machineMap.values())
 			{
 				machine.terminateAll();
@@ -53,7 +54,7 @@ class JMataImpl
 	
 	private Map<Class<?>, JMMachine> machineMap;
 	
-	private Executor globalQue;
+	private ExecutorService globalQue;
 	
 	private JMataImpl()
 	{
