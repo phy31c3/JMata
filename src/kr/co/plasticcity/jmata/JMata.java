@@ -72,7 +72,37 @@ public class JMata
 		JMataImpl.get().inputTo(machineTag, signal);
 	}
 	
+	public static <S extends Enum<S>> void inputTo(Class<?> machineTag, Enum<S> signal)
+	{
+		JMataImpl.get().inputTo(machineTag, signal);
+	}
+	
+	public static void inputTo(Class<?> machineTag, String signal)
+	{
+		JMataImpl.get().inputTo(machineTag, signal);
+	}
+	
+	public static void inputTo(Class<?> machineTag, Integer signal)
+	{
+		JMataImpl.get().inputTo(machineTag, signal);
+	}
+	
 	public static <S> void inputTo(Class<?> machineTag, int machineIdx, S signal)
+	{
+		JMataImpl.get().inputTo(machineTag, signal);
+	}
+	
+	public static <S extends Enum<S>> void inputTo(Class<?> machineTag, int machineIdx, Enum<S> signal)
+	{
+		JMataImpl.get().inputTo(machineTag, signal);
+	}
+	
+	public static void inputTo(Class<?> machineTag, int machineIdx, String signal)
+	{
+		JMataImpl.get().inputTo(machineTag, signal);
+	}
+	
+	public static void inputTo(Class<?> machineTag, int machineIdx, Integer signal)
 	{
 		JMataImpl.get().inputTo(machineTag, signal);
 	}
