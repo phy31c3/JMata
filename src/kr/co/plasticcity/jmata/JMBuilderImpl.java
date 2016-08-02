@@ -181,9 +181,13 @@ class JMBuilderImpl implements JMBuilder
 				@Override
 				public StateBuilder doNothing()
 				{
-					creater.putEnterFunction(signal, p ->
+					creater.putEnterFunction(signal, new JMConsumer<S>()
 					{
-						/* do nothing */
+						@Override
+						public void accept(S s)
+						{
+							/* do nothing */
+						}
 					});
 					return StateBuilderImpl.this;
 				}
@@ -251,9 +255,13 @@ class JMBuilderImpl implements JMBuilder
 				@Override
 				public StateBuilder AndDoNothing()
 				{
-					creater.putExitFunction(signal, p ->
+					creater.putExitFunction(signal, new JMConsumer<S>()
 					{
-						/* do nothing */
+						@Override
+						public void accept(S s)
+						{
+							/* do nothing */
+						}
 					});
 					return StateBuilderImpl.this;
 				}
