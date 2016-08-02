@@ -2,7 +2,6 @@ package kr.co.plasticcity.jmata;
 
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.function.*;
 
 import kr.co.plasticcity.jmata.function.*;
 
@@ -26,14 +25,10 @@ class JMataImpl
 	{
 		if (instance != null)
 		{
-			instance.machineMap.values().stream().forEach(new Consumer<JMMachine>()
+			for (JMMachine machine : instance.machineMap.values())
 			{
-				@Override
-				public void accept(JMMachine m)
-				{
-					m.terminateAll();
-				}
-			});
+				machine.terminateAll();
+			}
 			instance = null;
 		}
 	}
