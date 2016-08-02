@@ -2,6 +2,7 @@ package kr.co.plasticcity.jmata;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.*;
 
 import kr.co.plasticcity.jmata.function.*;
 
@@ -25,7 +26,14 @@ class JMataImpl
 	{
 		if (instance != null)
 		{
-			instance.machineMap.values().stream().forEach(m -> m.terminateAll());
+			instance.machineMap.values().stream().forEach(new Consumer<JMMachine>()
+			{
+				@Override
+				public void accept(JMMachine m)
+				{
+					m.terminateAll();
+				}
+			});
 			instance = null;
 		}
 	}
@@ -58,139 +66,179 @@ class JMataImpl
 		globalQue = Executors.newSingleThreadExecutor();
 	}
 	
-	void buildMachine(Class<?> machineTag, JMConsumer<JMBuilder> builder)
+	void buildMachine(final Class<?> machineTag, final JMConsumer<JMBuilder> builder)
 	{
-		globalQue.execute(() ->
+		globalQue.execute(new Runnable()
 		{
-			builder.accept(JMBuilder.Constructor.getNew(machineTag, machineMap.containsKey(machineTag), machine ->
+			@Override
+			public void run()
 			{
-				JMMachine oldMachine = machineMap.put(machineTag, machine);
-				if (oldMachine != null)
+				builder.accept(JMBuilder.Constructor.getNew(machineTag, machineMap.containsKey(machineTag), new JMConsumer<JMMachine>()
 				{
-					oldMachine.terminateAll();
-				}
-			}));
-		});
-	}
-	
-	void runMachine(Class<?> machineTag)
-	{
-		globalQue.execute(() ->
-		{
-			if (machineMap.containsKey(machineTag))
-			{
-				machineMap.get(machineTag).runAll();
+					@Override
+					public void accept(JMMachine machine)
+					{
+						JMMachine oldMachine = machineMap.put(machineTag, machine);
+						if (oldMachine != null)
+						{
+							oldMachine.terminateAll();
+						}
+					}
+				}));
 			}
 		});
 	}
 	
-	void runMachine(Class<?> machineTag, int machineIdx)
+	void runMachine(final Class<?> machineTag)
 	{
-		globalQue.execute(() ->
+		globalQue.execute(new Runnable()
 		{
-			if (machineMap.containsKey(machineTag))
+			@Override
+			public void run()
 			{
-				try
+				if (machineMap.containsKey(machineTag))
 				{
-					machineMap.get(machineTag).run(machineIdx);
-				}
-				catch (JMException e)
-				{
-					e.printJMLog();
+					machineMap.get(machineTag).runAll();
 				}
 			}
 		});
 	}
 	
-	void stopMachine(Class<?> machineTag)
+	void runMachine(final Class<?> machineTag, final int machineIdx)
 	{
-		globalQue.execute(() ->
+		globalQue.execute(new Runnable()
 		{
-			if (machineMap.containsKey(machineTag))
+			@Override
+			public void run()
 			{
-				machineMap.get(machineTag).stopAll();
-			}
-		});
-	}
-	
-	void stopMachine(Class<?> machineTag, int machineIdx)
-	{
-		globalQue.execute(() ->
-		{
-			if (machineMap.containsKey(machineTag))
-			{
-				try
+				if (machineMap.containsKey(machineTag))
 				{
-					machineMap.get(machineTag).stop(machineIdx);
-				}
-				catch (JMException e)
-				{
-					e.printJMLog();
+					try
+					{
+						machineMap.get(machineTag).run(machineIdx);
+					}
+					catch (JMException e)
+					{
+						e.printJMLog();
+					}
 				}
 			}
 		});
 	}
 	
-	void terminateMachine(Class<?> machineTag)
+	void stopMachine(final Class<?> machineTag)
 	{
-		globalQue.execute(() ->
+		globalQue.execute(new Runnable()
 		{
-			if (machineMap.containsKey(machineTag))
+			@Override
+			public void run()
 			{
-				machineMap.get(machineTag).terminateAll();
-			}
-		});
-	}
-	
-	void terminateMachine(Class<?> machineTag, int machineIdx)
-	{
-		globalQue.execute(() ->
-		{
-			if (machineMap.containsKey(machineTag))
-			{
-				try
+				if (machineMap.containsKey(machineTag))
 				{
-					machineMap.get(machineTag).terminate(machineIdx);
-				}
-				catch (JMException e)
-				{
-					e.printJMLog();
+					machineMap.get(machineTag).stopAll();
 				}
 			}
 		});
 	}
 	
-	<S> void inputTo(Class<?> machineTag, S signal)
+	void stopMachine(final Class<?> machineTag, final int machineIdx)
 	{
-		globalQue.execute(() ->
+		globalQue.execute(new Runnable()
 		{
-			if (machineMap.containsKey(machineTag))
+			@Override
+			public void run()
 			{
-				try
+				if (machineMap.containsKey(machineTag))
 				{
-					machineMap.get(machineTag).inputAll(signal);
-				}
-				catch (JMException e)
-				{
-					e.printJMLog();
+					try
+					{
+						machineMap.get(machineTag).stop(machineIdx);
+					}
+					catch (JMException e)
+					{
+						e.printJMLog();
+					}
 				}
 			}
 		});
 	}
 	
-	<S> void inputTo(Class<?> machineTag, int machineIdx, S signal)
+	void terminateMachine(final Class<?> machineTag)
 	{
-		globalQue.execute(() ->
+		globalQue.execute(new Runnable()
 		{
-			if (machineMap.containsKey(machineTag))
+			@Override
+			public void run()
 			{
-				try
+				if (machineMap.containsKey(machineTag))
 				{
-					machineMap.get(machineTag).input(machineIdx, signal);
+					machineMap.get(machineTag).terminateAll();
 				}
-				catch (JMException e)
+			}
+		});
+	}
+	
+	void terminateMachine(final Class<?> machineTag, final int machineIdx)
+	{
+		globalQue.execute(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				if (machineMap.containsKey(machineTag))
 				{
-					e.printJMLog();
+					try
+					{
+						machineMap.get(machineTag).terminate(machineIdx);
+					}
+					catch (JMException e)
+					{
+						e.printJMLog();
+					}
+				}
+			}
+		});
+	}
+	
+	<S> void inputTo(final Class<?> machineTag, final S signal)
+	{
+		globalQue.execute(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				if (machineMap.containsKey(machineTag))
+				{
+					try
+					{
+						machineMap.get(machineTag).inputAll(signal);
+					}
+					catch (JMException e)
+					{
+						e.printJMLog();
+					}
+				}
+			}
+		});
+	}
+	
+	<S> void inputTo(final Class<?> machineTag, final int machineIdx, final S signal)
+	{
+		globalQue.execute(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				if (machineMap.containsKey(machineTag))
+				{
+					try
+					{
+						machineMap.get(machineTag).input(machineIdx, signal);
+					}
+					catch (JMException e)
+					{
+						e.printJMLog();
+					}
 				}
 			}
 		});

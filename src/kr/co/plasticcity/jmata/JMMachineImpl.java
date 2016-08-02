@@ -3,6 +3,8 @@ package kr.co.plasticcity.jmata;
 import java.util.*;
 import java.util.concurrent.*;
 
+import kr.co.plasticcity.jmata.function.*;
+
 class JMMachineImpl implements JMMachine
 {
 	enum COND
@@ -52,15 +54,19 @@ class JMMachineImpl implements JMMachine
 	}
 	
 	@Override
-	public void run(int idx) throws JMException
+	public void run(final int idx) throws JMException
 	{
 		idxTest(idx);
 		if (isCondOf(idx, COND.CREATED))
 		{
 			setCondOf(idx, COND.RUNNING);
-			machineQue[idx].execute(() ->
+			machineQue[idx].execute(new Runnable()
 			{
-				stateMap.get(startState).runEnterFunction(idx);
+				@Override
+				public void run()
+				{
+					stateMap.get(startState).runEnterFunction(idx);
+				}
 			});
 		}
 		else if (isCondOf(idx, COND.STOPPED))
@@ -139,20 +145,28 @@ class JMMachineImpl implements JMMachine
 	}
 	
 	@Override
-	public <S> void input(int idx, S signal) throws JMException
+	public <S> void input(final int idx, final S signal) throws JMException
 	{
 		idxTest(idx);
 		if (isCondOf(idx, COND.RUNNING))
 		{
-			machineQue[idx].execute(() ->
+			machineQue[idx].execute(new Runnable()
 			{
-				if (isCondOf(idx, COND.RUNNING) && !Thread.interrupted())
+				@Override
+				public void run()
 				{
-					stateMap.get(curStates[idx]).runExitFunction(idx, signal, nextState ->
+					if (isCondOf(idx, COND.RUNNING) && !Thread.interrupted())
 					{
-						curStates[idx] = nextState;
-						stateMap.get(curStates[idx]).runEnterFunction(idx, signal);
-					});
+						stateMap.get(curStates[idx]).runExitFunction(idx, signal, new JMConsumer<Class<?>>()
+						{
+							@Override
+							public void accept(Class<?> nextState)
+							{
+								curStates[idx] = nextState;
+								stateMap.get(curStates[idx]).runEnterFunction(idx, signal);
+							}
+						});
+					}
 				}
 			});
 		}

@@ -1,6 +1,9 @@
 # JMata
 Java State-based Programming Library
 
+## Version Code
+0.0.0 -> [인터페이스 변화].[기능 추가/수정].[오류 수정]
+
 ## License
 ```
 The MIT License (MIT)
