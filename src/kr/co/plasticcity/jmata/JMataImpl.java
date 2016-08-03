@@ -25,6 +25,7 @@ class JMataImpl
 	{
 		if (instance != null)
 		{
+			instance.globalQue.shutdownNow();
 			for (JMMachine machine : instance.machineMap.values())
 			{
 				machine.terminateAll();
@@ -53,7 +54,7 @@ class JMataImpl
 	
 	private Map<Class<?>, JMMachine> machineMap;
 	
-	private Executor globalQue;
+	private ExecutorService globalQue;
 	
 	private JMataImpl()
 	{
@@ -217,7 +218,95 @@ class JMataImpl
 		});
 	}
 	
+	<S extends Enum<S>> void inputTo(final Class<?> machineTag, final Enum<S> signal)
+	{
+		globalQue.execute(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				if (machineMap.containsKey(machineTag))
+				{
+					try
+					{
+						machineMap.get(machineTag).inputAll(signal);
+					}
+					catch (JMException e)
+					{
+						e.printJMLog();
+					}
+				}
+			}
+		});
+	}
+	
+	void inputTo(final Class<?> machineTag, final String signal)
+	{
+		globalQue.execute(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				if (machineMap.containsKey(machineTag))
+				{
+					try
+					{
+						machineMap.get(machineTag).inputAll(signal);
+					}
+					catch (JMException e)
+					{
+						e.printJMLog();
+					}
+				}
+			}
+		});
+	}
+	
 	<S> void inputTo(final Class<?> machineTag, final int machineIdx, final S signal)
+	{
+		globalQue.execute(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				if (machineMap.containsKey(machineTag))
+				{
+					try
+					{
+						machineMap.get(machineTag).input(machineIdx, signal);
+					}
+					catch (JMException e)
+					{
+						e.printJMLog();
+					}
+				}
+			}
+		});
+	}
+	
+	<S extends Enum<S>> void inputTo(final Class<?> machineTag, final int machineIdx, final Enum<S> signal)
+	{
+		globalQue.execute(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				if (machineMap.containsKey(machineTag))
+				{
+					try
+					{
+						machineMap.get(machineTag).input(machineIdx, signal);
+					}
+					catch (JMException e)
+					{
+						e.printJMLog();
+					}
+				}
+			}
+		});
+	}
+	
+	void inputTo(final Class<?> machineTag, final int machineIdx, final String signal)
 	{
 		globalQue.execute(new Runnable()
 		{

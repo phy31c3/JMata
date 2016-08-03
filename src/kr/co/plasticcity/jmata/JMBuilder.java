@@ -12,9 +12,9 @@ public interface JMBuilder
 		}
 	}
 	
-	void ifPresentThenIgnoreThis(JMConsumer<StartStateDefiner> machineBuilder);
+	void ifPresentThenIgnoreThis(JMConsumer<StartStateDefiner> definer);
 	
-	void ifPresentThenReplaceToThis(JMConsumer<StartStateDefiner> machineBuilder);
+	void ifPresentThenReplaceToThis(JMConsumer<StartStateDefiner> definer);
 	
 	public interface StartStateDefiner
 	{
@@ -46,9 +46,21 @@ public interface JMBuilder
 		
 		<S> WhenEnter<S> whenEnterFrom(Class<S> signal);
 		
+		<S extends Enum<S>> WhenEnter<S> whenEnterFrom(Enum<S> signal);
+		
+		WhenEnter<String> whenEnterFrom(String signal);
+		
 		JustSwitchTo whenInput(Class<?>... signals);
 		
+		JustSwitchTo whenInput(Enum<?>... signals);
+		
+		JustSwitchTo whenInput(String... signals);
+		
 		<S> SwitchTo<S> whenInput(Class<S> signal);
+		
+		<S extends Enum<S>> SwitchTo<S> whenInput(Enum<S> signal);
+		
+		SwitchTo<String> whenInput(String signal);
 		
 		MachineBuilder apply();
 		
