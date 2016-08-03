@@ -50,23 +50,17 @@ public interface JMBuilder
 		
 		WhenEnter<String> whenEnterFrom(String signal);
 		
-		WhenEnter<Integer> whenEnterFrom(Integer signal);
-		
 		JustSwitchTo whenInput(Class<?>... signals);
 		
 		JustSwitchTo whenInput(Enum<?>... signals);
 		
 		JustSwitchTo whenInput(String... signals);
 		
-		JustSwitchTo whenInput(Integer... signals);
-		
 		<S> SwitchTo<S> whenInput(Class<S> signal);
 		
-		<S extends Enum<S>> SwitchTo<Enum<S>> whenInput(Enum<S> signal);
+		<S extends Enum<S>> SwitchTo<S> whenInput(Enum<S> signal);
 		
 		SwitchTo<String> whenInput(String signal);
-		
-		SwitchTo<Integer> whenInput(Integer signal);
 		
 		MachineBuilder apply();
 		

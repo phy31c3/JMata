@@ -145,7 +145,95 @@ class JMMachineImpl implements JMMachine
 	}
 	
 	@Override
+	public <S extends Enum<S>> void inputAll(Enum<S> signal) throws JMException
+	{
+		for (int idx = 0; idx < machineQue.length; ++idx)
+		{
+			try
+			{
+				input(idx, signal);
+			}
+			catch (JMException e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	@Override
+	public void inputAll(String signal) throws JMException
+	{
+		for (int idx = 0; idx < machineQue.length; ++idx)
+		{
+			try
+			{
+				input(idx, signal);
+			}
+			catch (JMException e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	@Override
 	public <S> void input(final int idx, final S signal) throws JMException
+	{
+		idxTest(idx);
+		if (isCondOf(idx, COND.RUNNING))
+		{
+			machineQue[idx].execute(new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					if (isCondOf(idx, COND.RUNNING) && !Thread.interrupted())
+					{
+						stateMap.get(curStates[idx]).runExitFunction(idx, signal, new JMConsumer<Class<?>>()
+						{
+							@Override
+							public void accept(Class<?> nextState)
+							{
+								curStates[idx] = nextState;
+								stateMap.get(curStates[idx]).runEnterFunction(idx, signal);
+							}
+						});
+					}
+				}
+			});
+		}
+	}
+	
+	@Override
+	public <S extends Enum<S>> void input(final int idx, final Enum<S> signal) throws JMException
+	{
+		idxTest(idx);
+		if (isCondOf(idx, COND.RUNNING))
+		{
+			machineQue[idx].execute(new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					if (isCondOf(idx, COND.RUNNING) && !Thread.interrupted())
+					{
+						stateMap.get(curStates[idx]).runExitFunction(idx, signal, new JMConsumer<Class<?>>()
+						{
+							@Override
+							public void accept(Class<?> nextState)
+							{
+								curStates[idx] = nextState;
+								stateMap.get(curStates[idx]).runEnterFunction(idx, signal);
+							}
+						});
+					}
+				}
+			});
+		}
+	}
+	
+	@Override
+	public void input(final int idx, final String signal) throws JMException
 	{
 		idxTest(idx);
 		if (isCondOf(idx, COND.RUNNING))

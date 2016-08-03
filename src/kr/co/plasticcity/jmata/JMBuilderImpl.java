@@ -149,12 +149,6 @@ class JMBuilderImpl implements JMBuilder
 			}
 			
 			@Override
-			public WhenEnter<Integer> whenEnterFrom(Integer signal)
-			{
-				return new WhenEnterImpl<Integer>(signal);
-			}
-			
-			@Override
 			public JustSwitchTo whenInput(Class<?>... signals)
 			{
 				return new JustSwitchToImpl(signals);
@@ -173,33 +167,21 @@ class JMBuilderImpl implements JMBuilder
 			}
 			
 			@Override
-			public JustSwitchTo whenInput(Integer... signals)
-			{
-				return new JustSwitchToImpl(signals);
-			}
-			
-			@Override
 			public <S> SwitchTo<S> whenInput(Class<S> signal)
 			{
 				return new SwitchToImpl<S>(signal);
 			}
 			
 			@Override
-			public <S extends Enum<S>> SwitchTo<Enum<S>> whenInput(Enum<S> signal)
+			public <S extends Enum<S>> SwitchTo<S> whenInput(Enum<S> signal)
 			{
-				return new SwitchToImpl<Enum<S>>(signal);
+				return new SwitchToImpl<S>(signal);
 			}
 			
 			@Override
 			public SwitchTo<String> whenInput(String signal)
 			{
 				return new SwitchToImpl<String>(signal);
-			}
-			
-			@Override
-			public SwitchTo<Integer> whenInput(Integer signal)
-			{
-				return new SwitchToImpl<Integer>(signal);
 			}
 			
 			@Override
@@ -213,8 +195,7 @@ class JMBuilderImpl implements JMBuilder
 			{
 				private Class<S> signalC;
 				private Enum<?> signalE;
-				private String signalStr;
-				private Integer signalI;
+				private String signalS;
 				
 				private WhenEnterImpl(Class<S> signal)
 				{
@@ -228,12 +209,7 @@ class JMBuilderImpl implements JMBuilder
 				
 				private WhenEnterImpl(String signal)
 				{
-					this.signalStr = signal;
-				}
-				
-				private WhenEnterImpl(Integer signal)
-				{
-					this.signalI = signal;
+					this.signalS = signal;
 				}
 				
 				@Override
@@ -248,13 +224,9 @@ class JMBuilderImpl implements JMBuilder
 					{
 						stateCreater.putEnterFunction(signalE, (JMConsumer<Enum<?>>)workOnEnter);
 					}
-					else if (signalStr != null)
-					{
-						stateCreater.putEnterFunction(signalStr, (JMConsumer<String>)workOnEnter);
-					}
 					else
 					{
-						stateCreater.putEnterFunction(signalI, (JMConsumer<Integer>)workOnEnter);
+						stateCreater.putEnterFunction(signalS, (JMConsumer<String>)workOnEnter);
 					}
 					return StateBuilderImpl.this;
 				}
@@ -271,13 +243,9 @@ class JMBuilderImpl implements JMBuilder
 					{
 						stateCreater.putEnterFunction(signalE, (JMBiConsumer<Enum<?>, Integer>)workOnEnter);
 					}
-					else if (signalStr != null)
-					{
-						stateCreater.putEnterFunction(signalStr, (JMBiConsumer<String, Integer>)workOnEnter);
-					}
 					else
 					{
-						stateCreater.putEnterFunction(signalI, (JMBiConsumer<Integer, Integer>)workOnEnter);
+						stateCreater.putEnterFunction(signalS, (JMBiConsumer<String, Integer>)workOnEnter);
 					}
 					return StateBuilderImpl.this;
 				}
@@ -307,23 +275,12 @@ class JMBuilderImpl implements JMBuilder
 							}
 						});
 					}
-					else if (signalStr != null)
+					else
 					{
-						stateCreater.putEnterFunction(signalStr, new JMConsumer<String>()
+						stateCreater.putEnterFunction(signalS, new JMConsumer<String>()
 						{
 							@Override
 							public void accept(String s)
-							{
-								/* do nothing */
-							}
-						});
-					}
-					else
-					{
-						stateCreater.putEnterFunction(signalI, new JMConsumer<Integer>()
-						{
-							@Override
-							public void accept(Integer s)
 							{
 								/* do nothing */
 							}
@@ -337,8 +294,7 @@ class JMBuilderImpl implements JMBuilder
 			{
 				protected Class<?>[] signalsC;
 				protected Enum<?>[] signalsE;
-				protected String[] signalsStr;
-				protected Integer[] signalsI;
+				protected String[] signalsS;
 				
 				protected JustSwitchToImpl(Class<?>... signals)
 				{
@@ -352,12 +308,7 @@ class JMBuilderImpl implements JMBuilder
 				
 				protected JustSwitchToImpl(String... signals)
 				{
-					this.signalsStr = signals;
-				}
-				
-				protected JustSwitchToImpl(Integer... signals)
-				{
-					this.signalsI = signals;
+					this.signalsS = signals;
 				}
 				
 				@Override
@@ -377,16 +328,9 @@ class JMBuilderImpl implements JMBuilder
 							stateCreater.putSwitchRule(signal, stateTag);
 						}
 					}
-					else if (signalsStr != null)
-					{
-						for (String signal : signalsStr)
-						{
-							stateCreater.putSwitchRule(signal, stateTag);
-						}
-					}
 					else
 					{
-						for (Integer signal : signalsI)
+						for (String signal : signalsS)
 						{
 							stateCreater.putSwitchRule(signal, stateTag);
 						}
@@ -412,11 +356,6 @@ class JMBuilderImpl implements JMBuilder
 					super(signal);
 				}
 				
-				private SwitchToImpl(Integer signal)
-				{
-					super(signal);
-				}
-				
 				@Override
 				@SuppressWarnings("unchecked")
 				public WhenExit<S> switchTo(Class<?> stateTag)
@@ -431,15 +370,10 @@ class JMBuilderImpl implements JMBuilder
 						stateCreater.putSwitchRule(signalsE[0], stateTag);
 						return new WhenExitImpl<S>(signalsE[0]);
 					}
-					else if (signalsStr != null)
-					{
-						stateCreater.putSwitchRule(signalsStr[0], stateTag);
-						return new WhenExitImpl<S>(signalsStr[0]);
-					}
 					else
 					{
-						stateCreater.putSwitchRule(signalsI[0], stateTag);
-						return new WhenExitImpl<S>(signalsI[0]);
+						stateCreater.putSwitchRule(signalsS[0], stateTag);
+						return new WhenExitImpl<S>(signalsS[0]);
 					}
 				}
 			}
@@ -448,8 +382,7 @@ class JMBuilderImpl implements JMBuilder
 			{
 				private Class<S> signalC;
 				private Enum<?> signalE;
-				private String signalStr;
-				private Integer signalI;
+				private String signalS;
 				
 				private WhenExitImpl(Class<S> signal)
 				{
@@ -463,12 +396,7 @@ class JMBuilderImpl implements JMBuilder
 				
 				private WhenExitImpl(String signal)
 				{
-					this.signalStr = signal;
-				}
-				
-				private WhenExitImpl(Integer signal)
-				{
-					this.signalI = signal;
+					this.signalS = signal;
 				}
 				
 				@Override
@@ -483,13 +411,9 @@ class JMBuilderImpl implements JMBuilder
 					{
 						stateCreater.putExitFunction(signalE, (JMConsumer<Enum<?>>)workOnExit);
 					}
-					else if (signalStr != null)
-					{
-						stateCreater.putExitFunction(signalStr, (JMConsumer<String>)workOnExit);
-					}
 					else
 					{
-						stateCreater.putExitFunction(signalI, (JMConsumer<Integer>)workOnExit);
+						stateCreater.putExitFunction(signalS, (JMConsumer<String>)workOnExit);
 					}
 					return StateBuilderImpl.this;
 				}
@@ -506,13 +430,9 @@ class JMBuilderImpl implements JMBuilder
 					{
 						stateCreater.putExitFunction(signalE, (JMBiConsumer<Enum<?>, Integer>)workOnExit);
 					}
-					else if (signalStr != null)
-					{
-						stateCreater.putExitFunction(signalStr, (JMBiConsumer<String, Integer>)workOnExit);
-					}
 					else
 					{
-						stateCreater.putExitFunction(signalI, (JMBiConsumer<Integer, Integer>)workOnExit);
+						stateCreater.putExitFunction(signalS, (JMBiConsumer<String, Integer>)workOnExit);
 					}
 					return StateBuilderImpl.this;
 				}
@@ -542,23 +462,12 @@ class JMBuilderImpl implements JMBuilder
 							}
 						});
 					}
-					else if (signalStr != null)
+					else
 					{
-						stateCreater.putExitFunction(signalStr, new JMConsumer<String>()
+						stateCreater.putExitFunction(signalS, new JMConsumer<String>()
 						{
 							@Override
 							public void accept(String s)
-							{
-								/* do nothing */
-							}
-						});
-					}
-					else
-					{
-						stateCreater.putExitFunction(signalI, new JMConsumer<Integer>()
-						{
-							@Override
-							public void accept(Integer s)
 							{
 								/* do nothing */
 							}

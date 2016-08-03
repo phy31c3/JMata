@@ -23,13 +23,9 @@ interface JMState
 	
 	void runEnterFunction(int machineIdx, String signal);
 	
-	void runEnterFunction(int machineIdx, Integer signal);
-	
 	<S> void runExitFunction(int machineIdx, S signal, JMConsumer<Class<?>> nextState);
 	
 	<S extends Enum<S>> void runExitFunction(int machineIdx, Enum<S> signal, JMConsumer<Class<?>> nextState);
 	
 	void runExitFunction(int machineIdx, String signal, JMConsumer<Class<?>> nextState);
-	
-	void runExitFunction(int machineIdx, Integer signal, JMConsumer<Class<?>> nextState);
 }
