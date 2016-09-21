@@ -50,7 +50,7 @@ class JMStateImpl implements JMStateCreater
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public <S> void runEnterFunction(int machineIdx, S signal)
+	public <S> void runEnterFunctionC(int machineIdx, S signal)
 	{
 		if (enterSignalCIdx != null && enterSignalCIdx.containsKey(signal.getClass()))
 		{
@@ -72,51 +72,47 @@ class JMStateImpl implements JMStateCreater
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public <S extends Enum<S>> void runEnterFunction(int machineIdx, Enum<S> signal)
+	public <S extends Enum<S>> boolean runEnterFunction(int machineIdx, Enum<S> signal)
 	{
 		if (enterSignalEIdx != null && enterSignalEIdx.containsKey(signal))
 		{
 			((JMBiConsumer<Enum<S>, Integer>)enterSignalEIdx.get(signal)).accept(signal, machineIdx);
+			return true;
 		}
 		else if (enterSignalE != null && enterSignalE.containsKey(signal))
 		{
 			((JMConsumer<Enum<S>>)enterSignalE.get(signal)).accept(signal);
+			return true;
 		}
-		else if (enterIdx != null)
+		else
 		{
-			enterIdx.accept(machineIdx);
-		}
-		else if (enter != null)
-		{
-			enter.accept();
+			return false;
 		}
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public void runEnterFunction(int machineIdx, String signal)
+	public boolean runEnterFunction(int machineIdx, String signal)
 	{
 		if (enterSignalSIdx != null && enterSignalSIdx.containsKey(signal))
 		{
 			((JMBiConsumer<String, Integer>)enterSignalSIdx.get(signal)).accept(signal, machineIdx);
+			return true;
 		}
 		else if (enterSignalS != null && enterSignalS.containsKey(signal))
 		{
 			((JMConsumer<String>)enterSignalS.get(signal)).accept(signal);
+			return true;
 		}
-		else if (enterIdx != null)
+		else
 		{
-			enterIdx.accept(machineIdx);
-		}
-		else if (enter != null)
-		{
-			enter.accept();
+			return false;
 		}
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public <S> void runExitFunction(int machineIdx, S signal, JMConsumer<Class<?>> nextState)
+	public <S> void runExitFunctionC(int machineIdx, S signal, JMConsumer<Class<?>> nextState)
 	{
 		if (switchRuleC != null && switchRuleC.containsKey(signal.getClass()))
 		{
@@ -143,55 +139,59 @@ class JMStateImpl implements JMStateCreater
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public <S extends Enum<S>> void runExitFunction(int machineIdx, Enum<S> signal, JMConsumer<Class<?>> nextState)
+	public <S extends Enum<S>> boolean runExitFunction(int machineIdx, Enum<S> signal, JMConsumer<Class<?>> nextState)
 	{
 		if (switchRuleE != null && switchRuleE.containsKey(signal))
 		{
 			if (exitSignalEIdx != null && exitSignalEIdx.containsKey(signal))
 			{
 				((JMBiConsumer<Enum<?>, Integer>)exitSignalEIdx.get(signal)).accept(signal, machineIdx);
+				nextState.accept(switchRuleE.get(signal));
+				return true;
 			}
 			else if (exitSignalE != null && exitSignalE.containsKey(signal))
 			{
 				((JMConsumer<Enum<?>>)exitSignalE.get(signal)).accept(signal);
+				nextState.accept(switchRuleE.get(signal));
+				return true;
 			}
-			else if (exitIdx != null)
+			else
 			{
-				exitIdx.accept(machineIdx);
+				return false;
 			}
-			else if (exit != null)
-			{
-				exit.accept();
-			}
-			
-			nextState.accept(switchRuleE.get(signal));
+		}
+		else
+		{
+			return false;
 		}
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public void runExitFunction(int machineIdx, String signal, JMConsumer<Class<?>> nextState)
+	public boolean runExitFunction(int machineIdx, String signal, JMConsumer<Class<?>> nextState)
 	{
 		if (switchRuleS != null && switchRuleS.containsKey(signal))
 		{
 			if (exitSignalSIdx != null && exitSignalSIdx.containsKey(signal))
 			{
 				((JMBiConsumer<String, Integer>)exitSignalSIdx.get(signal)).accept(signal, machineIdx);
+				nextState.accept(switchRuleS.get(signal));
+				return true;
 			}
 			else if (exitSignalS != null && exitSignalS.containsKey(signal))
 			{
 				((JMConsumer<String>)exitSignalS.get(signal)).accept(signal);
+				nextState.accept(switchRuleS.get(signal));
+				return true;
 			}
-			else if (exitIdx != null)
+			else
 			{
-				exitIdx.accept(machineIdx);
+				return false;
 			}
-			else if (exit != null)
-			{
-				exit.accept();
-			}
-			
-			nextState.accept(switchRuleS.get(signal));
+		}
+		else
+		{
+			return false;
 		}
 	}
 	

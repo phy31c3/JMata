@@ -17,15 +17,27 @@ interface JMState
 	 */
 	void runEnterFunction(int machineIdx);
 	
-	<S> void runEnterFunction(int machineIdx, S signal);
+	<S> void runEnterFunctionC(int machineIdx, S signal);
 	
-	<S extends Enum<S>> void runEnterFunction(int machineIdx, Enum<S> signal);
+	/**
+	 * @return 전달된 신호와 연결된 전이 규칙이 없는 경우 == false
+	 */
+	<S extends Enum<S>> boolean runEnterFunction(int machineIdx, Enum<S> signal);
 	
-	void runEnterFunction(int machineIdx, String signal);
+	/**
+	 * @return 전달된 신호와 연결된 전이 규칙이 없는 경우 == false
+	 */
+	boolean runEnterFunction(int machineIdx, String signal);
 	
-	<S> void runExitFunction(int machineIdx, S signal, JMConsumer<Class<?>> nextState);
+	<S> void runExitFunctionC(int machineIdx, S signal, JMConsumer<Class<?>> nextState);
 	
-	<S extends Enum<S>> void runExitFunction(int machineIdx, Enum<S> signal, JMConsumer<Class<?>> nextState);
+	/**
+	 * @return 전달된 신호와 연결된 전이 규칙이 없는 경우 == false
+	 */
+	<S extends Enum<S>> boolean runExitFunction(int machineIdx, Enum<S> signal, JMConsumer<Class<?>> nextState);
 	
-	void runExitFunction(int machineIdx, String signal, JMConsumer<Class<?>> nextState);
+	/**
+	 * @return 전달된 신호와 연결된 전이 규칙이 없는 경우 == false
+	 */
+	boolean runExitFunction(int machineIdx, String signal, JMConsumer<Class<?>> nextState);
 }
