@@ -207,7 +207,18 @@ class JMataImpl
 				{
 					try
 					{
-						machineMap.get(machineTag).inputAll(signal);
+						if (signal instanceof String)
+						{
+							machineMap.get(machineTag).inputToAll((String)signal);
+						}
+						else if (signal instanceof Enum)
+						{
+							machineMap.get(machineTag).inputToAll((Enum<?>)signal);
+						}
+						else
+						{
+							machineMap.get(machineTag).inputToAll(signal);
+						}
 					}
 					catch (JMException e)
 					{
@@ -229,7 +240,7 @@ class JMataImpl
 				{
 					try
 					{
-						machineMap.get(machineTag).inputAll(signal);
+						machineMap.get(machineTag).inputToAll(signal);
 					}
 					catch (JMException e)
 					{
@@ -251,7 +262,7 @@ class JMataImpl
 				{
 					try
 					{
-						machineMap.get(machineTag).inputAll(signal);
+						machineMap.get(machineTag).inputToAll(signal);
 					}
 					catch (JMException e)
 					{
@@ -273,7 +284,18 @@ class JMataImpl
 				{
 					try
 					{
-						machineMap.get(machineTag).input(machineIdx, signal);
+						if (signal instanceof String)
+						{
+							machineMap.get(machineTag).input(machineIdx, (String)signal);
+						}
+						else if (signal instanceof Enum)
+						{
+							machineMap.get(machineTag).input(machineIdx, (Enum<?>)signal);
+						}
+						else
+						{
+							machineMap.get(machineTag).input(machineIdx, signal);
+						}
 					}
 					catch (JMException e)
 					{

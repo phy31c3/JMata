@@ -24,11 +24,11 @@ interface JMMachine
 	
 	void terminate(int idx) throws JMException;
 	
-	<S> void inputAll(S signal) throws JMException;
+	<S> void inputToAll(S signal) throws JMException;
 	
-	<S extends Enum<S>> void inputAll(Enum<S> signal) throws JMException;
+	<S extends Enum<S>> void inputToAll(Enum<S> signal) throws JMException;
 	
-	void inputAll(String signal) throws JMException;
+	void inputToAll(String signal) throws JMException;
 	
 	<S> void input(int idx, S signal) throws JMException;
 	

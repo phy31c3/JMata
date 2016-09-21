@@ -129,7 +129,7 @@ class JMMachineImpl implements JMMachine
 	}
 	
 	@Override
-	public <S> void inputAll(S signal) throws JMException
+	public <S> void inputToAll(S signal) throws JMException
 	{
 		for (int idx = 0; idx < machineQue.length; ++idx)
 		{
@@ -145,7 +145,7 @@ class JMMachineImpl implements JMMachine
 	}
 	
 	@Override
-	public <S extends Enum<S>> void inputAll(Enum<S> signal) throws JMException
+	public <S extends Enum<S>> void inputToAll(Enum<S> signal) throws JMException
 	{
 		for (int idx = 0; idx < machineQue.length; ++idx)
 		{
@@ -161,7 +161,7 @@ class JMMachineImpl implements JMMachine
 	}
 	
 	@Override
-	public void inputAll(String signal) throws JMException
+	public void inputToAll(String signal) throws JMException
 	{
 		for (int idx = 0; idx < machineQue.length; ++idx)
 		{
@@ -189,13 +189,13 @@ class JMMachineImpl implements JMMachine
 				{
 					if (isCondOf(idx, COND.RUNNING) && !Thread.interrupted())
 					{
-						stateMap.get(curStates[idx]).runExitFunction(idx, signal, new JMConsumer<Class<?>>()
+						stateMap.get(curStates[idx]).runExitFunctionC(idx, signal, new JMConsumer<Class<?>>()
 						{
 							@Override
 							public void accept(Class<?> nextState)
 							{
 								curStates[idx] = nextState;
-								stateMap.get(curStates[idx]).runEnterFunction(idx, signal);
+								stateMap.get(curStates[idx]).runEnterFunctionC(idx, signal);
 							}
 						});
 					}
@@ -217,15 +217,23 @@ class JMMachineImpl implements JMMachine
 				{
 					if (isCondOf(idx, COND.RUNNING) && !Thread.interrupted())
 					{
-						stateMap.get(curStates[idx]).runExitFunction(idx, signal, new JMConsumer<Class<?>>()
+						JMConsumer<Class<?>> switchToNext = new JMConsumer<Class<?>>()
 						{
 							@Override
 							public void accept(Class<?> nextState)
 							{
 								curStates[idx] = nextState;
-								stateMap.get(curStates[idx]).runEnterFunction(idx, signal);
+								if (!stateMap.get(curStates[idx]).runEnterFunction(idx, signal))
+								{
+									stateMap.get(curStates[idx]).runEnterFunctionC(idx, signal);
+								}
 							}
-						});
+						};
+						
+						if (!stateMap.get(curStates[idx]).runExitFunction(idx, signal, switchToNext))
+						{
+							stateMap.get(curStates[idx]).runExitFunctionC(idx, signal, switchToNext);
+						}
 					}
 				}
 			});
@@ -245,15 +253,23 @@ class JMMachineImpl implements JMMachine
 				{
 					if (isCondOf(idx, COND.RUNNING) && !Thread.interrupted())
 					{
-						stateMap.get(curStates[idx]).runExitFunction(idx, signal, new JMConsumer<Class<?>>()
+						JMConsumer<Class<?>> switchToNext = new JMConsumer<Class<?>>()
 						{
 							@Override
 							public void accept(Class<?> nextState)
 							{
 								curStates[idx] = nextState;
-								stateMap.get(curStates[idx]).runEnterFunction(idx, signal);
+								if (!stateMap.get(curStates[idx]).runEnterFunction(idx, signal))
+								{
+									stateMap.get(curStates[idx]).runEnterFunctionC(idx, signal);
+								}
 							}
-						});
+						};
+						
+						if (!stateMap.get(curStates[idx]).runExitFunction(idx, signal, switchToNext))
+						{
+							stateMap.get(curStates[idx]).runExitFunctionC(idx, signal, switchToNext);
+						}
 					}
 				}
 			});
