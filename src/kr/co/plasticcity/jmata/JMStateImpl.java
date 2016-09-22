@@ -157,7 +157,8 @@ class JMStateImpl implements JMStateCreater
 			}
 			else
 			{
-				return false;
+				nextState.accept(switchRuleE.get(signal));
+				return true;
 			}
 		}
 		else
@@ -186,7 +187,8 @@ class JMStateImpl implements JMStateCreater
 			}
 			else
 			{
-				return false;
+				nextState.accept(switchRuleS.get(signal));
+				return true;
 			}
 		}
 		else
