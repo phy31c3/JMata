@@ -19,6 +19,7 @@ class JMMachineImpl implements JMMachine
 	private volatile ExecutorService[] machineQue;
 	private volatile Class<?>[] curStates;
 	private COND[] conds;
+	private int activeInstances;
 	
 	JMMachineImpl(Class<?> tag, int numInstances, Class<?> startState, Map<Class<?>, ? extends JMState> stateMap)
 	{
@@ -28,6 +29,7 @@ class JMMachineImpl implements JMMachine
 		this.machineQue = new ExecutorService[numInstances];
 		this.curStates = new Class<?>[numInstances];
 		this.conds = new COND[numInstances];
+		this.activeInstances = numInstances;
 		
 		for (int idx = 0; idx < numInstances; ++idx)
 		{
@@ -118,13 +120,18 @@ class JMMachineImpl implements JMMachine
 	}
 	
 	@Override
-	public void terminate(int idx) throws JMException
+	public boolean terminate(int idx) throws JMException
 	{
 		idxTest(idx);
 		if (notCondOf(idx, COND.TERMINATED))
 		{
 			setCondOf(idx, COND.TERMINATED);
 			machineQue[idx].shutdownNow();
+			return --activeInstances == 0 ? true : false;
+		}
+		else
+		{
+			return false;
 		}
 	}
 	
