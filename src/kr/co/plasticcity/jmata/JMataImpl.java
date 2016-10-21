@@ -10,18 +10,53 @@ class JMataImpl
 	/************************** ↓ Static Part **************************/
 	
 	private volatile static JMataImpl instance;
+	private volatile static STATE state = STATE.NOT_INIT;
+	
+	private enum STATE
+	{
+		NOT_INIT, RUNNING, RELEASED;
+	}
 	
 	static synchronized void initialize()
 	{
 		clearInstance();
+		instance = new JMataImpl();
+		state = STATE.RUNNING;
 	}
 	
 	static synchronized void release()
 	{
-		clearInstance();
+		if (state == STATE.RUNNING)
+		{
+			clearInstance();
+			state = STATE.RELEASED;
+		}
 	}
 	
-	private static synchronized void clearInstance()
+	static synchronized void post(JMConsumer<JMataImpl> func)
+	{
+		if (instance != null)
+		{
+			func.accept(instance);
+		}
+		else
+		{
+			switch (state)
+			{
+			case NOT_INIT:
+				JMLog.out("JMata 초기화 오류 : 최초 JMata.initialize()를 호출해주세요.");
+				break;
+			case RUNNING:
+				JMLog.out("알 수 없는 오류 발생 : JMata가 RUNNIG 상태이나 instance == null");
+				break;
+			case RELEASED:
+				/* do nothing */
+				break;
+			}
+		}
+	}
+	
+	private static void clearInstance()
 	{
 		if (instance != null)
 		{
@@ -32,22 +67,6 @@ class JMataImpl
 			}
 			instance = null;
 		}
-	}
-	
-	static JMataImpl get()
-	{
-		if (instance == null)
-		{
-			synchronized (JMataImpl.class)
-			{
-				if (instance == null)
-				{
-					instance = new JMataImpl();
-				}
-			}
-		}
-		
-		return instance;
 	}
 	
 	/************************** ↑ Static Part **************************/
