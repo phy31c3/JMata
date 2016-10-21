@@ -22,7 +22,10 @@ interface JMMachine
 	
 	void terminateAll();
 	
-	void terminate(int idx) throws JMException;
+	/**
+	 * @return 모든 머신 인스턴스가 종료 된 경우 true
+	 */
+	boolean terminate(int idx) throws JMException;
 	
 	<S> void inputToAll(S signal) throws JMException;
 	

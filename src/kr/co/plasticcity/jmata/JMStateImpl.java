@@ -155,6 +155,18 @@ class JMStateImpl implements JMStateCreater
 				nextState.accept(switchRuleE.get(signal));
 				return true;
 			}
+			else if (exitIdx != null)
+			{
+				exitIdx.accept(machineIdx);
+				nextState.accept(switchRuleE.get(signal));
+				return true;
+			}
+			else if (exit != null)
+			{
+				exit.accept();
+				nextState.accept(switchRuleE.get(signal));
+				return true;
+			}
 			else
 			{
 				nextState.accept(switchRuleE.get(signal));
@@ -182,6 +194,18 @@ class JMStateImpl implements JMStateCreater
 			else if (exitSignalS != null && exitSignalS.containsKey(signal))
 			{
 				((JMConsumer<String>)exitSignalS.get(signal)).accept(signal);
+				nextState.accept(switchRuleS.get(signal));
+				return true;
+			}
+			else if (exitIdx != null)
+			{
+				exitIdx.accept(machineIdx);
+				nextState.accept(switchRuleS.get(signal));
+				return true;
+			}
+			else if (exit != null)
+			{
+				exit.accept();
 				nextState.accept(switchRuleS.get(signal));
 				return true;
 			}

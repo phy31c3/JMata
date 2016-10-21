@@ -52,14 +52,13 @@ class JMataImpl
 	
 	/************************** ↑ Static Part **************************/
 	
-	private Map<Class<?>, JMMachine> machineMap;
-	
-	private ExecutorService globalQue;
+	private final Map<Class<?>, JMMachine> machineMap;
+	private final ExecutorService globalQue;
 	
 	private JMataImpl()
 	{
-		machineMap = new ConcurrentHashMap<>();
-		globalQue = Executors.newSingleThreadExecutor();
+		this.machineMap = new ConcurrentHashMap<>();
+		this.globalQue = Executors.newSingleThreadExecutor();
 	}
 	
 	void buildMachine(final Class<?> machineTag, final JMConsumer<JMBuilder> builder)
@@ -169,6 +168,7 @@ class JMataImpl
 				if (machineMap.containsKey(machineTag))
 				{
 					machineMap.get(machineTag).terminateAll();
+					machineMap.remove(machineTag);
 				}
 			}
 		});
@@ -185,7 +185,10 @@ class JMataImpl
 				{
 					try
 					{
-						machineMap.get(machineTag).terminate(machineIdx);
+						if (machineMap.get(machineTag).terminate(machineIdx))
+						{
+							machineMap.remove(machineTag);
+						}
 					}
 					catch (JMException e)
 					{
