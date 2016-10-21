@@ -9,7 +9,7 @@ Java State-based Programming Library
 ### Gradle
 ```groovy
 dependencies {
-	compile 'kr.co.plasticcity:JMata:v.0.6.0'
+	compile 'kr.co.plasticcity:jmata:v.0.5.2'
 }
 ```
 
@@ -17,8 +17,8 @@ dependencies {
 ```xml
 <dependency>
 	<groupId>kr.co.plasticcity</groupId>
-	<artifactId>JMata</artifactId>
-	<version>v.0.4.0</version>
+	<artifactId>jmata</artifactId>
+	<version>v.0.5.2</version>
 	<type>pom</type>
 </dependency>
 ```
