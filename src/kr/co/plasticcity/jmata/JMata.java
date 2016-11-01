@@ -23,77 +23,168 @@ public class JMata
 		JMLog.setLogFunction(null);
 	}
 	
-	public static void buildMachine(Class<?> machineTag, JMConsumer<JMBuilder> builder)
+	public static void buildMachine(final Class<?> machineTag, final JMConsumer<JMBuilder> builder)
 	{
-		JMataImpl.get().buildMachine(machineTag, builder);
+		JMataImpl.post(new JMConsumer<JMataImpl>()
+		{
+			@Override
+			public void accept(JMataImpl jmata)
+			{
+				jmata.buildMachine(machineTag, builder);
+			}
+		});
 	}
 	
 	/**
 	 * 해당 머신의 모든 인스턴스를 가동
 	 */
-	public static void runMachine(Class<?> machineTag)
+	public static void runMachine(final Class<?> machineTag)
 	{
-		JMataImpl.get().runMachine(machineTag);
+		JMataImpl.post(new JMConsumer<JMataImpl>()
+		{
+			@Override
+			public void accept(JMataImpl jmata)
+			{
+				jmata.runMachine(machineTag);
+			}
+		});
 	}
 	
-	public static void runMachine(Class<?> machineTag, int machineIdx)
+	public static void runMachine(final Class<?> machineTag, final int machineIdx)
 	{
-		JMataImpl.get().runMachine(machineTag, machineIdx);
+		JMataImpl.post(new JMConsumer<JMataImpl>()
+		{
+			@Override
+			public void accept(JMataImpl jmata)
+			{
+				jmata.runMachine(machineTag, machineIdx);
+			}
+		});
 	}
 	
 	/**
 	 * 해당 머신의 모든 인스턴스를 정지
 	 */
-	public static void stopMachine(Class<?> machineTag)
+	public static void stopMachine(final Class<?> machineTag)
 	{
-		JMataImpl.get().stopMachine(machineTag);
+		JMataImpl.post(new JMConsumer<JMataImpl>()
+		{
+			@Override
+			public void accept(JMataImpl jmata)
+			{
+				jmata.stopMachine(machineTag);
+			}
+		});
 	}
 	
-	public static void stopMachine(Class<?> machineTag, int machineIdx)
+	public static void stopMachine(final Class<?> machineTag, final int machineIdx)
 	{
-		JMataImpl.get().stopMachine(machineTag, machineIdx);
+		JMataImpl.post(new JMConsumer<JMataImpl>()
+		{
+			@Override
+			public void accept(JMataImpl jmata)
+			{
+				jmata.stopMachine(machineTag, machineIdx);
+			}
+		});
 	}
 	
 	/**
 	 * 해당 머신의 모든 인스턴스를 종료
 	 */
-	public static void terminateMachine(Class<?> machineTag)
+	public static void terminateMachine(final Class<?> machineTag)
 	{
-		JMataImpl.get().terminateMachine(machineTag);
+		JMataImpl.post(new JMConsumer<JMataImpl>()
+		{
+			@Override
+			public void accept(JMataImpl jmata)
+			{
+				jmata.terminateMachine(machineTag);
+			}
+		});
 	}
 	
-	public static void terminateMachine(Class<?> machineTag, int machineIdx)
+	public static void terminateMachine(final Class<?> machineTag, final int machineIdx)
 	{
-		JMataImpl.get().terminateMachine(machineTag, machineIdx);
+		JMataImpl.post(new JMConsumer<JMataImpl>()
+		{
+			@Override
+			public void accept(JMataImpl jmata)
+			{
+				jmata.terminateMachine(machineTag, machineIdx);
+			}
+		});
 	}
 	
-	public static <S> void inputTo(Class<?> machineTag, S signal)
+	public static <S> void inputTo(final Class<?> machineTag, final S signal)
 	{
-		JMataImpl.get().inputTo(machineTag, signal);
+		JMataImpl.post(new JMConsumer<JMataImpl>()
+		{
+			@Override
+			public void accept(JMataImpl jmata)
+			{
+				jmata.inputTo(machineTag, signal);
+			}
+		});
 	}
 	
-	public static <S extends Enum<S>> void inputTo(Class<?> machineTag, Enum<S> signal)
+	public static <S extends Enum<S>> void inputTo(final Class<?> machineTag, final Enum<S> signal)
 	{
-		JMataImpl.get().inputTo(machineTag, signal);
+		JMataImpl.post(new JMConsumer<JMataImpl>()
+		{
+			@Override
+			public void accept(JMataImpl jmata)
+			{
+				jmata.inputTo(machineTag, signal);
+			}
+		});
 	}
 	
-	public static void inputTo(Class<?> machineTag, String signal)
+	public static void inputTo(final Class<?> machineTag, final String signal)
 	{
-		JMataImpl.get().inputTo(machineTag, signal);
+		JMataImpl.post(new JMConsumer<JMataImpl>()
+		{
+			@Override
+			public void accept(JMataImpl jmata)
+			{
+				jmata.inputTo(machineTag, signal);
+			}
+		});
 	}
 	
-	public static <S> void inputTo(Class<?> machineTag, int machineIdx, S signal)
+	public static <S> void inputTo(final Class<?> machineTag, final int machineIdx, final S signal)
 	{
-		JMataImpl.get().inputTo(machineTag, signal);
+		JMataImpl.post(new JMConsumer<JMataImpl>()
+		{
+			@Override
+			public void accept(JMataImpl jmata)
+			{
+				jmata.inputTo(machineTag, signal);
+			}
+		});
 	}
 	
-	public static <S extends Enum<S>> void inputTo(Class<?> machineTag, int machineIdx, Enum<S> signal)
+	public static <S extends Enum<S>> void inputTo(final Class<?> machineTag, final int machineIdx, final Enum<S> signal)
 	{
-		JMataImpl.get().inputTo(machineTag, signal);
+		JMataImpl.post(new JMConsumer<JMataImpl>()
+		{
+			@Override
+			public void accept(JMataImpl jmata)
+			{
+				jmata.inputTo(machineTag, signal);
+			}
+		});
 	}
 	
-	public static void inputTo(Class<?> machineTag, int machineIdx, String signal)
+	public static void inputTo(final Class<?> machineTag, final int machineIdx, final String signal)
 	{
-		JMataImpl.get().inputTo(machineTag, signal);
+		JMataImpl.post(new JMConsumer<JMataImpl>()
+		{
+			@Override
+			public void accept(JMataImpl jmata)
+			{
+				jmata.inputTo(machineTag, signal);
+			}
+		});
 	}
 }
