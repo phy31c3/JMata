@@ -9,50 +9,99 @@ class JMataImpl
 {
 	/************************** ↓ Static Part **************************/
 	
-	private volatile static JMataImpl instance;
-	private volatile static STATE state = STATE.NOT_INIT;
+	private static final Semaphore permit = new Semaphore(1, true);
+	private static volatile JMataImpl instance;
+	private static volatile STATE state = STATE.NOT_INIT;
 	
 	private enum STATE
 	{
 		NOT_INIT, RUNNING, RELEASED;
 	}
 	
-	static synchronized void initialize()
+	static void initialize()
 	{
-		clearInstance();
-		instance = new JMataImpl();
-		state = STATE.RUNNING;
-	}
-	
-	static synchronized void release()
-	{
-		if (state == STATE.RUNNING)
+		try
 		{
-			clearInstance();
-			state = STATE.RELEASED;
-		}
-	}
-	
-	static synchronized void post(JMConsumer<JMataImpl> func)
-	{
-		if (instance != null)
-		{
-			func.accept(instance);
-		}
-		else
-		{
-			switch (state)
+			permit.acquire();
+			
+			try
 			{
-			case NOT_INIT:
-				JMLog.out("JMata 초기화 오류 : 최초 JMata.initialize()를 호출해주세요.");
-				break;
-			case RUNNING:
-				JMLog.out("알 수 없는 오류 발생 : JMata가 RUNNIG 상태이나 instance == null");
-				break;
-			case RELEASED:
-				/* do nothing */
-				break;
+				clearInstance();
+				instance = new JMataImpl();
+				state = STATE.RUNNING;
 			}
+			finally
+			{
+				permit.release();
+			}
+		}
+		catch (InterruptedException e)
+		{
+			initialize();
+		}
+	}
+	
+	static void release()
+	{
+		try
+		{
+			permit.acquire();
+			
+			try
+			{
+				if (state == STATE.RUNNING)
+				{
+					clearInstance();
+					state = STATE.RELEASED;
+				}
+			}
+			finally
+			{
+				permit.release();
+			}
+		}
+		catch (InterruptedException e)
+		{
+			release();
+		}
+	}
+	
+	static void post(JMConsumer<JMataImpl> func)
+	{
+		try
+		{
+			permit.acquire();
+			
+			try
+			{
+				if (instance != null)
+				{
+					func.accept(instance);
+				}
+				else
+				{
+					switch (state)
+					{
+					case NOT_INIT:
+						JMLog.out("JMata 초기화 오류 : 최초 JMata.initialize()를 호출해주세요.");
+						break;
+					case RUNNING:
+						JMLog.out("알 수 없는 오류 발생 : JMata가 RUNNIG 상태이나 instance == null");
+						break;
+					case RELEASED:
+						/* do nothing */
+						break;
+					}
+				}
+			}
+			finally
+			{
+				permit.release();
+			}
+		}
+		catch (InterruptedException e)
+		{
+			/* do nothing */
 		}
 	}
 	
