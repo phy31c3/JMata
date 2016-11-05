@@ -3,7 +3,7 @@
 자바 상태 기반 프로그래밍 라이브러리</br>
 Java State-based Programming Library</br>
 </br>
-#Java Automata #자바 오토마타
+`#Java Automata #자바 오토마타`
 
 ## 적용 하기
 ----------
