@@ -4,23 +4,24 @@ import kr.co.plasticcity.jmata.function.*;
 
 public class JMata
 {
-	/**
-	 * 어플리케이션 시작 시 반드시 호출.
-	 */
 	public static void initialize()
 	{
-		JMataImpl.initialize();
+		initialize(null, null);
 	}
 	
-	public static void setLogFunction(JMConsumer<String> logFunc)
+	public static void initialize(JMConsumer<String> debugLogger)
 	{
-		JMLog.setLogFunction(logFunc);
+		initialize(debugLogger, null);
+	}
+	
+	public static void initialize(JMConsumer<String> debugLogger, JMConsumer<String> errorLogger)
+	{
+		JMataImpl.initialize(debugLogger, errorLogger);
 	}
 	
 	public static void release()
 	{
 		JMataImpl.release();
-		JMLog.setLogFunction(null);
 	}
 	
 	public static void buildMachine(final Class<?> machineTag, final JMConsumer<JMBuilder> builder)
@@ -128,30 +129,6 @@ public class JMata
 		});
 	}
 	
-	public static <S extends Enum<S>> void inputTo(final Class<?> machineTag, final Enum<S> signal)
-	{
-		JMataImpl.post(new JMConsumer<JMataImpl>()
-		{
-			@Override
-			public void accept(JMataImpl jmata)
-			{
-				jmata.inputTo(machineTag, signal);
-			}
-		});
-	}
-	
-	public static void inputTo(final Class<?> machineTag, final String signal)
-	{
-		JMataImpl.post(new JMConsumer<JMataImpl>()
-		{
-			@Override
-			public void accept(JMataImpl jmata)
-			{
-				jmata.inputTo(machineTag, signal);
-			}
-		});
-	}
-	
 	public static <S> void inputTo(final Class<?> machineTag, final int machineIdx, final S signal)
 	{
 		JMataImpl.post(new JMConsumer<JMataImpl>()
@@ -159,31 +136,7 @@ public class JMata
 			@Override
 			public void accept(JMataImpl jmata)
 			{
-				jmata.inputTo(machineTag, signal);
-			}
-		});
-	}
-	
-	public static <S extends Enum<S>> void inputTo(final Class<?> machineTag, final int machineIdx, final Enum<S> signal)
-	{
-		JMataImpl.post(new JMConsumer<JMataImpl>()
-		{
-			@Override
-			public void accept(JMataImpl jmata)
-			{
-				jmata.inputTo(machineTag, signal);
-			}
-		});
-	}
-	
-	public static void inputTo(final Class<?> machineTag, final int machineIdx, final String signal)
-	{
-		JMataImpl.post(new JMConsumer<JMataImpl>()
-		{
-			@Override
-			public void accept(JMataImpl jmata)
-			{
-				jmata.inputTo(machineTag, signal);
+				jmata.inputTo(machineTag, machineIdx, signal);
 			}
 		});
 	}

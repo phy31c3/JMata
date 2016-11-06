@@ -4,18 +4,28 @@ import kr.co.plasticcity.jmata.function.*;
 
 class JMLog
 {
-	private static JMConsumer<String> logFunc;
+	private static JMConsumer<String> debug;
+	private static JMConsumer<String> error;
 	
-	static void setLogFunction(JMConsumer<String> logFunc)
+	static void setLogger(JMConsumer<String> debugLogger, JMConsumer<String> errorLogger)
 	{
-		JMLog.logFunc = logFunc;
+		JMLog.debug = debugLogger;
+		JMLog.error = errorLogger;
 	}
 	
-	static void out(String format, Object... args)
+	static void debug(String format, Object... args)
 	{
-		if (logFunc != null)
+		if (debug != null)
 		{
-			logFunc.accept(String.format(format, args));
+			debug.accept(String.format(format, args));
+		}
+	}
+	
+	static void error(String format, Object... args)
+	{
+		if (error != null)
+		{
+			error.accept(String.format(format, args));
 		}
 	}
 }

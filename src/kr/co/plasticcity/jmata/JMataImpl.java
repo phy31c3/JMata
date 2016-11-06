@@ -18,7 +18,7 @@ class JMataImpl
 		NOT_INIT, RUNNING, RELEASED;
 	}
 	
-	static void initialize()
+	static void initialize(JMConsumer<String> debugLogger, JMConsumer<String> errorLogger)
 	{
 		try
 		{
@@ -26,6 +26,7 @@ class JMataImpl
 			
 			try
 			{
+				JMLog.setLogger(debugLogger, errorLogger);
 				clearInstance();
 				instance = new JMataImpl();
 				state = STATE.RUNNING;
@@ -37,7 +38,7 @@ class JMataImpl
 		}
 		catch (InterruptedException e)
 		{
-			initialize();
+			initialize(debugLogger, errorLogger);
 		}
 	}
 	
@@ -51,6 +52,7 @@ class JMataImpl
 			{
 				if (state == STATE.RUNNING)
 				{
+					JMLog.setLogger(null, null);
 					clearInstance();
 					state = STATE.RELEASED;
 				}
@@ -83,10 +85,10 @@ class JMataImpl
 					switch (state)
 					{
 					case NOT_INIT:
-						JMLog.out("JMata 초기화 오류 : 최초 JMata.initialize()를 호출해주세요.");
+						JMLog.debug("JMata 초기화 오류 : 최초 JMata.initialize()를 호출해주세요.");
 						break;
 					case RUNNING:
-						JMLog.out("알 수 없는 오류 발생 : JMata가 RUNNIG 상태이나 instance == null");
+						JMLog.debug("알 수 없는 오류 발생 : JMata가 RUNNIG 상태이나 instance == null");
 						break;
 					case RELEASED:
 						/* do nothing */
@@ -300,50 +302,6 @@ class JMataImpl
 		});
 	}
 	
-	<S extends Enum<S>> void inputTo(final Class<?> machineTag, final Enum<S> signal)
-	{
-		globalQue.execute(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				if (machineMap.containsKey(machineTag))
-				{
-					try
-					{
-						machineMap.get(machineTag).inputToAll(signal);
-					}
-					catch (JMException e)
-					{
-						e.printJMLog();
-					}
-				}
-			}
-		});
-	}
-	
-	void inputTo(final Class<?> machineTag, final String signal)
-	{
-		globalQue.execute(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				if (machineMap.containsKey(machineTag))
-				{
-					try
-					{
-						machineMap.get(machineTag).inputToAll(signal);
-					}
-					catch (JMException e)
-					{
-						e.printJMLog();
-					}
-				}
-			}
-		});
-	}
-	
 	<S> void inputTo(final Class<?> machineTag, final int machineIdx, final S signal)
 	{
 		globalQue.execute(new Runnable()
@@ -367,50 +325,6 @@ class JMataImpl
 						{
 							machineMap.get(machineTag).input(machineIdx, signal);
 						}
-					}
-					catch (JMException e)
-					{
-						e.printJMLog();
-					}
-				}
-			}
-		});
-	}
-	
-	<S extends Enum<S>> void inputTo(final Class<?> machineTag, final int machineIdx, final Enum<S> signal)
-	{
-		globalQue.execute(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				if (machineMap.containsKey(machineTag))
-				{
-					try
-					{
-						machineMap.get(machineTag).input(machineIdx, signal);
-					}
-					catch (JMException e)
-					{
-						e.printJMLog();
-					}
-				}
-			}
-		});
-	}
-	
-	void inputTo(final Class<?> machineTag, final int machineIdx, final String signal)
-	{
-		globalQue.execute(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				if (machineMap.containsKey(machineTag))
-				{
-					try
-					{
-						machineMap.get(machineTag).input(machineIdx, signal);
 					}
 					catch (JMException e)
 					{

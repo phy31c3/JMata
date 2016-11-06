@@ -36,6 +36,7 @@ public interface JMBuilder
 	
 	public interface StateBuilder
 	{
+		/* ================================== enter & exit ================================== */
 		StateBuilder whenEnter(JMVoidConsumer defaultWork);
 		
 		StateBuilder whenEnter(JMConsumer<Integer> defaultWork);
@@ -50,18 +51,21 @@ public interface JMBuilder
 		
 		WhenEnter<String> whenEnterFrom(String signal);
 		
+		/* ===================================== input ===================================== */
 		JustSwitchTo whenInput(Class<?>... signals);
 		
-		JustSwitchTo whenInput(Enum<?>... signals);
+		@SuppressWarnings("unchecked")
+		<S extends Enum<S>> WhenInput<S> whenInput(S... signals);
 		
-		JustSwitchTo whenInput(String... signals);
+		WhenInput<String> whenInput(String... signals);
 		
-		<S> SwitchTo<S> whenInput(Class<S> signal);
+		<S> WhenInput<S> whenInput(Class<S> signal);
 		
-		<S extends Enum<S>> SwitchTo<S> whenInput(Enum<S> signal);
+		<S extends Enum<S>> WhenInput<S> whenInput(Enum<S> signal);
 		
-		SwitchTo<String> whenInput(String signal);
+		WhenInput<String> whenInput(String signal);
 		
+		/* ====================================== etc ====================================== */
 		MachineBuilder apply();
 		
 		public interface WhenEnter<S>
@@ -75,21 +79,25 @@ public interface JMBuilder
 		
 		public interface JustSwitchTo
 		{
+			StateBuilder justSwitchToSelf();
+			
 			StateBuilder justSwitchTo(Class<?> stateTag);
 		}
 		
-		public interface SwitchTo<S> extends JustSwitchTo
+		public interface WhenInput<S> extends JustSwitchTo
 		{
-			WhenExit<S> switchTo(Class<?> stateTag);
+			SwitchTo<S> doThis(JMConsumer<S> workOnExit);
+			
+			SwitchTo<S> doThis(JMBiConsumer<S, Integer> workOnExit);
+			
+			SwitchTo<S> doNothing();
 		}
 		
-		public interface WhenExit<S>
+		public interface SwitchTo<S>
 		{
-			StateBuilder AndDo(JMConsumer<S> workOnExit);
+			StateBuilder switchToSelf();
 			
-			StateBuilder AndDo(JMBiConsumer<S, Integer> workOnExit);
-			
-			StateBuilder AndDoNothing();
+			StateBuilder switchTo(Class<?> stateTag);
 		}
 	}
 }
