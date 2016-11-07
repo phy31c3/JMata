@@ -311,7 +311,7 @@ class JMMachineImpl implements JMMachine
 	{
 		if (idx >= machineQue.length)
 		{
-			JMLog.out("");
+			JMLog.debug("");
 			throw new JMException("'%s' 머신 인덱스 테스트 에러 : 인스턴스 갯수 = %d, 요청 idx = %d", machineTag.getSimpleName(), machineQue.length, idx);
 		}
 	}
