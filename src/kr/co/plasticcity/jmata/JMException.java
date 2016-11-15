@@ -13,6 +13,6 @@ class JMException extends Exception
 	
 	public void printJMLog()
 	{
-		JMLog.debug(msg);
+		JMLog.error(msg);
 	}
 }

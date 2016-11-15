@@ -85,10 +85,10 @@ class JMataImpl
 					switch (state)
 					{
 					case NOT_INIT:
-						JMLog.debug("JMata 초기화 오류 : 최초 JMata.initialize()를 호출해주세요.");
+						JMLog.error("JMata 초기화 오류 : 최초 JMata.initialize()를 호출해주세요.");
 						break;
 					case RUNNING:
-						JMLog.debug("알 수 없는 오류 발생 : JMata가 RUNNIG 상태이나 instance == null");
+						JMLog.error("알 수 없는 오류 발생 : JMata가 RUNNIG 상태이나 instance == null");
 						break;
 					case RELEASED:
 						/* do nothing */

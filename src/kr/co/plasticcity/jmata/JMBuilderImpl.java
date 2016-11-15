@@ -60,7 +60,7 @@ class JMBuilderImpl implements JMBuilder
 		{
 			if (stateMap.containsKey(stateTag))
 			{
-				JMLog.debug("State '%s' 중복 정의", stateTag.getSimpleName());
+				JMLog.error("State '%s' 중복 정의", stateTag.getSimpleName());
 			}
 			return new StateBuilderImpl(stateTag);
 		}

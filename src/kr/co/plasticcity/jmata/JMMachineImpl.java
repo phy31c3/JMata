@@ -201,6 +201,7 @@ class JMMachineImpl implements JMMachine
 							@Override
 							public void accept(Class<?> nextState)
 							{
+								JMLog.debug("%s : switch from [%s] to [%s] due to [%s]", tag, curStates[idx].getSimpleName(), nextState.getSimpleName(), signal);
 								curStates[idx] = nextState;
 								stateMap.get(curStates[idx]).runEnterFunctionC(idx, signal);
 							}
@@ -229,6 +230,7 @@ class JMMachineImpl implements JMMachine
 							@Override
 							public void accept(Class<?> nextState)
 							{
+								JMLog.debug("%s : switch from [%s] to [%s] due to [%s]", tag, curStates[idx].getSimpleName(), nextState.getSimpleName(), signal);
 								curStates[idx] = nextState;
 								if (!stateMap.get(curStates[idx]).runEnterFunction(idx, signal))
 								{
@@ -265,6 +267,7 @@ class JMMachineImpl implements JMMachine
 							@Override
 							public void accept(Class<?> nextState)
 							{
+								JMLog.debug("%s : switch from [%s] to [%s] due to [%s]", tag, curStates[idx].getSimpleName(), nextState.getSimpleName(), signal);
 								curStates[idx] = nextState;
 								if (!stateMap.get(curStates[idx]).runEnterFunction(idx, signal))
 								{
@@ -311,7 +314,6 @@ class JMMachineImpl implements JMMachine
 	{
 		if (idx >= machineQue.length)
 		{
-			JMLog.debug("");
 			throw new JMException("'%s' 머신 인덱스 테스트 에러 : 인스턴스 갯수 = %d, 요청 idx = %d", tag, machineQue.length, idx);
 		}
 	}

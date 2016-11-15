@@ -226,7 +226,7 @@ class JMStateImpl implements JMStateCreater
 	{
 		if (enter != null || enterIdx != null)
 		{
-			JMLog.debug("State '%s'의 default enter 함수 중복 정의", tag.getSimpleName());
+			JMLog.error("State '%s'의 default enter 함수 중복 정의", tag.getSimpleName());
 		}
 		
 		enter = func;
@@ -238,7 +238,7 @@ class JMStateImpl implements JMStateCreater
 	{
 		if (enter != null || enterIdx != null)
 		{
-			JMLog.debug("State '%s'의 default enter 함수 중복 정의", tag.getSimpleName());
+			JMLog.error("State '%s'의 default enter 함수 중복 정의", tag.getSimpleName());
 		}
 		
 		enter = null;
@@ -254,7 +254,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (enterSignalC.containsKey(signal) || (enterSignalCIdx != null && enterSignalCIdx.remove(signal) != null))
 		{
-			JMLog.debug("State '%s'의 signal enter 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal.getSimpleName());
+			JMLog.error("State '%s'의 signal enter 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal.getSimpleName());
 		}
 		
 		enterSignalC.put(signal, func);
@@ -269,7 +269,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (enterSignalE.containsKey(signal) || (enterSignalEIdx != null && enterSignalEIdx.remove(signal) != null))
 		{
-			JMLog.debug("State '%s'의 signal enter  함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
+			JMLog.error("State '%s'의 signal enter  함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
 		}
 		
 		enterSignalE.put(signal, func);
@@ -284,7 +284,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (enterSignalS.containsKey(signal) || (enterSignalSIdx != null && enterSignalSIdx.remove(signal) != null))
 		{
-			JMLog.debug("State '%s'의 signal enter 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
+			JMLog.error("State '%s'의 signal enter 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
 		}
 		
 		enterSignalS.put(signal, func);
@@ -299,7 +299,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (enterSignalCIdx.containsKey(signal) || (enterSignalC != null && enterSignalC.remove(signal) != null))
 		{
-			JMLog.debug("State '%s'의 signal enter 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal.getSimpleName());
+			JMLog.error("State '%s'의 signal enter 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal.getSimpleName());
 		}
 		
 		enterSignalCIdx.put(signal, func);
@@ -314,7 +314,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (enterSignalEIdx.containsKey(signal) || (enterSignalE != null && enterSignalE.remove(signal) != null))
 		{
-			JMLog.debug("State '%s'의 signal enter 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
+			JMLog.error("State '%s'의 signal enter 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
 		}
 		
 		enterSignalEIdx.put(signal, func);
@@ -329,7 +329,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (enterSignalSIdx.containsKey(signal) || (enterSignalS != null && enterSignalS.remove(signal) != null))
 		{
-			JMLog.debug("State '%s'의 signal enter 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
+			JMLog.error("State '%s'의 signal enter 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
 		}
 		
 		enterSignalSIdx.put(signal, func);
@@ -340,7 +340,7 @@ class JMStateImpl implements JMStateCreater
 	{
 		if (exit != null || exitIdx != null)
 		{
-			JMLog.debug("State '%s'의 default exit 함수 중복 정의", tag.getSimpleName());
+			JMLog.error("State '%s'의 default exit 함수 중복 정의", tag.getSimpleName());
 		}
 		
 		exit = func;
@@ -352,7 +352,7 @@ class JMStateImpl implements JMStateCreater
 	{
 		if (exit != null || exitIdx != null)
 		{
-			JMLog.debug("State '%s'의 default exit 함수 중복 정의", tag.getSimpleName());
+			JMLog.error("State '%s'의 default exit 함수 중복 정의", tag.getSimpleName());
 		}
 		
 		exit = null;
@@ -368,7 +368,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (exitSignalC.containsKey(signal) || (exitSignalCIdx != null && exitSignalCIdx.remove(signal) != null))
 		{
-			JMLog.debug("State '%s'의 signal exit 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal.getSimpleName());
+			JMLog.error("State '%s'의 signal exit 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal.getSimpleName());
 		}
 		
 		exitSignalC.put(signal, func);
@@ -383,7 +383,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (exitSignalE.containsKey(signal) || (exitSignalEIdx != null && exitSignalEIdx.remove(signal) != null))
 		{
-			JMLog.debug("State '%s'의 signal exit 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
+			JMLog.error("State '%s'의 signal exit 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
 		}
 		
 		exitSignalE.put(signal, func);
@@ -398,7 +398,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (exitSignalS.containsKey(signal) || (exitSignalSIdx != null && exitSignalSIdx.remove(signal) != null))
 		{
-			JMLog.debug("State '%s'의 signal exit 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
+			JMLog.error("State '%s'의 signal exit 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
 		}
 		
 		exitSignalS.put(signal, func);
@@ -413,7 +413,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (exitSignalCIdx.containsKey(signal) || (exitSignalC != null && exitSignalC.remove(signal) != null))
 		{
-			JMLog.debug("State '%s'의 signal exit 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal.getSimpleName());
+			JMLog.error("State '%s'의 signal exit 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal.getSimpleName());
 		}
 		
 		exitSignalCIdx.put(signal, func);
@@ -428,7 +428,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (exitSignalEIdx.containsKey(signal) || (exitSignalE != null && exitSignalE.remove(signal) != null))
 		{
-			JMLog.debug("State '%s'의 signal exit 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
+			JMLog.error("State '%s'의 signal exit 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
 		}
 		
 		exitSignalEIdx.put(signal, func);
@@ -443,7 +443,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (exitSignalSIdx.containsKey(signal) || (exitSignalS != null && exitSignalS.remove(signal) != null))
 		{
-			JMLog.debug("State '%s'의 signal exit 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
+			JMLog.error("State '%s'의 signal exit 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
 		}
 		
 		exitSignalSIdx.put(signal, func);
@@ -458,7 +458,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (switchRuleC.containsKey(signal))
 		{
-			JMLog.debug("State '%s'의 switch rule 중복 정의 : signal = '%s'", tag.getSimpleName(), signal.getSimpleName());
+			JMLog.error("State '%s'의 switch rule 중복 정의 : signal = '%s'", tag.getSimpleName(), signal.getSimpleName());
 		}
 		
 		switchRuleC.put(signal, stateTag);
@@ -473,7 +473,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (switchRuleE.containsKey(signal))
 		{
-			JMLog.debug("State '%s'의 switch rule 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
+			JMLog.error("State '%s'의 switch rule 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
 		}
 		
 		switchRuleE.put(signal, stateTag);
@@ -488,7 +488,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (switchRuleS.containsKey(signal))
 		{
-			JMLog.debug("State '%s'의 switch rule 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
+			JMLog.error("State '%s'의 switch rule 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
 		}
 		
 		switchRuleS.put(signal, stateTag);
