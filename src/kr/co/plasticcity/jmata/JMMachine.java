@@ -6,7 +6,7 @@ interface JMMachine
 {
 	class Constructor
 	{
-		static JMMachine getNew(Class<?> tag, int numInstances, Class<?> startState, Map<Class<?>, ? extends JMState> stateMap)
+		static JMMachine getNew(Object tag, int numInstances, Class<?> startState, Map<Class<?>, ? extends JMState> stateMap)
 		{
 			return new JMMachineImpl(tag, numInstances, startState, stateMap);
 		}

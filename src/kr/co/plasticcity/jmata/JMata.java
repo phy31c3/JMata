@@ -24,7 +24,7 @@ public class JMata
 		JMataImpl.release();
 	}
 	
-	public static void buildMachine(final Class<?> machineTag, final JMConsumer<JMBuilder> builder)
+	public static void buildMachine(final Object machineTag, final JMConsumer<JMBuilder> builder)
 	{
 		JMataImpl.post(new JMConsumer<JMataImpl>()
 		{
@@ -39,7 +39,7 @@ public class JMata
 	/**
 	 * 해당 머신의 모든 인스턴스를 가동
 	 */
-	public static void runMachine(final Class<?> machineTag)
+	public static void runMachine(final Object machineTag)
 	{
 		JMataImpl.post(new JMConsumer<JMataImpl>()
 		{
@@ -51,7 +51,7 @@ public class JMata
 		});
 	}
 	
-	public static void runMachine(final Class<?> machineTag, final int machineIdx)
+	public static void runMachine(final Object machineTag, final int machineIdx)
 	{
 		JMataImpl.post(new JMConsumer<JMataImpl>()
 		{
@@ -66,7 +66,7 @@ public class JMata
 	/**
 	 * 해당 머신의 모든 인스턴스를 정지
 	 */
-	public static void stopMachine(final Class<?> machineTag)
+	public static void stopMachine(final Object machineTag)
 	{
 		JMataImpl.post(new JMConsumer<JMataImpl>()
 		{
@@ -78,7 +78,7 @@ public class JMata
 		});
 	}
 	
-	public static void stopMachine(final Class<?> machineTag, final int machineIdx)
+	public static void stopMachine(final Object machineTag, final int machineIdx)
 	{
 		JMataImpl.post(new JMConsumer<JMataImpl>()
 		{
@@ -93,7 +93,7 @@ public class JMata
 	/**
 	 * 해당 머신의 모든 인스턴스를 종료
 	 */
-	public static void terminateMachine(final Class<?> machineTag)
+	public static void terminateMachine(final Object machineTag)
 	{
 		JMataImpl.post(new JMConsumer<JMataImpl>()
 		{
@@ -105,7 +105,7 @@ public class JMata
 		});
 	}
 	
-	public static void terminateMachine(final Class<?> machineTag, final int machineIdx)
+	public static void terminateMachine(final Object machineTag, final int machineIdx)
 	{
 		JMataImpl.post(new JMConsumer<JMataImpl>()
 		{
@@ -117,7 +117,7 @@ public class JMata
 		});
 	}
 	
-	public static <S> void inputTo(final Class<?> machineTag, final S signal)
+	public static <S> void inputTo(final Object machineTag, final S signal)
 	{
 		JMataImpl.post(new JMConsumer<JMataImpl>()
 		{
@@ -129,7 +129,7 @@ public class JMata
 		});
 	}
 	
-	public static <S> void inputTo(final Class<?> machineTag, final int machineIdx, final S signal)
+	public static <S> void inputTo(final Object machineTag, final int machineIdx, final S signal)
 	{
 		JMataImpl.post(new JMConsumer<JMataImpl>()
 		{

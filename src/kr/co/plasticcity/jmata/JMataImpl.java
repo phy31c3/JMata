@@ -122,7 +122,7 @@ class JMataImpl
 	
 	/************************** ↑ Static Part **************************/
 	
-	private final Map<Class<?>, JMMachine> machineMap;
+	private final Map<Object, JMMachine> machineMap;
 	private final ExecutorService globalQue;
 	
 	private JMataImpl()
@@ -131,7 +131,7 @@ class JMataImpl
 		this.globalQue = Executors.newSingleThreadExecutor();
 	}
 	
-	void buildMachine(final Class<?> machineTag, final JMConsumer<JMBuilder> builder)
+	void buildMachine(final Object machineTag, final JMConsumer<JMBuilder> builder)
 	{
 		globalQue.execute(new Runnable()
 		{
@@ -154,7 +154,7 @@ class JMataImpl
 		});
 	}
 	
-	void runMachine(final Class<?> machineTag)
+	void runMachine(final Object machineTag)
 	{
 		globalQue.execute(new Runnable()
 		{
@@ -169,7 +169,7 @@ class JMataImpl
 		});
 	}
 	
-	void runMachine(final Class<?> machineTag, final int machineIdx)
+	void runMachine(final Object machineTag, final int machineIdx)
 	{
 		globalQue.execute(new Runnable()
 		{
@@ -191,7 +191,7 @@ class JMataImpl
 		});
 	}
 	
-	void stopMachine(final Class<?> machineTag)
+	void stopMachine(final Object machineTag)
 	{
 		globalQue.execute(new Runnable()
 		{
@@ -206,7 +206,7 @@ class JMataImpl
 		});
 	}
 	
-	void stopMachine(final Class<?> machineTag, final int machineIdx)
+	void stopMachine(final Object machineTag, final int machineIdx)
 	{
 		globalQue.execute(new Runnable()
 		{
@@ -228,7 +228,7 @@ class JMataImpl
 		});
 	}
 	
-	void terminateMachine(final Class<?> machineTag)
+	void terminateMachine(final Object machineTag)
 	{
 		globalQue.execute(new Runnable()
 		{
@@ -244,7 +244,7 @@ class JMataImpl
 		});
 	}
 	
-	void terminateMachine(final Class<?> machineTag, final int machineIdx)
+	void terminateMachine(final Object machineTag, final int machineIdx)
 	{
 		globalQue.execute(new Runnable()
 		{
@@ -269,7 +269,7 @@ class JMataImpl
 		});
 	}
 	
-	<S> void inputTo(final Class<?> machineTag, final S signal)
+	<S> void inputTo(final Object machineTag, final S signal)
 	{
 		globalQue.execute(new Runnable()
 		{
@@ -302,7 +302,7 @@ class JMataImpl
 		});
 	}
 	
-	<S> void inputTo(final Class<?> machineTag, final int machineIdx, final S signal)
+	<S> void inputTo(final Object machineTag, final int machineIdx, final S signal)
 	{
 		globalQue.execute(new Runnable()
 		{

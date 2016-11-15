@@ -12,7 +12,7 @@ class JMMachineImpl implements JMMachine
 		CREATED, RUNNING, STOPPED, TERMINATED
 	}
 	
-	private final Class<?> machineTag;
+	private final Object tag;
 	private final Class<?> startState;
 	private final Map<Class<?>, ? extends JMState> stateMap;
 	
@@ -21,9 +21,9 @@ class JMMachineImpl implements JMMachine
 	private COND[] conds;
 	private int activeInstances;
 	
-	JMMachineImpl(Class<?> tag, int numInstances, Class<?> startState, Map<Class<?>, ? extends JMState> stateMap)
+	JMMachineImpl(Object tag, int numInstances, Class<?> startState, Map<Class<?>, ? extends JMState> stateMap)
 	{
-		this.machineTag = tag;
+		this.tag = tag;
 		this.startState = startState;
 		this.stateMap = stateMap;
 		this.machineQue = new ExecutorService[numInstances];
@@ -312,7 +312,7 @@ class JMMachineImpl implements JMMachine
 		if (idx >= machineQue.length)
 		{
 			JMLog.debug("");
-			throw new JMException("'%s' 머신 인덱스 테스트 에러 : 인스턴스 갯수 = %d, 요청 idx = %d", machineTag.getSimpleName(), machineQue.length, idx);
+			throw new JMException("'%s' 머신 인덱스 테스트 에러 : 인스턴스 갯수 = %d, 요청 idx = %d", tag, machineQue.length, idx);
 		}
 	}
 }

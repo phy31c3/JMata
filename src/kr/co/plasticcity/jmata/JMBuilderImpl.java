@@ -8,11 +8,11 @@ import kr.co.plasticcity.jmata.function.*;
 
 class JMBuilderImpl implements JMBuilder
 {
-	private Class<?> machineTag;
+	private Object machineTag;
 	private boolean present;
 	private JMConsumer<JMMachine> consumer;
 	
-	JMBuilderImpl(Class<?> machineTag, boolean isPresent, JMConsumer<JMMachine> consumer)
+	JMBuilderImpl(Object machineTag, boolean isPresent, JMConsumer<JMMachine> consumer)
 	{
 		this.machineTag = machineTag;
 		this.present = isPresent;

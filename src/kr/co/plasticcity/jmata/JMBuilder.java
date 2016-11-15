@@ -6,7 +6,7 @@ public interface JMBuilder
 {
 	class Constructor
 	{
-		static JMBuilder getNew(Class<?> machineTag, boolean isPresent, JMConsumer<JMMachine> consumer)
+		static JMBuilder getNew(Object machineTag, boolean isPresent, JMConsumer<JMMachine> consumer)
 		{
 			return new JMBuilderImpl(machineTag, isPresent, consumer);
 		}
