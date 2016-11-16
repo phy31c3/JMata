@@ -52,7 +52,7 @@ public interface JMBuilder
 		WhenEnter<String> whenEnterFrom(String signal);
 		
 		/* ===================================== input ===================================== */
-		JustSwitchTo whenInput(Class<?>... signals);
+		SwitchTo whenInput(Class<?>... signals);
 		
 		@SuppressWarnings("unchecked")
 		<S extends Enum<S>> WhenInput<S> whenInput(S... signals);
@@ -77,27 +77,20 @@ public interface JMBuilder
 			StateBuilder doNothing();
 		}
 		
-		public interface JustSwitchTo
-		{
-			StateBuilder justSwitchToSelf();
-			
-			StateBuilder justSwitchTo(Class<?> stateTag);
-		}
-		
-		public interface WhenInput<S> extends JustSwitchTo
-		{
-			SwitchTo<S> doThis(JMConsumer<S> workOnExit);
-			
-			SwitchTo<S> doThis(JMBiConsumer<S, Integer> workOnExit);
-			
-			SwitchTo<S> doNothing();
-		}
-		
-		public interface SwitchTo<S>
+		public interface SwitchTo
 		{
 			StateBuilder switchToSelf();
 			
 			StateBuilder switchTo(Class<?> stateTag);
+		}
+		
+		public interface WhenInput<S> extends SwitchTo
+		{
+			SwitchTo doThis(JMConsumer<S> workOnExit);
+			
+			SwitchTo doThis(JMBiConsumer<S, Integer> workOnExit);
+			
+			SwitchTo doNothing();
 		}
 	}
 }

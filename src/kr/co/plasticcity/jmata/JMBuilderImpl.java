@@ -151,9 +151,9 @@ class JMBuilderImpl implements JMBuilder
 			}
 			
 			@Override
-			public JustSwitchTo whenInput(Class<?>... signals)
+			public SwitchTo whenInput(Class<?>... signals)
 			{
-				return new JustSwitchToImpl(signals);
+				return new SwitchToImpl(signals);
 			}
 			
 			@Override
@@ -293,35 +293,35 @@ class JMBuilderImpl implements JMBuilder
 				}
 			}
 			
-			private class JustSwitchToImpl implements JustSwitchTo
+			private class SwitchToImpl implements SwitchTo
 			{
 				protected Class<?>[] signalsC;
 				protected Enum<?>[] signalsE;
 				protected String[] signalsS;
 				
-				protected JustSwitchToImpl(Class<?>... signals)
+				protected SwitchToImpl(Class<?>... signals)
 				{
 					this.signalsC = signals;
 				}
 				
-				protected JustSwitchToImpl(Enum<?>... signals)
+				protected SwitchToImpl(Enum<?>... signals)
 				{
 					this.signalsE = signals;
 				}
 				
-				protected JustSwitchToImpl(String... signals)
+				protected SwitchToImpl(String... signals)
 				{
 					this.signalsS = signals;
 				}
 				
 				@Override
-				public StateBuilder justSwitchToSelf()
+				public StateBuilder switchToSelf()
 				{
-					return justSwitchTo(stateTag);
+					return switchTo(stateTag);
 				}
 				
 				@Override
-				public StateBuilder justSwitchTo(Class<?> stateTag)
+				public StateBuilder switchTo(Class<?> stateTag)
 				{
 					if (signalsC != null)
 					{
@@ -348,7 +348,7 @@ class JMBuilderImpl implements JMBuilder
 				}
 			}
 			
-			private class WhenInputImpl<S> extends JustSwitchToImpl implements WhenInput<S>
+			private class WhenInputImpl<S> extends SwitchToImpl implements WhenInput<S>
 			{
 				private Class<S> signalC;
 				
@@ -370,12 +370,12 @@ class JMBuilderImpl implements JMBuilder
 				
 				@Override
 				@SuppressWarnings("unchecked")
-				public SwitchTo<S> doThis(JMConsumer<S> workOnExit)
+				public SwitchTo doThis(JMConsumer<S> workOnExit)
 				{
 					if (signalC != null)
 					{
 						stateCreater.putExitFunction(signalC, workOnExit);
-						return new SwitchToImpl<S>(signalC);
+						return new SwitchToImpl(signalC);
 					}
 					else if (signalsE != null)
 					{
@@ -383,7 +383,7 @@ class JMBuilderImpl implements JMBuilder
 						{
 							stateCreater.putExitFunction(signal, (JMConsumer<Enum<?>>)workOnExit);
 						}
-						return new SwitchToImpl<S>(signalsE);
+						return new SwitchToImpl(signalsE);
 					}
 					else
 					{
@@ -391,18 +391,18 @@ class JMBuilderImpl implements JMBuilder
 						{
 							stateCreater.putExitFunction(signal, (JMConsumer<String>)workOnExit);
 						}
-						return new SwitchToImpl<S>(signalsS);
+						return new SwitchToImpl(signalsS);
 					}
 				}
 				
 				@Override
 				@SuppressWarnings("unchecked")
-				public SwitchTo<S> doThis(JMBiConsumer<S, Integer> workOnExit)
+				public SwitchTo doThis(JMBiConsumer<S, Integer> workOnExit)
 				{
 					if (signalC != null)
 					{
 						stateCreater.putExitFunction(signalC, workOnExit);
-						return new SwitchToImpl<S>(signalC);
+						return new SwitchToImpl(signalC);
 					}
 					else if (signalsE != null)
 					{
@@ -410,7 +410,7 @@ class JMBuilderImpl implements JMBuilder
 						{
 							stateCreater.putExitFunction(signal, (JMBiConsumer<Enum<?>, Integer>)workOnExit);
 						}
-						return new SwitchToImpl<S>(signalsE);
+						return new SwitchToImpl(signalsE);
 					}
 					else
 					{
@@ -418,12 +418,12 @@ class JMBuilderImpl implements JMBuilder
 						{
 							stateCreater.putExitFunction(signal, (JMBiConsumer<String, Integer>)workOnExit);
 						}
-						return new SwitchToImpl<S>(signalsS);
+						return new SwitchToImpl(signalsS);
 					}
 				}
 				
 				@Override
-				public SwitchTo<S> doNothing()
+				public SwitchTo doNothing()
 				{
 					if (signalC != null)
 					{
@@ -435,7 +435,7 @@ class JMBuilderImpl implements JMBuilder
 								/* do nothing */
 							}
 						});
-						return new SwitchToImpl<S>(signalC);
+						return new SwitchToImpl(signalC);
 					}
 					else if (signalsE != null)
 					{
@@ -450,7 +450,7 @@ class JMBuilderImpl implements JMBuilder
 								}
 							});
 						}
-						return new SwitchToImpl<S>(signalsE);
+						return new SwitchToImpl(signalsE);
 					}
 					else
 					{
@@ -465,56 +465,8 @@ class JMBuilderImpl implements JMBuilder
 								}
 							});
 						}
-						return new SwitchToImpl<S>(signalsS);
+						return new SwitchToImpl(signalsS);
 					}
-				}
-			}
-			
-			private class SwitchToImpl<S> extends JustSwitchToImpl implements SwitchTo<S>
-			{
-				private SwitchToImpl(Class<S> signal)
-				{
-					super(signal);
-				}
-				
-				private SwitchToImpl(Enum<?>... signals)
-				{
-					super(signals);
-				}
-				
-				private SwitchToImpl(String... signals)
-				{
-					super(signals);
-				}
-				
-				@Override
-				public StateBuilder switchToSelf()
-				{
-					return switchTo(stateTag);
-				}
-				
-				@Override
-				public StateBuilder switchTo(Class<?> stateTag)
-				{
-					if (signalsC != null)
-					{
-						stateCreater.putSwitchRule(signalsC[0], stateTag);
-					}
-					else if (signalsE != null)
-					{
-						for (Enum<?> signal : signalsE)
-						{
-							stateCreater.putSwitchRule(signal, stateTag);
-						}
-					}
-					else
-					{
-						for (String signal : signalsS)
-						{
-							stateCreater.putSwitchRule(signal, stateTag);
-						}
-					}
-					return StateBuilderImpl.this;
 				}
 			}
 		}
