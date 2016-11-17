@@ -31,9 +31,11 @@ class JMMachineImpl implements JMMachine
 		this.conds = new COND[numInstances];
 		this.activeInstances = numInstances;
 		
-		for (int idx = 0; idx < numInstances; ++idx)
+		for (int idx = 0 ; idx < numInstances ; ++idx)
 		{
+			final int i = idx;
 			machineQue[idx] = Executors.newSingleThreadExecutor();
+			machineQue[idx].execute(() -> Thread.currentThread().setName(String.format("JMataMachineThread-%s[%d]", tag, i)));
 			curStates[idx] = startState;
 			conds[idx] = COND.CREATED;
 		}
@@ -42,7 +44,7 @@ class JMMachineImpl implements JMMachine
 	@Override
 	public void runAll()
 	{
-		for (int idx = 0; idx < machineQue.length; ++idx)
+		for (int idx = 0 ; idx < machineQue.length ; ++idx)
 		{
 			try
 			{
@@ -73,7 +75,7 @@ class JMMachineImpl implements JMMachine
 	@Override
 	public void stopAll()
 	{
-		for (int idx = 0; idx < machineQue.length; ++idx)
+		for (int idx = 0 ; idx < machineQue.length ; ++idx)
 		{
 			try
 			{
@@ -99,7 +101,7 @@ class JMMachineImpl implements JMMachine
 	@Override
 	public void terminateAll()
 	{
-		for (int idx = 0; idx < machineQue.length; ++idx)
+		for (int idx = 0 ; idx < machineQue.length ; ++idx)
 		{
 			try
 			{
@@ -131,7 +133,7 @@ class JMMachineImpl implements JMMachine
 	@Override
 	public <S> void inputToAll(S signal) throws JMException
 	{
-		for (int idx = 0; idx < machineQue.length; ++idx)
+		for (int idx = 0 ; idx < machineQue.length ; ++idx)
 		{
 			try
 			{
@@ -147,7 +149,7 @@ class JMMachineImpl implements JMMachine
 	@Override
 	public <S extends Enum<S>> void inputToAll(Enum<S> signal) throws JMException
 	{
-		for (int idx = 0; idx < machineQue.length; ++idx)
+		for (int idx = 0 ; idx < machineQue.length ; ++idx)
 		{
 			try
 			{
@@ -163,7 +165,7 @@ class JMMachineImpl implements JMMachine
 	@Override
 	public void inputToAll(String signal) throws JMException
 	{
-		for (int idx = 0; idx < machineQue.length; ++idx)
+		for (int idx = 0 ; idx < machineQue.length ; ++idx)
 		{
 			try
 			{
@@ -188,7 +190,7 @@ class JMMachineImpl implements JMMachine
 				{
 					stateMap.get(curStates[idx]).runExitFunctionC(idx, signal, nextState ->
 					{
-						JMLog.debug("%s : switch from [%s] to [%s] due to [%s]", tag, curStates[idx].getSimpleName(), nextState.getSimpleName(), signal);
+						JMLog.debug("%s[%d] : switch from [%s] to [%s] due to [%s]", tag, idx, curStates[idx].getSimpleName(), nextState.getSimpleName(), signal);
 						curStates[idx] = nextState;
 						stateMap.get(curStates[idx]).runEnterFunctionC(idx, signal);
 					});
@@ -209,7 +211,7 @@ class JMMachineImpl implements JMMachine
 				{
 					JMConsumer<Class<?>> switchToNext = nextState ->
 					{
-						JMLog.debug("%s : switch from [%s] to [%s] due to [%s]", tag, curStates[idx].getSimpleName(), nextState.getSimpleName(), signal);
+						JMLog.debug("%s[%d] : switch from [%s] to [%s] due to [%s]", tag, idx, curStates[idx].getSimpleName(), nextState.getSimpleName(), signal);
 						curStates[idx] = nextState;
 						if (!stateMap.get(curStates[idx]).runEnterFunction(idx, signal))
 						{
@@ -238,7 +240,7 @@ class JMMachineImpl implements JMMachine
 				{
 					JMConsumer<Class<?>> switchToNext = nextState ->
 					{
-						JMLog.debug("%s : switch from [%s] to [%s] due to [%s]", tag, curStates[idx].getSimpleName(), nextState.getSimpleName(), signal);
+						JMLog.debug("%s[%d] : switch from [%s] to [%s] due to [%s]", tag, idx, curStates[idx].getSimpleName(), nextState.getSimpleName(), signal);
 						curStates[idx] = nextState;
 						if (!stateMap.get(curStates[idx]).runEnterFunction(idx, signal))
 						{
