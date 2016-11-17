@@ -62,14 +62,7 @@ class JMMachineImpl implements JMMachine
 		if (isCondOf(idx, COND.CREATED))
 		{
 			setCondOf(idx, COND.RUNNING);
-			machineQue[idx].execute(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					stateMap.get(startState).runEnterFunction(idx);
-				}
-			});
+			machineQue[idx].execute(() -> stateMap.get(startState).runEnterFunction(idx));
 		}
 		else if (isCondOf(idx, COND.STOPPED))
 		{
@@ -189,24 +182,16 @@ class JMMachineImpl implements JMMachine
 		idxTest(idx);
 		if (isCondOf(idx, COND.RUNNING))
 		{
-			machineQue[idx].execute(new Runnable()
+			machineQue[idx].execute(() ->
 			{
-				@Override
-				public void run()
+				if (isCondOf(idx, COND.RUNNING) && !Thread.interrupted())
 				{
-					if (isCondOf(idx, COND.RUNNING) && !Thread.interrupted())
+					stateMap.get(curStates[idx]).runExitFunctionC(idx, signal, nextState ->
 					{
-						stateMap.get(curStates[idx]).runExitFunctionC(idx, signal, new JMConsumer<Class<?>>()
-						{
-							@Override
-							public void accept(Class<?> nextState)
-							{
-								JMLog.debug("%s : switch from [%s] to [%s] due to [%s]", tag, curStates[idx].getSimpleName(), nextState.getSimpleName(), signal);
-								curStates[idx] = nextState;
-								stateMap.get(curStates[idx]).runEnterFunctionC(idx, signal);
-							}
-						});
-					}
+						JMLog.debug("%s : switch from [%s] to [%s] due to [%s]", tag, curStates[idx].getSimpleName(), nextState.getSimpleName(), signal);
+						curStates[idx] = nextState;
+						stateMap.get(curStates[idx]).runEnterFunctionC(idx, signal);
+					});
 				}
 			});
 		}
@@ -218,31 +203,23 @@ class JMMachineImpl implements JMMachine
 		idxTest(idx);
 		if (isCondOf(idx, COND.RUNNING))
 		{
-			machineQue[idx].execute(new Runnable()
+			machineQue[idx].execute(() ->
 			{
-				@Override
-				public void run()
+				if (isCondOf(idx, COND.RUNNING) && !Thread.interrupted())
 				{
-					if (isCondOf(idx, COND.RUNNING) && !Thread.interrupted())
+					JMConsumer<Class<?>> switchToNext = nextState ->
 					{
-						JMConsumer<Class<?>> switchToNext = new JMConsumer<Class<?>>()
+						JMLog.debug("%s : switch from [%s] to [%s] due to [%s]", tag, curStates[idx].getSimpleName(), nextState.getSimpleName(), signal);
+						curStates[idx] = nextState;
+						if (!stateMap.get(curStates[idx]).runEnterFunction(idx, signal))
 						{
-							@Override
-							public void accept(Class<?> nextState)
-							{
-								JMLog.debug("%s : switch from [%s] to [%s] due to [%s]", tag, curStates[idx].getSimpleName(), nextState.getSimpleName(), signal);
-								curStates[idx] = nextState;
-								if (!stateMap.get(curStates[idx]).runEnterFunction(idx, signal))
-								{
-									stateMap.get(curStates[idx]).runEnterFunctionC(idx, signal);
-								}
-							}
-						};
-						
-						if (!stateMap.get(curStates[idx]).runExitFunction(idx, signal, switchToNext))
-						{
-							stateMap.get(curStates[idx]).runExitFunctionC(idx, signal, switchToNext);
+							stateMap.get(curStates[idx]).runEnterFunctionC(idx, signal);
 						}
+					};
+					
+					if (!stateMap.get(curStates[idx]).runExitFunction(idx, signal, switchToNext))
+					{
+						stateMap.get(curStates[idx]).runExitFunctionC(idx, signal, switchToNext);
 					}
 				}
 			});
@@ -255,31 +232,23 @@ class JMMachineImpl implements JMMachine
 		idxTest(idx);
 		if (isCondOf(idx, COND.RUNNING))
 		{
-			machineQue[idx].execute(new Runnable()
+			machineQue[idx].execute(() ->
 			{
-				@Override
-				public void run()
+				if (isCondOf(idx, COND.RUNNING) && !Thread.interrupted())
 				{
-					if (isCondOf(idx, COND.RUNNING) && !Thread.interrupted())
+					JMConsumer<Class<?>> switchToNext = nextState ->
 					{
-						JMConsumer<Class<?>> switchToNext = new JMConsumer<Class<?>>()
+						JMLog.debug("%s : switch from [%s] to [%s] due to [%s]", tag, curStates[idx].getSimpleName(), nextState.getSimpleName(), signal);
+						curStates[idx] = nextState;
+						if (!stateMap.get(curStates[idx]).runEnterFunction(idx, signal))
 						{
-							@Override
-							public void accept(Class<?> nextState)
-							{
-								JMLog.debug("%s : switch from [%s] to [%s] due to [%s]", tag, curStates[idx].getSimpleName(), nextState.getSimpleName(), signal);
-								curStates[idx] = nextState;
-								if (!stateMap.get(curStates[idx]).runEnterFunction(idx, signal))
-								{
-									stateMap.get(curStates[idx]).runEnterFunctionC(idx, signal);
-								}
-							}
-						};
-						
-						if (!stateMap.get(curStates[idx]).runExitFunction(idx, signal, switchToNext))
-						{
-							stateMap.get(curStates[idx]).runExitFunctionC(idx, signal, switchToNext);
+							stateMap.get(curStates[idx]).runEnterFunctionC(idx, signal);
 						}
+					};
+					
+					if (!stateMap.get(curStates[idx]).runExitFunction(idx, signal, switchToNext))
+					{
+						stateMap.get(curStates[idx]).runExitFunctionC(idx, signal, switchToNext);
 					}
 				}
 			});

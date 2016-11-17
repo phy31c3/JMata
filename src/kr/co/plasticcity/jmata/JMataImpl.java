@@ -133,59 +133,43 @@ class JMataImpl
 	
 	void buildMachine(final Object machineTag, final JMConsumer<JMBuilder> builder)
 	{
-		globalQue.execute(new Runnable()
+		globalQue.execute(() ->
 		{
-			@Override
-			public void run()
+			builder.accept(JMBuilder.Constructor.getNew(machineTag, machineMap.containsKey(machineTag), machine ->
 			{
-				builder.accept(JMBuilder.Constructor.getNew(machineTag, machineMap.containsKey(machineTag), new JMConsumer<JMMachine>()
+				JMMachine oldMachine = machineMap.put(machineTag, machine);
+				if (oldMachine != null)
 				{
-					@Override
-					public void accept(JMMachine machine)
-					{
-						JMMachine oldMachine = machineMap.put(machineTag, machine);
-						if (oldMachine != null)
-						{
-							oldMachine.terminateAll();
-						}
-					}
-				}));
-			}
+					oldMachine.terminateAll();
+				}
+			}));
 		});
 	}
 	
 	void runMachine(final Object machineTag)
 	{
-		globalQue.execute(new Runnable()
+		globalQue.execute(() ->
 		{
-			@Override
-			public void run()
+			if (machineMap.containsKey(machineTag))
 			{
-				if (machineMap.containsKey(machineTag))
-				{
-					machineMap.get(machineTag).runAll();
-				}
+				machineMap.get(machineTag).runAll();
 			}
 		});
 	}
 	
 	void runMachine(final Object machineTag, final int machineIdx)
 	{
-		globalQue.execute(new Runnable()
+		globalQue.execute(() ->
 		{
-			@Override
-			public void run()
+			if (machineMap.containsKey(machineTag))
 			{
-				if (machineMap.containsKey(machineTag))
+				try
 				{
-					try
-					{
-						machineMap.get(machineTag).run(machineIdx);
-					}
-					catch (JMException e)
-					{
-						e.printJMLog();
-					}
+					machineMap.get(machineTag).run(machineIdx);
+				}
+				catch (JMException e)
+				{
+					e.printJMLog();
 				}
 			}
 		});
@@ -193,36 +177,28 @@ class JMataImpl
 	
 	void stopMachine(final Object machineTag)
 	{
-		globalQue.execute(new Runnable()
+		globalQue.execute(() ->
 		{
-			@Override
-			public void run()
+			if (machineMap.containsKey(machineTag))
 			{
-				if (machineMap.containsKey(machineTag))
-				{
-					machineMap.get(machineTag).stopAll();
-				}
+				machineMap.get(machineTag).stopAll();
 			}
 		});
 	}
 	
 	void stopMachine(final Object machineTag, final int machineIdx)
 	{
-		globalQue.execute(new Runnable()
+		globalQue.execute(() ->
 		{
-			@Override
-			public void run()
+			if (machineMap.containsKey(machineTag))
 			{
-				if (machineMap.containsKey(machineTag))
+				try
 				{
-					try
-					{
-						machineMap.get(machineTag).stop(machineIdx);
-					}
-					catch (JMException e)
-					{
-						e.printJMLog();
-					}
+					machineMap.get(machineTag).stop(machineIdx);
+				}
+				catch (JMException e)
+				{
+					e.printJMLog();
 				}
 			}
 		});
@@ -230,40 +206,32 @@ class JMataImpl
 	
 	void terminateMachine(final Object machineTag)
 	{
-		globalQue.execute(new Runnable()
+		globalQue.execute(() ->
 		{
-			@Override
-			public void run()
+			if (machineMap.containsKey(machineTag))
 			{
-				if (machineMap.containsKey(machineTag))
-				{
-					machineMap.get(machineTag).terminateAll();
-					machineMap.remove(machineTag);
-				}
+				machineMap.get(machineTag).terminateAll();
+				machineMap.remove(machineTag);
 			}
 		});
 	}
 	
 	void terminateMachine(final Object machineTag, final int machineIdx)
 	{
-		globalQue.execute(new Runnable()
+		globalQue.execute(() ->
 		{
-			@Override
-			public void run()
+			if (machineMap.containsKey(machineTag))
 			{
-				if (machineMap.containsKey(machineTag))
+				try
 				{
-					try
+					if (machineMap.get(machineTag).terminate(machineIdx))
 					{
-						if (machineMap.get(machineTag).terminate(machineIdx))
-						{
-							machineMap.remove(machineTag);
-						}
+						machineMap.remove(machineTag);
 					}
-					catch (JMException e)
-					{
-						e.printJMLog();
-					}
+				}
+				catch (JMException e)
+				{
+					e.printJMLog();
 				}
 			}
 		});
@@ -271,32 +239,28 @@ class JMataImpl
 	
 	<S> void inputTo(final Object machineTag, final S signal)
 	{
-		globalQue.execute(new Runnable()
+		globalQue.execute(() ->
 		{
-			@Override
-			public void run()
+			if (machineMap.containsKey(machineTag))
 			{
-				if (machineMap.containsKey(machineTag))
+				try
 				{
-					try
+					if (signal instanceof String)
 					{
-						if (signal instanceof String)
-						{
-							machineMap.get(machineTag).inputToAll((String)signal);
-						}
-						else if (signal instanceof Enum)
-						{
-							machineMap.get(machineTag).inputToAll((Enum<?>)signal);
-						}
-						else
-						{
-							machineMap.get(machineTag).inputToAll(signal);
-						}
+						machineMap.get(machineTag).inputToAll((String)signal);
 					}
-					catch (JMException e)
+					else if (signal instanceof Enum)
 					{
-						e.printJMLog();
+						machineMap.get(machineTag).inputToAll((Enum<?>)signal);
 					}
+					else
+					{
+						machineMap.get(machineTag).inputToAll(signal);
+					}
+				}
+				catch (JMException e)
+				{
+					e.printJMLog();
 				}
 			}
 		});
@@ -304,32 +268,28 @@ class JMataImpl
 	
 	<S> void inputTo(final Object machineTag, final int machineIdx, final S signal)
 	{
-		globalQue.execute(new Runnable()
+		globalQue.execute(() ->
 		{
-			@Override
-			public void run()
+			if (machineMap.containsKey(machineTag))
 			{
-				if (machineMap.containsKey(machineTag))
+				try
 				{
-					try
+					if (signal instanceof String)
 					{
-						if (signal instanceof String)
-						{
-							machineMap.get(machineTag).input(machineIdx, (String)signal);
-						}
-						else if (signal instanceof Enum)
-						{
-							machineMap.get(machineTag).input(machineIdx, (Enum<?>)signal);
-						}
-						else
-						{
-							machineMap.get(machineTag).input(machineIdx, signal);
-						}
+						machineMap.get(machineTag).input(machineIdx, (String)signal);
 					}
-					catch (JMException e)
+					else if (signal instanceof Enum)
 					{
-						e.printJMLog();
+						machineMap.get(machineTag).input(machineIdx, (Enum<?>)signal);
 					}
+					else
+					{
+						machineMap.get(machineTag).input(machineIdx, signal);
+					}
+				}
+				catch (JMException e)
+				{
+					e.printJMLog();
 				}
 			}
 		});
