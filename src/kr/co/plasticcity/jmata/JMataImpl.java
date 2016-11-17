@@ -7,9 +7,10 @@ import kr.co.plasticcity.jmata.function.*;
 
 class JMataImpl
 {
-	/************************** ↓ Static Part **************************/
+	/* ================================== ↓ Static Part ================================== */
 	
-	private static final Semaphore permit = new Semaphore(1, true);
+	private static final int NUM_PERMITS = Runtime.getRuntime().availableProcessors();
+	private static final Semaphore permit = new Semaphore(NUM_PERMITS, true);
 	private static volatile JMataImpl instance;
 	private static volatile STATE state = STATE.NOT_INIT;
 	
@@ -22,7 +23,7 @@ class JMataImpl
 	{
 		try
 		{
-			permit.acquire();
+			permit.acquire(NUM_PERMITS);
 			
 			try
 			{
@@ -33,7 +34,7 @@ class JMataImpl
 			}
 			finally
 			{
-				permit.release();
+				permit.release(NUM_PERMITS);
 			}
 		}
 		catch (InterruptedException e)
@@ -46,7 +47,7 @@ class JMataImpl
 	{
 		try
 		{
-			permit.acquire();
+			permit.acquire(NUM_PERMITS);
 			
 			try
 			{
@@ -59,7 +60,7 @@ class JMataImpl
 			}
 			finally
 			{
-				permit.release();
+				permit.release(NUM_PERMITS);
 			}
 		}
 		catch (InterruptedException e)
@@ -120,7 +121,7 @@ class JMataImpl
 		}
 	}
 	
-	/************************** ↑ Static Part **************************/
+	/* ================================== ↑ Static Part ================================== */
 	
 	private final Map<Object, JMMachine> machineMap;
 	private final ExecutorService globalQue;
