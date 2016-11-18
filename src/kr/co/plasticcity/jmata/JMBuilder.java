@@ -25,6 +25,8 @@ public interface JMBuilder
 	{
 		StateBuilder defineState(Class<?> stateTag);
 		
+		MachineBuilder defineTerminateWork(JMVoidConsumer work);
+		
 		void build();
 		
 		void build(int numMachines);

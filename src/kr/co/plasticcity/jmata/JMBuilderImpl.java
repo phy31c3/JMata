@@ -2,8 +2,6 @@ package kr.co.plasticcity.jmata;
 
 import java.util.*;
 
-import kr.co.plasticcity.jmata.JMBuilder.*;
-import kr.co.plasticcity.jmata.JMBuilder.StateBuilder.*;
 import kr.co.plasticcity.jmata.function.*;
 
 class JMBuilderImpl implements JMBuilder
@@ -42,6 +40,7 @@ class JMBuilderImpl implements JMBuilder
 	{
 		private Class<?> startState;
 		private Map<Class<?>, JMStateCreater> stateMap;
+		private JMVoidConsumer terminateWork;
 		
 		private MachineBuilderImpl()
 		{
@@ -66,21 +65,28 @@ class JMBuilderImpl implements JMBuilder
 		}
 		
 		@Override
+		public MachineBuilder defineTerminateWork(JMVoidConsumer work)
+		{
+			terminateWork = work;
+			return this;
+		}
+		
+		@Override
 		public void build()
 		{
-			consumer.accept(JMMachine.Constructor.getNew(machineTag, 1, startState, stateMap));
+			consumer.accept(JMMachine.Constructor.getNew(machineTag, 1, startState, stateMap, terminateWork));
 		}
 		
 		@Override
 		public void build(int numMachines)
 		{
-			consumer.accept(JMMachine.Constructor.getNew(machineTag, numMachines, startState, stateMap));
+			consumer.accept(JMMachine.Constructor.getNew(machineTag, numMachines, startState, stateMap, terminateWork));
 		}
 		
 		@Override
 		public void buildAndRun()
 		{
-			JMMachine machine = JMMachine.Constructor.getNew(machineTag, 1, startState, stateMap);
+			JMMachine machine = JMMachine.Constructor.getNew(machineTag, 1, startState, stateMap, terminateWork);
 			consumer.accept(machine);
 			machine.runAll();
 		}
@@ -88,7 +94,7 @@ class JMBuilderImpl implements JMBuilder
 		@Override
 		public void buildAndRun(int numMachines)
 		{
-			JMMachine machine = JMMachine.Constructor.getNew(machineTag, numMachines, startState, stateMap);
+			JMMachine machine = JMMachine.Constructor.getNew(machineTag, numMachines, startState, stateMap, terminateWork);
 			consumer.accept(machine);
 			machine.runAll();
 		}

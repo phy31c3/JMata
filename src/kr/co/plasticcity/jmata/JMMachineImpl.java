@@ -15,17 +15,19 @@ class JMMachineImpl implements JMMachine
 	private final Object tag;
 	private final Class<?> startState;
 	private final Map<Class<?>, ? extends JMState> stateMap;
+	private final JMVoidConsumer terminateWork;
 	
 	private volatile ExecutorService[] machineQue;
 	private volatile Class<?>[] curStates;
+	private volatile int activeInstances;
 	private COND[] conds;
-	private int activeInstances;
 	
-	JMMachineImpl(Object tag, int numInstances, Class<?> startState, Map<Class<?>, ? extends JMState> stateMap)
+	JMMachineImpl(Object tag, int numInstances, Class<?> startState, Map<Class<?>, ? extends JMState> stateMap, JMVoidConsumer terminateWork)
 	{
 		this.tag = tag;
 		this.startState = startState;
 		this.stateMap = stateMap;
+		this.terminateWork = terminateWork;
 		this.machineQue = new ExecutorService[numInstances];
 		this.curStates = new Class<?>[numInstances];
 		this.conds = new COND[numInstances];
@@ -122,12 +124,21 @@ class JMMachineImpl implements JMMachine
 		{
 			setCondOf(idx, COND.TERMINATED);
 			machineQue[idx].shutdownNow();
-			return --activeInstances == 0 ? true : false;
+			return --activeInstances == 0 ? onTerminateAllMachine() : false;
 		}
 		else
 		{
 			return false;
 		}
+	}
+	
+	private boolean onTerminateAllMachine()
+	{
+		if (terminateWork != null)
+		{
+			terminateWork.accept();
+		}
+		return true;
 	}
 	
 	@Override

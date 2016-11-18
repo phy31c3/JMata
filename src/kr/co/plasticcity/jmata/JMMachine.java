@@ -2,13 +2,15 @@ package kr.co.plasticcity.jmata;
 
 import java.util.*;
 
+import kr.co.plasticcity.jmata.function.*;
+
 interface JMMachine
 {
 	class Constructor
 	{
-		static JMMachine getNew(Object tag, int numInstances, Class<?> startState, Map<Class<?>, ? extends JMState> stateMap)
+		static JMMachine getNew(Object tag, int numInstances, Class<?> startState, Map<Class<?>, ? extends JMState> stateMap, JMVoidConsumer terminateWork)
 		{
-			return new JMMachineImpl(tag, numInstances, startState, stateMap);
+			return new JMMachineImpl(tag, numInstances, startState, stateMap, terminateWork);
 		}
 	}
 	
