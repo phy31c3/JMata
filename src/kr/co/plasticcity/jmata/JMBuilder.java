@@ -29,11 +29,7 @@ public interface JMBuilder
 		
 		void build();
 		
-		void build(int numMachines);
-		
 		void buildAndRun();
-		
-		void buildAndRun(int numMachines);
 	}
 	
 	public interface StateBuilder
@@ -41,11 +37,7 @@ public interface JMBuilder
 		/* ================================== enter & exit ================================== */
 		StateBuilder whenEnter(JMVoidConsumer defaultWork);
 		
-		StateBuilder whenEnter(JMConsumer<Integer> defaultWork);
-		
 		StateBuilder whenExit(JMVoidConsumer defaultWork);
-		
-		StateBuilder whenExit(JMConsumer<Integer> defaultWork);
 		
 		<S> WhenEnter<S> whenEnterFrom(Class<S> signal);
 		
@@ -74,8 +66,6 @@ public interface JMBuilder
 		{
 			StateBuilder doThis(JMConsumer<S> workOnEnter);
 			
-			StateBuilder doThis(JMBiConsumer<S, Integer> workOnEnter);
-			
 			StateBuilder doNothing();
 		}
 		
@@ -89,8 +79,6 @@ public interface JMBuilder
 		public interface WhenInput<S> extends SwitchTo
 		{
 			SwitchTo doThis(JMConsumer<S> workOnExit);
-			
-			SwitchTo doThis(JMBiConsumer<S, Integer> workOnExit);
 			
 			SwitchTo doNothing();
 		}

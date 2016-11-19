@@ -29,52 +29,23 @@ public class JMata
 		JMataImpl.post(jmata -> jmata.buildMachine(machineTag, builder));
 	}
 	
-	/**
-	 * 해당 머신의 모든 인스턴스를 가동
-	 */
 	public static void runMachine(final Object machineTag)
 	{
 		JMataImpl.post(jmata -> jmata.runMachine(machineTag));
 	}
 	
-	public static void runMachine(final Object machineTag, final int machineIdx)
-	{
-		JMataImpl.post(jmata -> jmata.runMachine(machineTag, machineIdx));
-	}
-	
-	/**
-	 * 해당 머신의 모든 인스턴스를 정지
-	 */
 	public static void stopMachine(final Object machineTag)
 	{
 		JMataImpl.post(jmata -> jmata.stopMachine(machineTag));
 	}
 	
-	public static void stopMachine(final Object machineTag, final int machineIdx)
-	{
-		JMataImpl.post(jmata -> jmata.stopMachine(machineTag, machineIdx));
-	}
-	
-	/**
-	 * 해당 머신의 모든 인스턴스를 종료
-	 */
 	public static void terminateMachine(final Object machineTag)
 	{
 		JMataImpl.post(jmata -> jmata.terminateMachine(machineTag));
 	}
 	
-	public static void terminateMachine(final Object machineTag, final int machineIdx)
-	{
-		JMataImpl.post(jmata -> jmata.terminateMachine(machineTag, machineIdx));
-	}
-	
 	public static <S> void inputTo(final Object machineTag, final S signal)
 	{
 		JMataImpl.post(jmata -> jmata.inputTo(machineTag, signal));
-	}
-	
-	public static <S> void inputTo(final Object machineTag, final int machineIdx, final S signal)
-	{
-		JMataImpl.post(jmata -> jmata.inputTo(machineTag, machineIdx, signal));
 	}
 }

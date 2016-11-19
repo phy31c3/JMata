@@ -92,7 +92,7 @@ class JMataImpl
 						JMLog.error("알 수 없는 오류 발생 : JMata가 RUNNIG 상태이나 instance == null");
 						break;
 					case RELEASED:
-						/* do nothing */
+						JMLog.debug("JMata가 이미 해제 : JMata가 해제 되었으나 JMata관련 명령(JMata의 static method)을 호출함");
 						break;
 					}
 				}
@@ -115,7 +115,7 @@ class JMataImpl
 			instance.globalQue.shutdownNow();
 			for (JMMachine machine : instance.machineMap.values())
 			{
-				machine.terminateAll();
+				machine.terminate();
 			}
 			instance = null;
 		}
@@ -142,7 +142,7 @@ class JMataImpl
 				JMMachine oldMachine = machineMap.put(machineTag, machine);
 				if (oldMachine != null)
 				{
-					oldMachine.terminateAll();
+					oldMachine.terminate();
 				}
 			}));
 		});
@@ -154,25 +154,7 @@ class JMataImpl
 		{
 			if (machineMap.containsKey(machineTag))
 			{
-				machineMap.get(machineTag).runAll();
-			}
-		});
-	}
-	
-	void runMachine(final Object machineTag, final int machineIdx)
-	{
-		globalQue.execute(() ->
-		{
-			if (machineMap.containsKey(machineTag))
-			{
-				try
-				{
-					machineMap.get(machineTag).run(machineIdx);
-				}
-				catch (JMException e)
-				{
-					e.printJMLog();
-				}
+				machineMap.get(machineTag).run();
 			}
 		});
 	}
@@ -183,25 +165,7 @@ class JMataImpl
 		{
 			if (machineMap.containsKey(machineTag))
 			{
-				machineMap.get(machineTag).stopAll();
-			}
-		});
-	}
-	
-	void stopMachine(final Object machineTag, final int machineIdx)
-	{
-		globalQue.execute(() ->
-		{
-			if (machineMap.containsKey(machineTag))
-			{
-				try
-				{
-					machineMap.get(machineTag).stop(machineIdx);
-				}
-				catch (JMException e)
-				{
-					e.printJMLog();
-				}
+				machineMap.get(machineTag).stop();
 			}
 		});
 	}
@@ -212,29 +176,8 @@ class JMataImpl
 		{
 			if (machineMap.containsKey(machineTag))
 			{
-				machineMap.get(machineTag).terminateAll();
+				machineMap.get(machineTag).terminate();
 				machineMap.remove(machineTag);
-			}
-		});
-	}
-	
-	void terminateMachine(final Object machineTag, final int machineIdx)
-	{
-		globalQue.execute(() ->
-		{
-			if (machineMap.containsKey(machineTag))
-			{
-				try
-				{
-					if (machineMap.get(machineTag).terminate(machineIdx))
-					{
-						machineMap.remove(machineTag);
-					}
-				}
-				catch (JMException e)
-				{
-					e.printJMLog();
-				}
 			}
 		});
 	}
@@ -245,54 +188,7 @@ class JMataImpl
 		{
 			if (machineMap.containsKey(machineTag))
 			{
-				try
-				{
-					if (signal instanceof String)
-					{
-						machineMap.get(machineTag).inputToAll((String)signal);
-					}
-					else if (signal instanceof Enum)
-					{
-						machineMap.get(machineTag).inputToAll((Enum<?>)signal);
-					}
-					else
-					{
-						machineMap.get(machineTag).inputToAll(signal);
-					}
-				}
-				catch (JMException e)
-				{
-					e.printJMLog();
-				}
-			}
-		});
-	}
-	
-	<S> void inputTo(final Object machineTag, final int machineIdx, final S signal)
-	{
-		globalQue.execute(() ->
-		{
-			if (machineMap.containsKey(machineTag))
-			{
-				try
-				{
-					if (signal instanceof String)
-					{
-						machineMap.get(machineTag).input(machineIdx, (String)signal);
-					}
-					else if (signal instanceof Enum)
-					{
-						machineMap.get(machineTag).input(machineIdx, (Enum<?>)signal);
-					}
-					else
-					{
-						machineMap.get(machineTag).input(machineIdx, signal);
-					}
-				}
-				catch (JMException e)
-				{
-					e.printJMLog();
-				}
+				machineMap.get(machineTag).input(signal);
 			}
 		});
 	}
