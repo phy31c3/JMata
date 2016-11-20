@@ -32,7 +32,7 @@ class JMMachineImpl implements JMMachine
 	}
 	
 	@Override
-	public void run()
+	public synchronized void run()
 	{
 		if (cond == COND.CREATED)
 		{
@@ -50,7 +50,7 @@ class JMMachineImpl implements JMMachine
 	}
 	
 	@Override
-	public void stop()
+	public synchronized void stop()
 	{
 		if (cond == COND.RUNNING)
 		{
@@ -60,9 +60,17 @@ class JMMachineImpl implements JMMachine
 	}
 	
 	@Override
-	public void terminate()
+	public synchronized void terminate()
 	{
-		if (cond != COND.TERMINATED)
+		if (cond == COND.CREATED)
+		{
+			cond = COND.TERMINATED;
+			if (terminateWork != null)
+			{
+				terminateWork.accept();
+			}
+		}
+		else if (cond != COND.TERMINATED)
 		{
 			cond = COND.TERMINATED;
 			machineQue.shutdownNow();
@@ -76,7 +84,7 @@ class JMMachineImpl implements JMMachine
 					}
 					else
 					{
-						JMLog.error("%s : 머신 종료에 너무 긴 시간(1초)이 소요되어 종료 동작을 수행하지 못했습니다.", tag);
+						JMLog.error("%s : 머신 종료에 너무 긴 시간(1초 이상)이 소요되어 종료 동작을 수행하지 못했습니다.", tag);
 					}
 				}
 				catch (InterruptedException e)
