@@ -12,13 +12,13 @@ interface JMStateCreater extends JMState
 		}
 	}
 	
-	void putEnterFunction(JMVoidConsumer func);
+	void putEnterFunction(JMSupplier<Object> func);
 	
-	void putEnterFunction(Class<?> signal, JMConsumer<? super Object> func);
+	void putEnterFunction(Class<?> signal, JMFunction<? super Object, Object> func);
 	
-	void putEnterFunction(Enum<?> signal, JMConsumer<Enum<?>> func);
+	void putEnterFunction(Enum<?> signal, JMFunction<Enum<?>, Object> func);
 	
-	void putEnterFunction(String signal, JMConsumer<String> func);
+	void putEnterFunction(String signal, JMFunction<String, Object> func);
 	
 	void putExitFunction(JMVoidConsumer func);
 	

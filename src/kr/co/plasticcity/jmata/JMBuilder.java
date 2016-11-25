@@ -37,6 +37,8 @@ public interface JMBuilder
 		/* ================================== enter & exit ================================== */
 		StateBuilder whenEnter(JMVoidConsumer defaultWork);
 		
+		StateBuilder whenEnter(JMSupplier<Object> defaultWork);
+		
 		StateBuilder whenExit(JMVoidConsumer defaultWork);
 		
 		<S> WhenEnter<S> whenEnterFrom(Class<S> signal);
@@ -65,6 +67,8 @@ public interface JMBuilder
 		public interface WhenEnter<S>
 		{
 			StateBuilder doThis(JMConsumer<S> workOnEnter);
+			
+			StateBuilder doThis(JMFunction<S, Object> workOnEnter);
 			
 			StateBuilder doNothing();
 		}

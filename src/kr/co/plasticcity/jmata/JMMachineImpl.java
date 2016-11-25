@@ -102,6 +102,9 @@ class JMMachineImpl implements JMMachine
 		{
 			machineQue.execute(() ->
 			{
+				// TODO enter 함수 반환값 signal로 활용
+				// ...
+				
 				if (cond == COND.RUNNING && !Thread.interrupted())
 				{
 					if (signal instanceof String)

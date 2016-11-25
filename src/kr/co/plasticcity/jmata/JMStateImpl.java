@@ -8,12 +8,12 @@ class JMStateImpl implements JMStateCreater
 {
 	private Class<?> tag;
 	
-	private JMVoidConsumer enter;
+	private JMSupplier<Object> enter;
 	private JMVoidConsumer exit;
 	
-	private Map<Class<?>, JMConsumer<? super Object>> enterSignalC;
-	private Map<Enum<?>, JMConsumer<Enum<?>>> enterSignalE;
-	private Map<String, JMConsumer<String>> enterSignalS;
+	private Map<Class<?>, JMFunction<? super Object, Object>> enterSignalC;
+	private Map<Enum<?>, JMFunction<Enum<?>, Object>> enterSignalE;
+	private Map<String, JMFunction<String, Object>> enterSignalS;
 	
 	private Map<Class<?>, JMConsumer<? super Object>> exitSignalC;
 	private Map<Enum<?>, JMConsumer<Enum<?>>> exitSignalE;
@@ -29,58 +29,74 @@ class JMStateImpl implements JMStateCreater
 	}
 	
 	@Override
-	public void runEnterFunction()
+	public Object runEnterFunction()
 	{
 		if (enter != null)
 		{
-			enter.accept();
+			return enter.get();
+		}
+		else
+		{
+			return null;
 		}
 	}
 	
 	@Override
-	public <S> void runEnterFunctionC(S signal)
+	public <S> Object runEnterFunctionC(S signal)
 	{
 		if (enterSignalC != null && enterSignalC.containsKey(signal.getClass()))
 		{
-			enterSignalC.get(signal.getClass()).accept(signal);
+			return enterSignalC.get(signal.getClass()).apply(signal);
 		}
 		else if (enter != null)
 		{
-			enter.accept();
+			return enter.get();
+		}
+		else
+		{
+			return null;
 		}
 	}
 	
 	@Override
-	public <S extends Enum<S>> void runEnterFunction(Enum<S> signal)
+	public <S extends Enum<S>> Object runEnterFunction(Enum<S> signal)
 	{
 		if (enterSignalE != null && enterSignalE.containsKey(signal))
 		{
-			enterSignalE.get(signal).accept(signal);
+			return enterSignalE.get(signal).apply(signal);
 		}
 		else if (enterSignalC != null && enterSignalC.containsKey(signal.getClass()))
 		{
-			enterSignalC.get(signal.getClass()).accept(signal);
+			return enterSignalC.get(signal.getClass()).apply(signal);
 		}
 		else if (enter != null)
 		{
-			enter.accept();
+			return enter.get();
+		}
+		else
+		{
+			return null;
 		}
 	}
 	
 	@Override
-	public void runEnterFunction(String signal)
+	public Object runEnterFunction(String signal)
 	{
 		if (enterSignalS != null && enterSignalS.containsKey(signal))
 		{
-			enterSignalS.get(signal).accept(signal);
+			return enterSignalS.get(signal).apply(signal);
 		}
 		else if (enterSignalC != null && enterSignalC.containsKey(signal.getClass()))
 		{
-			enterSignalC.get(signal.getClass()).accept(signal);
+			return enterSignalC.get(signal.getClass()).apply(signal);
 		}
 		else if (enter != null)
 		{
-			enter.accept();
+			return enter.get();
+		}
+		else
+		{
+			return null;
 		}
 	}
 	
@@ -165,7 +181,7 @@ class JMStateImpl implements JMStateCreater
 	}
 	
 	@Override
-	public void putEnterFunction(JMVoidConsumer func)
+	public void putEnterFunction(JMSupplier<Object> func)
 	{
 		if (enter != null)
 		{
@@ -176,7 +192,7 @@ class JMStateImpl implements JMStateCreater
 	}
 	
 	@Override
-	public void putEnterFunction(Class<?> signal, JMConsumer<? super Object> func)
+	public void putEnterFunction(Class<?> signal, JMFunction<? super Object, Object> func)
 	{
 		if (enterSignalC == null)
 		{
@@ -191,7 +207,7 @@ class JMStateImpl implements JMStateCreater
 	}
 	
 	@Override
-	public void putEnterFunction(Enum<?> signal, JMConsumer<Enum<?>> func)
+	public void putEnterFunction(Enum<?> signal, JMFunction<Enum<?>, Object> func)
 	{
 		if (enterSignalE == null)
 		{
@@ -206,7 +222,7 @@ class JMStateImpl implements JMStateCreater
 	}
 	
 	@Override
-	public void putEnterFunction(String signal, JMConsumer<String> func)
+	public void putEnterFunction(String signal, JMFunction<String, Object> func)
 	{
 		if (enterSignalS == null)
 		{

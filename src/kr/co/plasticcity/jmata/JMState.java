@@ -15,13 +15,13 @@ interface JMState
 	/**
 	 * 머신 생성 후 처음 Run 할 시에만 호출
 	 */
-	void runEnterFunction();
+	Object runEnterFunction();
 	
-	<S> void runEnterFunctionC(S signal);
+	<S> Object runEnterFunctionC(S signal);
 	
-	<S extends Enum<S>> void runEnterFunction(Enum<S> signal);
+	<S extends Enum<S>> Object runEnterFunction(Enum<S> signal);
 	
-	void runEnterFunction(String signal);
+	Object runEnterFunction(String signal);
 	
 	<S> void runExitFunctionC(S signal, JMConsumer<Class<?>> nextState);
 	

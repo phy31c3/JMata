@@ -99,8 +99,19 @@ class JMBuilderImpl implements JMBuilder
 			@Override
 			public StateBuilder whenEnter(JMVoidConsumer defaultWork)
 			{
-				stateCreater.putEnterFunction(defaultWork);
+				stateCreater.putEnterFunction(() ->
+				{
+					defaultWork.accept();
+					return null;
+				});
 				return this;
+			}
+			
+			@Override
+			public StateBuilder whenEnter(JMSupplier<Object> defaultWork)
+			{
+				stateCreater.putEnterFunction(defaultWork);
+				return null;
 			}
 			
 			@Override
@@ -199,15 +210,46 @@ class JMBuilderImpl implements JMBuilder
 				{
 					if (signalC != null)
 					{
-						stateCreater.putEnterFunction(signalC, (JMConsumer<Object>)workOnEnter);
+						stateCreater.putEnterFunction(signalC, s ->
+						{
+							workOnEnter.accept((S)s);
+							return null;
+						});
 					}
 					else if (signalE != null)
 					{
-						stateCreater.putEnterFunction(signalE, (JMConsumer<Enum<?>>)workOnEnter);
+						stateCreater.putEnterFunction(signalE, s ->
+						{
+							workOnEnter.accept((S)s);
+							return null;
+						});
 					}
 					else
 					{
-						stateCreater.putEnterFunction(signalS, (JMConsumer<String>)workOnEnter);
+						stateCreater.putEnterFunction(signalS, s ->
+						{
+							workOnEnter.accept((S)s);
+							return null;
+						});
+					}
+					return StateBuilderImpl.this;
+				}
+				
+				@Override
+				@SuppressWarnings("unchecked")
+				public StateBuilder doThis(JMFunction<S, Object> workOnEnter)
+				{
+					if (signalC != null)
+					{
+						stateCreater.putEnterFunction(signalC, (JMFunction<Object, Object>)workOnEnter);
+					}
+					else if (signalE != null)
+					{
+						stateCreater.putEnterFunction(signalE, (JMFunction<Enum<?>, Object>)workOnEnter);
+					}
+					else
+					{
+						stateCreater.putEnterFunction(signalS, (JMFunction<String, Object>)workOnEnter);
 					}
 					return StateBuilderImpl.this;
 				}
@@ -217,36 +259,15 @@ class JMBuilderImpl implements JMBuilder
 				{
 					if (signalC != null)
 					{
-						stateCreater.putEnterFunction(signalC, new JMConsumer<Object>()
-						{
-							@Override
-							public void accept(Object s)
-							{
-								/* do nothing */
-							}
-						});
+						stateCreater.putEnterFunction(signalC, s -> null);
 					}
 					else if (signalE != null)
 					{
-						stateCreater.putEnterFunction(signalE, new JMConsumer<Enum<?>>()
-						{
-							@Override
-							public void accept(Enum<?> s)
-							{
-								/* do nothing */
-							}
-						});
+						stateCreater.putEnterFunction(signalE, s -> null);
 					}
 					else
 					{
-						stateCreater.putEnterFunction(signalS, new JMConsumer<String>()
-						{
-							@Override
-							public void accept(String s)
-							{
-								/* do nothing */
-							}
-						});
+						stateCreater.putEnterFunction(signalS, s -> null);
 					}
 					return StateBuilderImpl.this;
 				}
@@ -359,13 +380,9 @@ class JMBuilderImpl implements JMBuilder
 				{
 					if (signalC != null)
 					{
-						stateCreater.putExitFunction(signalC, new JMConsumer<Object>()
+						stateCreater.putExitFunction(signalC, s ->
 						{
-							@Override
-							public void accept(Object s)
-							{
-								/* do nothing */
-							}
+							/* do nothing */
 						});
 						return new SwitchToImpl(signalC);
 					}
@@ -373,13 +390,9 @@ class JMBuilderImpl implements JMBuilder
 					{
 						for (Enum<?> signal : signalsE)
 						{
-							stateCreater.putExitFunction(signal, new JMConsumer<Enum<?>>()
+							stateCreater.putExitFunction(signal, s ->
 							{
-								@Override
-								public void accept(Enum<?> s)
-								{
-									/* do nothing */
-								}
+								/* do nothing */
 							});
 						}
 						return new SwitchToImpl(signalsE);
@@ -388,13 +401,9 @@ class JMBuilderImpl implements JMBuilder
 					{
 						for (String signal : signalsS)
 						{
-							stateCreater.putExitFunction(signal, new JMConsumer<String>()
+							stateCreater.putExitFunction(signal, s ->
 							{
-								@Override
-								public void accept(String s)
-								{
-									/* do nothing */
-								}
+								/* do nothing */
 							});
 						}
 						return new SwitchToImpl(signalsS);
