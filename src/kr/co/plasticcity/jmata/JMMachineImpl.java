@@ -102,49 +102,63 @@ class JMMachineImpl implements JMMachine
 		{
 			machineQue.execute(() ->
 			{
-				// TODO enter 함수 반환값 signal로 활용
-				// ...
-				
-				if (cond == COND.RUNNING && !Thread.interrupted())
-				{
-					if (signal instanceof String)
-					{
-						stateMap.get(curState).runExitFunction((String)signal, nextState ->
-						{
-							if (cond == COND.RUNNING && !Thread.interrupted())
-							{
-								JMLog.debug("%s : switch from [%s] to [%s] due to [%s]", tag, curState.getSimpleName(), nextState.getSimpleName(), signal);
-								curState = nextState;
-								stateMap.get(curState).runEnterFunction((String)signal);
-							}
-						});
-					}
-					else if (signal instanceof Enum)
-					{
-						stateMap.get(curState).runExitFunction((Enum<?>)signal, nextState ->
-						{
-							if (cond == COND.RUNNING && !Thread.interrupted())
-							{
-								JMLog.debug("%s : switch from [%s] to [%s] due to [%s]", tag, curState.getSimpleName(), nextState.getSimpleName(), signal);
-								curState = nextState;
-								stateMap.get(curState).runEnterFunction((Enum<?>)signal);
-							}
-						});
-					}
-					else
-					{
-						stateMap.get(curState).runExitFunctionC(signal, nextState ->
-						{
-							if (cond == COND.RUNNING && !Thread.interrupted())
-							{
-								JMLog.debug("%s : switch from [%s] to [%s] due to [%s]", tag, curState.getSimpleName(), nextState.getSimpleName(), signal);
-								curState = nextState;
-								stateMap.get(curState).runEnterFunctionC(signal);
-							}
-						});
-					}
-				}
+				doInput(signal);
 			});
+		}
+	}
+	
+	private <S> void doInput(S signal)
+	{
+		if (cond == COND.RUNNING && !Thread.interrupted())
+		{
+			if (signal instanceof String)
+			{
+				stateMap.get(curState).runExitFunction((String)signal, nextState ->
+				{
+					if (cond == COND.RUNNING && !Thread.interrupted())
+					{
+						JMLog.debug("%s : switch from [%s] to [%s] due to [%s]", tag, curState.getSimpleName(), nextState.getSimpleName(), signal);
+						curState = nextState;
+						Object nextSignal = stateMap.get(curState).runEnterFunction((String)signal);
+						if (nextSignal != null)
+						{
+							doInput(nextSignal);
+						}
+					}
+				});
+			}
+			else if (signal instanceof Enum)
+			{
+				stateMap.get(curState).runExitFunction((Enum<?>)signal, nextState ->
+				{
+					if (cond == COND.RUNNING && !Thread.interrupted())
+					{
+						JMLog.debug("%s : switch from [%s] to [%s] due to [%s]", tag, curState.getSimpleName(), nextState.getSimpleName(), signal);
+						curState = nextState;
+						Object nextSignal = stateMap.get(curState).runEnterFunction((Enum<?>)signal);
+						if (nextSignal != null)
+						{
+							doInput(nextSignal);
+						}
+					}
+				});
+			}
+			else
+			{
+				stateMap.get(curState).runExitFunctionC(signal, nextState ->
+				{
+					if (cond == COND.RUNNING && !Thread.interrupted())
+					{
+						JMLog.debug("%s : switch from [%s] to [%s] due to [%s]", tag, curState.getSimpleName(), nextState.getSimpleName(), signal);
+						curState = nextState;
+						Object nextSignal = stateMap.get(curState).runEnterFunctionC(signal);
+						if (nextSignal != null)
+						{
+							doInput(nextSignal);
+						}
+					}
+				});
+			}
 		}
 	}
 }
