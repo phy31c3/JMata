@@ -6,15 +6,15 @@ public interface JMBuilder
 {
 	class Constructor
 	{
-		static JMBuilder getNew(Object machineTag, boolean isPresent, JMConsumer<JMMachine> consumer)
+		static JMBuilder getNew(Object machineTag, boolean isPresent, JMConsumer<JMMachine> registrator)
 		{
-			return new JMBuilderImpl(machineTag, isPresent, consumer);
+			return new JMBuilderImpl(machineTag, isPresent, registrator);
 		}
 	}
 	
 	void ifPresentThenIgnoreThis(JMConsumer<StartStateDefiner> definer);
 	
-	void ifPresentThenReplaceToThis(JMConsumer<StartStateDefiner> definer);
+	void ifPresentThenReplaceWithThis(JMConsumer<StartStateDefiner> definer);
 	
 	public interface StartStateDefiner
 	{

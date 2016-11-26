@@ -8,13 +8,13 @@ class JMBuilderImpl implements JMBuilder
 {
 	private Object machineTag;
 	private boolean present;
-	private JMConsumer<JMMachine> consumer;
+	private JMConsumer<JMMachine> registrator;
 	
-	JMBuilderImpl(Object machineTag, boolean isPresent, JMConsumer<JMMachine> consumer)
+	JMBuilderImpl(Object machineTag, boolean isPresent, JMConsumer<JMMachine> registrator)
 	{
 		this.machineTag = machineTag;
 		this.present = isPresent;
-		this.consumer = consumer;
+		this.registrator = registrator;
 	}
 	
 	@Override
@@ -31,7 +31,7 @@ class JMBuilderImpl implements JMBuilder
 	}
 	
 	@Override
-	public void ifPresentThenReplaceToThis(JMConsumer<StartStateDefiner> definer)
+	public void ifPresentThenReplaceWithThis(JMConsumer<StartStateDefiner> definer)
 	{
 		definer.accept(new MachineBuilderImpl());
 	}
@@ -74,14 +74,14 @@ class JMBuilderImpl implements JMBuilder
 		@Override
 		public void build()
 		{
-			consumer.accept(JMMachine.Constructor.getNew(machineTag, startState, stateMap, terminateWork));
+			registrator.accept(JMMachine.Constructor.getNew(machineTag, startState, stateMap, terminateWork));
 		}
 		
 		@Override
 		public void buildAndRun()
 		{
 			JMMachine machine = JMMachine.Constructor.getNew(machineTag, startState, stateMap, terminateWork);
-			consumer.accept(machine);
+			registrator.accept(machine);
 			machine.run();
 		}
 		
