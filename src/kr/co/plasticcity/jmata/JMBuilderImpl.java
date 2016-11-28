@@ -22,6 +22,7 @@ class JMBuilderImpl implements JMBuilder
 	{
 		if (present)
 		{
+			JMLog.debug("[%s] machine already exists, ignoring build", machineTag);
 			return;
 		}
 		else
@@ -33,6 +34,10 @@ class JMBuilderImpl implements JMBuilder
 	@Override
 	public void ifPresentThenReplaceWithThis(JMConsumer<StartStateDefiner> definer)
 	{
+		if (present)
+		{
+			JMLog.debug("[%s] machine already exists and will be replaced with a new machine", machineTag);
+		}
 		definer.accept(new MachineBuilderImpl());
 	}
 	
@@ -59,7 +64,7 @@ class JMBuilderImpl implements JMBuilder
 		{
 			if (stateMap.containsKey(stateTag))
 			{
-				JMLog.error("State '%s' 중복 정의", stateTag.getSimpleName());
+				JMLog.error("[%s] machine : Definition of state [%s] redundancy", machineTag, stateTag.getSimpleName());
 			}
 			return new StateBuilderImpl(stateTag);
 		}
@@ -90,10 +95,10 @@ class JMBuilderImpl implements JMBuilder
 			private Class<?> stateTag;
 			private JMStateCreater stateCreater;
 			
-			private StateBuilderImpl(Class<?> tag)
+			private StateBuilderImpl(Class<?> stateTag)
 			{
-				this.stateTag = tag;
-				this.stateCreater = JMStateCreater.Constructor.getNew(tag);
+				this.stateTag = stateTag;
+				this.stateCreater = JMStateCreater.Constructor.getNew(machineTag, stateTag);
 			}
 			
 			@Override

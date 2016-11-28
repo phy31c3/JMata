@@ -6,7 +6,8 @@ import kr.co.plasticcity.jmata.function.*;
 
 class JMStateImpl implements JMStateCreater
 {
-	private Class<?> tag;
+	private Object machineTag;
+	private Class<?> stateTag;
 	
 	private JMSupplier<Object> enter;
 	private JMVoidConsumer exit;
@@ -23,9 +24,10 @@ class JMStateImpl implements JMStateCreater
 	private Map<Enum<?>, Class<?>> switchRuleE;
 	private Map<String, Class<?>> switchRuleS;
 	
-	public JMStateImpl(Class<?> tag)
+	public JMStateImpl(Object machineTag, Class<?> stateTag)
 	{
-		this.tag = tag;
+		this.machineTag = machineTag;
+		this.stateTag = stateTag;
 	}
 	
 	@Override
@@ -185,7 +187,7 @@ class JMStateImpl implements JMStateCreater
 	{
 		if (enter != null)
 		{
-			JMLog.error("State '%s'의 default enter 함수 중복 정의", tag.getSimpleName());
+			JMLog.error("[%s] machine : Definition of default entry function redundancy in state [%s]", machineTag, stateTag.getSimpleName());
 		}
 		
 		enter = func;
@@ -200,7 +202,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (enterSignalC.containsKey(signal))
 		{
-			JMLog.error("State '%s'의 signal enter 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal.getSimpleName());
+			JMLog.error("[%s] machine : Definition of entry function for input [%s] redundancy in state [%s]", machineTag, signal.getSimpleName(), stateTag.getSimpleName());
 		}
 		
 		enterSignalC.put(signal, func);
@@ -215,7 +217,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (enterSignalE.containsKey(signal))
 		{
-			JMLog.error("State '%s'의 signal enter  함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
+			JMLog.error("[%s] machine : Definition of entry function for input [%s] redundancy in state [%s]", machineTag, signal.name(), stateTag.getSimpleName());
 		}
 		
 		enterSignalE.put(signal, func);
@@ -230,7 +232,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (enterSignalS.containsKey(signal))
 		{
-			JMLog.error("State '%s'의 signal enter 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
+			JMLog.error("[%s] machine : Definition of entry function for input [%s] redundancy in state [%s]", machineTag, signal, stateTag.getSimpleName());
 		}
 		
 		enterSignalS.put(signal, func);
@@ -241,7 +243,7 @@ class JMStateImpl implements JMStateCreater
 	{
 		if (exit != null)
 		{
-			JMLog.error("State '%s'의 default exit 함수 중복 정의", tag.getSimpleName());
+			JMLog.error("[%s] machine : Definition of default exit function redundancy in state [%s]", machineTag, stateTag.getSimpleName());
 		}
 		
 		exit = func;
@@ -256,7 +258,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (exitSignalC.containsKey(signal))
 		{
-			JMLog.error("State '%s'의 signal exit 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal.getSimpleName());
+			JMLog.error("[%s] machine : Definition of exit function for input [%s] redundancy in state [%s]", machineTag, signal.getSimpleName(), stateTag.getSimpleName());
 		}
 		
 		exitSignalC.put(signal, func);
@@ -271,7 +273,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (exitSignalE.containsKey(signal))
 		{
-			JMLog.error("State '%s'의 signal exit 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
+			JMLog.error("[%s] machine : Definition of exit function for input [%s] redundancy in state [%s]", machineTag, signal.name(), stateTag.getSimpleName());
 		}
 		
 		exitSignalE.put(signal, func);
@@ -286,7 +288,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (exitSignalS.containsKey(signal))
 		{
-			JMLog.error("State '%s'의 signal exit 함수 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
+			JMLog.error("[%s] machine : Definition of exit function for input [%s] redundancy in state [%s]", machineTag, signal, stateTag.getSimpleName());
 		}
 		
 		exitSignalS.put(signal, func);
@@ -301,7 +303,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (switchRuleC.containsKey(signal))
 		{
-			JMLog.error("State '%s'의 switch rule 중복 정의 : signal = '%s'", tag.getSimpleName(), signal.getSimpleName());
+			JMLog.error("[%s] machine : Definition of switch rule for input [%s] redundancy in state [%s]", machineTag, signal.getSimpleName(), stateTag.getSimpleName());
 		}
 		
 		switchRuleC.put(signal, stateTag);
@@ -316,7 +318,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (switchRuleE.containsKey(signal))
 		{
-			JMLog.error("State '%s'의 switch rule 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
+			JMLog.error("[%s] machine : Definition of switch rule for input [%s] redundancy in state [%s]", machineTag, signal.name(), stateTag.getSimpleName());
 		}
 		
 		switchRuleE.put(signal, stateTag);
@@ -331,7 +333,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (switchRuleS.containsKey(signal))
 		{
-			JMLog.error("State '%s'의 switch rule 중복 정의 : signal = '%s'", tag.getSimpleName(), signal);
+			JMLog.error("[%s] machine : Definition of switch rule for input [%s] redundancy in state [%s]", machineTag, signal, stateTag.getSimpleName());
 		}
 		
 		switchRuleS.put(signal, stateTag);

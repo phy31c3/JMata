@@ -34,6 +34,7 @@ class JMataImpl
 			}
 			finally
 			{
+				JMLog.debug("** JMata has been initialized");
 				permit.release(NUM_PERMITS);
 			}
 		}
@@ -43,7 +44,7 @@ class JMataImpl
 		}
 	}
 	
-	static void release()
+	static void release(final JMVoidConsumer releaseWork)
 	{
 		try
 		{
@@ -53,9 +54,15 @@ class JMataImpl
 			{
 				if (state == STATE.RUNNING)
 				{
-					JMLog.setLogger(null, null);
 					clearInstance();
 					state = STATE.RELEASED;
+					JMLog.debug("** JMata has been released");
+					JMLog.setLogger(null, null);
+					
+					if (releaseWork != null)
+					{
+						releaseWork.accept();
+					}
 				}
 			}
 			finally
@@ -65,7 +72,7 @@ class JMataImpl
 		}
 		catch (InterruptedException e)
 		{
-			release();
+			release(releaseWork);
 		}
 	}
 	
@@ -86,13 +93,13 @@ class JMataImpl
 					switch (state)
 					{
 					case NOT_INIT:
-						JMLog.error("JMata 초기화 오류 : 최초 JMata.initialize()를 호출해주세요.");
+						JMLog.error("** JMata initialization error : Call JMata.initialize() first");
 						break;
 					case RUNNING:
-						JMLog.error("알 수 없는 오류 발생 : JMata가 RUNNIG 상태이나 instance == null");
+						JMLog.error("** JMata unknown error : JMata is in RUNNIG state, but instance == null");
 						break;
 					case RELEASED:
-						JMLog.debug("JMata가 이미 해제 : JMata가 해제 되었으나 JMata관련 명령(JMata의 static method)을 호출함");
+						JMLog.debug("** JMata already released : JMata is released, but JMata command is called");
 						break;
 					}
 				}
@@ -137,6 +144,7 @@ class JMataImpl
 	{
 		globalQue.execute(() ->
 		{
+			JMLog.debug("[%s] machine build started", machineTag);
 			builder.accept(JMBuilder.Constructor.getNew(machineTag, machineMap.containsKey(machineTag), machine ->
 			{
 				JMMachine oldMachine = machineMap.put(machineTag, machine);

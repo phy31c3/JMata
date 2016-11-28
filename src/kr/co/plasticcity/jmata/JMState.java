@@ -4,14 +4,6 @@ import kr.co.plasticcity.jmata.function.*;
 
 interface JMState
 {
-	class Constructor
-	{
-		static JMState getNew(Class<?> tag)
-		{
-			return new JMStateImpl(tag);
-		}
-	}
-	
 	/**
 	 * 머신 생성 후 처음 Run 할 시에만 호출
 	 */

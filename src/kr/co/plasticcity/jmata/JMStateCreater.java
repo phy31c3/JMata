@@ -6,9 +6,9 @@ interface JMStateCreater extends JMState
 {
 	class Constructor
 	{
-		static JMStateCreater getNew(Class<?> tag)
+		static JMStateCreater getNew(Object machineTag, Class<?> stateTag)
 		{
-			return new JMStateImpl(tag);
+			return new JMStateImpl(machineTag, stateTag);
 		}
 	}
 	

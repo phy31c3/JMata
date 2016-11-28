@@ -21,7 +21,12 @@ public class JMata
 	
 	public static void release()
 	{
-		JMataImpl.release();
+		release(null);
+	}
+	
+	public static void release(final JMVoidConsumer releaseWork)
+	{
+		JMataImpl.release(releaseWork);
 	}
 	
 	public static void buildMachine(final Object machineTag, final JMConsumer<JMBuilder> builder)
