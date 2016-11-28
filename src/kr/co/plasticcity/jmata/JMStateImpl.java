@@ -232,7 +232,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (enterSignalS.containsKey(signal))
 		{
-			JMLog.error("[%s] machine : Definition of entry function for input [%s] redundancy in state [%s]", machineTag, signal, stateTag.getSimpleName());
+			JMLog.error("[%s] machine : Definition of entry function for input [\"%s\"] redundancy in state [%s]", machineTag, signal, stateTag.getSimpleName());
 		}
 		
 		enterSignalS.put(signal, func);
@@ -288,7 +288,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (exitSignalS.containsKey(signal))
 		{
-			JMLog.error("[%s] machine : Definition of exit function for input [%s] redundancy in state [%s]", machineTag, signal, stateTag.getSimpleName());
+			JMLog.error("[%s] machine : Definition of exit function for input [\"%s\"] redundancy in state [%s]", machineTag, signal, stateTag.getSimpleName());
 		}
 		
 		exitSignalS.put(signal, func);
@@ -333,7 +333,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (switchRuleS.containsKey(signal))
 		{
-			JMLog.error("[%s] machine : Definition of switch rule for input [%s] redundancy in state [%s]", machineTag, signal, stateTag.getSimpleName());
+			JMLog.error("[%s] machine : Definition of switch rule for input [\"%s\"] redundancy in state [%s]", machineTag, signal, stateTag.getSimpleName());
 		}
 		
 		switchRuleS.put(signal, stateTag);

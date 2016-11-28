@@ -129,7 +129,7 @@ class JMMachineImpl implements JMMachine
 				{
 					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
-						JMLog.debug("[%s] machine : switch from [%s] to [%s] due to [%s]", machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
+						JMLog.debug("[%s] machine : switch from [%s] to [%s] due to [\"%s\"]", machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
 						curState = nextState;
 						Object nextSignal = stateMap.get(curState).runEnterFunction((String)signal);
 						if (nextSignal != null)
