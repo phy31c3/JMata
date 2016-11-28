@@ -12,307 +12,165 @@ class JMMachineImpl implements JMMachine
 		CREATED, RUNNING, STOPPED, TERMINATED
 	}
 	
-	private final Class<?> machineTag;
+	private final Object machineTag;
 	private final Class<?> startState;
 	private final Map<Class<?>, ? extends JMState> stateMap;
+	private final JMVoidConsumer terminateWork;
 	
-	private volatile ExecutorService[] machineQue;
-	private volatile Class<?>[] curStates;
-	private COND[] conds;
-	private int activeInstances;
+	private volatile ExecutorService machineQue;
+	private volatile Class<?> curState;
+	private volatile COND cond;
 	
-	JMMachineImpl(Class<?> tag, int numInstances, Class<?> startState, Map<Class<?>, ? extends JMState> stateMap)
+	JMMachineImpl(Object tag, Class<?> startState, Map<Class<?>, ? extends JMState> stateMap, JMVoidConsumer terminateWork)
 	{
 		this.machineTag = tag;
 		this.startState = startState;
 		this.stateMap = stateMap;
-		this.machineQue = new ExecutorService[numInstances];
-		this.curStates = new Class<?>[numInstances];
-		this.conds = new COND[numInstances];
-		this.activeInstances = numInstances;
+		this.terminateWork = terminateWork;
+		this.curState = startState;
+		this.cond = COND.CREATED;
 		
-		for (int idx = 0; idx < numInstances; ++idx)
+		JMLog.debug("[%s] machine has been built", tag);
+	}
+	
+	@Override
+	public synchronized void run()
+	{
+		if (cond == COND.CREATED)
 		{
-			machineQue[idx] = Executors.newSingleThreadExecutor();
-			curStates[idx] = startState;
-			conds[idx] = COND.CREATED;
+			JMLog.debug("[%s] machine state changed : [%s] -> [%s]", machineTag, cond.name(), COND.RUNNING.name());
+			
+			cond = COND.RUNNING;
+			machineQue = Executors.newSingleThreadExecutor();
+			machineQue.execute(() -> Thread.currentThread().setName(String.format("JMataMachineThread-%s", machineTag)));
+			machineQue.execute(() -> stateMap.get(startState).runEnterFunction());
+		}
+		else if (cond == COND.STOPPED)
+		{
+			JMLog.debug("[%s] machine state changed : [%s] -> [%s]", machineTag, cond.name(), COND.RUNNING.name());
+			
+			cond = COND.RUNNING;
+			machineQue = Executors.newSingleThreadExecutor();
+			machineQue.execute(() -> Thread.currentThread().setName(String.format("JMataMachineThread-%s", machineTag)));
 		}
 	}
 	
 	@Override
-	public void runAll()
+	public synchronized void stop()
 	{
-		for (int idx = 0; idx < machineQue.length; ++idx)
+		if (cond == COND.RUNNING)
 		{
-			try
-			{
-				run(idx);
-			}
-			catch (JMException e)
-			{
-				e.printStackTrace();
-			}
+			JMLog.debug("[%s] machine state changed : [%s] -> [%s]", machineTag, cond.name(), COND.STOPPED.name());
+			
+			cond = COND.STOPPED;
+			machineQue.shutdownNow();
 		}
 	}
 	
 	@Override
-	public void run(final int idx) throws JMException
+	public synchronized void terminate()
 	{
-		idxTest(idx);
-		if (isCondOf(idx, COND.CREATED))
+		if (cond == COND.CREATED)
 		{
-			setCondOf(idx, COND.RUNNING);
-			machineQue[idx].execute(new Runnable()
+			JMLog.debug("[%s] machine state changed : [%s] -> [%s]", machineTag, cond.name(), COND.TERMINATED.name());
+			
+			cond = COND.TERMINATED;
+			if (terminateWork != null)
 			{
-				@Override
-				public void run()
+				terminateWork.accept();
+			}
+		}
+		else if (cond != COND.TERMINATED)
+		{
+			JMLog.debug("[%s] machine state changed : [%s] -> [%s]", machineTag, cond.name(), COND.TERMINATED.name());
+			
+			cond = COND.TERMINATED;
+			machineQue.shutdownNow();
+			if (terminateWork != null)
+			{
+				try
 				{
-					stateMap.get(startState).runEnterFunction(idx);
-				}
-			});
-		}
-		else if (isCondOf(idx, COND.STOPPED))
-		{
-			setCondOf(idx, COND.RUNNING);
-		}
-	}
-	
-	@Override
-	public void stopAll()
-	{
-		for (int idx = 0; idx < machineQue.length; ++idx)
-		{
-			try
-			{
-				stop(idx);
-			}
-			catch (JMException e)
-			{
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	@Override
-	public void stop(int idx) throws JMException
-	{
-		idxTest(idx);
-		if (isCondOf(idx, COND.RUNNING))
-		{
-			setCondOf(idx, COND.STOPPED);
-		}
-	}
-	
-	@Override
-	public void terminateAll()
-	{
-		for (int idx = 0; idx < machineQue.length; ++idx)
-		{
-			try
-			{
-				terminate(idx);
-			}
-			catch (JMException e)
-			{
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	@Override
-	public boolean terminate(int idx) throws JMException
-	{
-		idxTest(idx);
-		if (notCondOf(idx, COND.TERMINATED))
-		{
-			setCondOf(idx, COND.TERMINATED);
-			machineQue[idx].shutdownNow();
-			return --activeInstances == 0 ? true : false;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	
-	@Override
-	public <S> void inputToAll(S signal) throws JMException
-	{
-		for (int idx = 0; idx < machineQue.length; ++idx)
-		{
-			try
-			{
-				input(idx, signal);
-			}
-			catch (JMException e)
-			{
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	@Override
-	public <S extends Enum<S>> void inputToAll(Enum<S> signal) throws JMException
-	{
-		for (int idx = 0; idx < machineQue.length; ++idx)
-		{
-			try
-			{
-				input(idx, signal);
-			}
-			catch (JMException e)
-			{
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	@Override
-	public void inputToAll(String signal) throws JMException
-	{
-		for (int idx = 0; idx < machineQue.length; ++idx)
-		{
-			try
-			{
-				input(idx, signal);
-			}
-			catch (JMException e)
-			{
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	@Override
-	public <S> void input(final int idx, final S signal) throws JMException
-	{
-		idxTest(idx);
-		if (isCondOf(idx, COND.RUNNING))
-		{
-			machineQue[idx].execute(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					if (isCondOf(idx, COND.RUNNING) && !Thread.interrupted())
+					if (machineQue.awaitTermination(1, TimeUnit.SECONDS))
 					{
-						stateMap.get(curStates[idx]).runExitFunctionC(idx, signal, new JMConsumer<Class<?>>()
-						{
-							@Override
-							public void accept(Class<?> nextState)
-							{
-								curStates[idx] = nextState;
-								stateMap.get(curStates[idx]).runEnterFunctionC(idx, signal);
-							}
-						});
+						terminateWork.accept();
+					}
+					else
+					{
+						JMLog.error("[%s] machine : The shutdown operation failed because the machine shutdown took too long (over 1 second)", machineTag);
 					}
 				}
-			});
+				catch (InterruptedException e)
+				{
+					/* do nothing */
+				}
+			}
 		}
 	}
 	
 	@Override
-	public <S extends Enum<S>> void input(final int idx, final Enum<S> signal) throws JMException
+	public <S> void input(S signal)
 	{
-		idxTest(idx);
-		if (isCondOf(idx, COND.RUNNING))
+		if (cond == COND.RUNNING)
 		{
-			machineQue[idx].execute(new Runnable()
+			machineQue.execute(() ->
 			{
-				@Override
-				public void run()
+				doInput(signal);
+			});
+		}
+	}
+	
+	private <S> void doInput(S signal)
+	{
+		if (cond == COND.RUNNING && !Thread.interrupted())
+		{
+			if (signal instanceof String)
+			{
+				stateMap.get(curState).runExitFunction((String)signal, nextState ->
 				{
-					if (isCondOf(idx, COND.RUNNING) && !Thread.interrupted())
+					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
-						JMConsumer<Class<?>> switchToNext = new JMConsumer<Class<?>>()
+						JMLog.debug("[%s] machine : switch from [%s] to [%s] due to [%s]", machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
+						curState = nextState;
+						Object nextSignal = stateMap.get(curState).runEnterFunction((String)signal);
+						if (nextSignal != null)
 						{
-							@Override
-							public void accept(Class<?> nextState)
-							{
-								curStates[idx] = nextState;
-								if (!stateMap.get(curStates[idx]).runEnterFunction(idx, signal))
-								{
-									stateMap.get(curStates[idx]).runEnterFunctionC(idx, signal);
-								}
-							}
-						};
-						
-						if (!stateMap.get(curStates[idx]).runExitFunction(idx, signal, switchToNext))
-						{
-							stateMap.get(curStates[idx]).runExitFunctionC(idx, signal, switchToNext);
+							doInput(nextSignal);
 						}
 					}
-				}
-			});
-		}
-	}
-	
-	@Override
-	public void input(final int idx, final String signal) throws JMException
-	{
-		idxTest(idx);
-		if (isCondOf(idx, COND.RUNNING))
-		{
-			machineQue[idx].execute(new Runnable()
+				});
+			}
+			else if (signal instanceof Enum)
 			{
-				@Override
-				public void run()
+				stateMap.get(curState).runExitFunction((Enum<?>)signal, nextState ->
 				{
-					if (isCondOf(idx, COND.RUNNING) && !Thread.interrupted())
+					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
-						JMConsumer<Class<?>> switchToNext = new JMConsumer<Class<?>>()
+						JMLog.debug("[%s] machine : switch from [%s] to [%s] due to [%s]", machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
+						curState = nextState;
+						Object nextSignal = stateMap.get(curState).runEnterFunction((Enum<?>)signal);
+						if (nextSignal != null)
 						{
-							@Override
-							public void accept(Class<?> nextState)
-							{
-								curStates[idx] = nextState;
-								if (!stateMap.get(curStates[idx]).runEnterFunction(idx, signal))
-								{
-									stateMap.get(curStates[idx]).runEnterFunctionC(idx, signal);
-								}
-							}
-						};
-						
-						if (!stateMap.get(curStates[idx]).runExitFunction(idx, signal, switchToNext))
-						{
-							stateMap.get(curStates[idx]).runExitFunctionC(idx, signal, switchToNext);
+							doInput(nextSignal);
 						}
 					}
-				}
-			});
-		}
-	}
-	
-	private boolean isCondOf(int idx, COND cond)
-	{
-		synchronized (conds[idx])
-		{
-			return this.conds[idx] == cond;
-		}
-	}
-	
-	private boolean notCondOf(int idx, COND cond)
-	{
-		synchronized (conds[idx])
-		{
-			return this.conds[idx] != cond;
-		}
-	}
-	
-	private void setCondOf(int idx, COND cond)
-	{
-		synchronized (conds[idx])
-		{
-			conds[idx] = cond;
-		}
-	}
-	
-	private void idxTest(int idx) throws JMException
-	{
-		if (idx >= machineQue.length)
-		{
-			JMLog.debug("");
-			throw new JMException("'%s' 머신 인덱스 테스트 에러 : 인스턴스 갯수 = %d, 요청 idx = %d", machineTag.getSimpleName(), machineQue.length, idx);
+				});
+			}
+			else
+			{
+				stateMap.get(curState).runExitFunctionC(signal, nextState ->
+				{
+					if (cond == COND.RUNNING && !Thread.interrupted())
+					{
+						JMLog.debug("[%s] machine : switch from [%s] to [%s] due to [%s]", machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
+						curState = nextState;
+						Object nextSignal = stateMap.get(curState).runEnterFunctionC(signal);
+						if (nextSignal != null)
+						{
+							doInput(nextSignal);
+						}
+					}
+				});
+			}
 		}
 	}
 }

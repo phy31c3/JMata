@@ -1,7 +1,7 @@
 package kr.co.plasticcity.jmata.function;
 
 @FunctionalInterface
-public interface JMConsumer<T>
+public interface JMFunction<T, R>
 {
-	void accept(T t);
+	R apply(T t);
 }

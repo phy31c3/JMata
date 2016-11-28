@@ -7,9 +7,10 @@ import kr.co.plasticcity.jmata.function.*;
 
 class JMataImpl
 {
-	/************************** ↓ Static Part **************************/
+	/* ================================== ↓ Static Part ================================== */
 	
-	private static final Semaphore permit = new Semaphore(1, true);
+	private static final int NUM_PERMITS = Runtime.getRuntime().availableProcessors();
+	private static final Semaphore permit = new Semaphore(NUM_PERMITS, true);
 	private static volatile JMataImpl instance;
 	private static volatile STATE state = STATE.NOT_INIT;
 	
@@ -22,7 +23,7 @@ class JMataImpl
 	{
 		try
 		{
-			permit.acquire();
+			permit.acquire(NUM_PERMITS);
 			
 			try
 			{
@@ -33,7 +34,8 @@ class JMataImpl
 			}
 			finally
 			{
-				permit.release();
+				JMLog.debug("** JMata has been initialized");
+				permit.release(NUM_PERMITS);
 			}
 		}
 		catch (InterruptedException e)
@@ -42,29 +44,35 @@ class JMataImpl
 		}
 	}
 	
-	static void release()
+	static void release(final JMVoidConsumer releaseWork)
 	{
 		try
 		{
-			permit.acquire();
+			permit.acquire(NUM_PERMITS);
 			
 			try
 			{
 				if (state == STATE.RUNNING)
 				{
-					JMLog.setLogger(null, null);
 					clearInstance();
 					state = STATE.RELEASED;
+					JMLog.debug("** JMata has been released");
+					JMLog.setLogger(null, null);
+					
+					if (releaseWork != null)
+					{
+						releaseWork.accept();
+					}
 				}
 			}
 			finally
 			{
-				permit.release();
+				permit.release(NUM_PERMITS);
 			}
 		}
 		catch (InterruptedException e)
 		{
-			release();
+			release(releaseWork);
 		}
 	}
 	
@@ -85,13 +93,13 @@ class JMataImpl
 					switch (state)
 					{
 					case NOT_INIT:
-						JMLog.debug("JMata 초기화 오류 : 최초 JMata.initialize()를 호출해주세요.");
+						JMLog.error("** JMata initialization error : Call JMata.initialize() first");
 						break;
 					case RUNNING:
-						JMLog.debug("알 수 없는 오류 발생 : JMata가 RUNNIG 상태이나 instance == null");
+						JMLog.error("** JMata unknown error : JMata is in RUNNIG state, but instance == null");
 						break;
 					case RELEASED:
-						/* do nothing */
+						JMLog.debug("** JMata already released : JMata is released, but JMata command is called");
 						break;
 					}
 				}
@@ -114,223 +122,81 @@ class JMataImpl
 			instance.globalQue.shutdownNow();
 			for (JMMachine machine : instance.machineMap.values())
 			{
-				machine.terminateAll();
+				machine.terminate();
 			}
 			instance = null;
 		}
 	}
 	
-	/************************** ↑ Static Part **************************/
+	/* ================================== ↑ Static Part ================================== */
 	
-	private final Map<Class<?>, JMMachine> machineMap;
+	private final Map<Object, JMMachine> machineMap;
 	private final ExecutorService globalQue;
 	
 	private JMataImpl()
 	{
 		this.machineMap = new ConcurrentHashMap<>();
 		this.globalQue = Executors.newSingleThreadExecutor();
+		this.globalQue.execute(() -> Thread.currentThread().setName("JMataGlobalThread"));
 	}
 	
-	void buildMachine(final Class<?> machineTag, final JMConsumer<JMBuilder> builder)
+	void buildMachine(final Object machineTag, final JMConsumer<JMBuilder> builder)
 	{
-		globalQue.execute(new Runnable()
+		globalQue.execute(() ->
 		{
-			@Override
-			public void run()
+			JMLog.debug("[%s] machine build started", machineTag);
+			builder.accept(JMBuilder.Constructor.getNew(machineTag, machineMap.containsKey(machineTag), machine ->
 			{
-				builder.accept(JMBuilder.Constructor.getNew(machineTag, machineMap.containsKey(machineTag), new JMConsumer<JMMachine>()
+				JMMachine oldMachine = machineMap.put(machineTag, machine);
+				if (oldMachine != null)
 				{
-					@Override
-					public void accept(JMMachine machine)
-					{
-						JMMachine oldMachine = machineMap.put(machineTag, machine);
-						if (oldMachine != null)
-						{
-							oldMachine.terminateAll();
-						}
-					}
-				}));
+					oldMachine.terminate();
+				}
+			}));
+		});
+	}
+	
+	void runMachine(final Object machineTag)
+	{
+		globalQue.execute(() ->
+		{
+			if (machineMap.containsKey(machineTag))
+			{
+				machineMap.get(machineTag).run();
 			}
 		});
 	}
 	
-	void runMachine(final Class<?> machineTag)
+	void stopMachine(final Object machineTag)
 	{
-		globalQue.execute(new Runnable()
+		globalQue.execute(() ->
 		{
-			@Override
-			public void run()
+			if (machineMap.containsKey(machineTag))
 			{
-				if (machineMap.containsKey(machineTag))
-				{
-					machineMap.get(machineTag).runAll();
-				}
+				machineMap.get(machineTag).stop();
 			}
 		});
 	}
 	
-	void runMachine(final Class<?> machineTag, final int machineIdx)
+	void terminateMachine(final Object machineTag)
 	{
-		globalQue.execute(new Runnable()
+		globalQue.execute(() ->
 		{
-			@Override
-			public void run()
+			if (machineMap.containsKey(machineTag))
 			{
-				if (machineMap.containsKey(machineTag))
-				{
-					try
-					{
-						machineMap.get(machineTag).run(machineIdx);
-					}
-					catch (JMException e)
-					{
-						e.printJMLog();
-					}
-				}
+				machineMap.get(machineTag).terminate();
+				machineMap.remove(machineTag);
 			}
 		});
 	}
 	
-	void stopMachine(final Class<?> machineTag)
+	<S> void inputTo(final Object machineTag, final S signal)
 	{
-		globalQue.execute(new Runnable()
+		globalQue.execute(() ->
 		{
-			@Override
-			public void run()
+			if (machineMap.containsKey(machineTag))
 			{
-				if (machineMap.containsKey(machineTag))
-				{
-					machineMap.get(machineTag).stopAll();
-				}
-			}
-		});
-	}
-	
-	void stopMachine(final Class<?> machineTag, final int machineIdx)
-	{
-		globalQue.execute(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				if (machineMap.containsKey(machineTag))
-				{
-					try
-					{
-						machineMap.get(machineTag).stop(machineIdx);
-					}
-					catch (JMException e)
-					{
-						e.printJMLog();
-					}
-				}
-			}
-		});
-	}
-	
-	void terminateMachine(final Class<?> machineTag)
-	{
-		globalQue.execute(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				if (machineMap.containsKey(machineTag))
-				{
-					machineMap.get(machineTag).terminateAll();
-					machineMap.remove(machineTag);
-				}
-			}
-		});
-	}
-	
-	void terminateMachine(final Class<?> machineTag, final int machineIdx)
-	{
-		globalQue.execute(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				if (machineMap.containsKey(machineTag))
-				{
-					try
-					{
-						if (machineMap.get(machineTag).terminate(machineIdx))
-						{
-							machineMap.remove(machineTag);
-						}
-					}
-					catch (JMException e)
-					{
-						e.printJMLog();
-					}
-				}
-			}
-		});
-	}
-	
-	<S> void inputTo(final Class<?> machineTag, final S signal)
-	{
-		globalQue.execute(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				if (machineMap.containsKey(machineTag))
-				{
-					try
-					{
-						if (signal instanceof String)
-						{
-							machineMap.get(machineTag).inputToAll((String)signal);
-						}
-						else if (signal instanceof Enum)
-						{
-							machineMap.get(machineTag).inputToAll((Enum<?>)signal);
-						}
-						else
-						{
-							machineMap.get(machineTag).inputToAll(signal);
-						}
-					}
-					catch (JMException e)
-					{
-						e.printJMLog();
-					}
-				}
-			}
-		});
-	}
-	
-	<S> void inputTo(final Class<?> machineTag, final int machineIdx, final S signal)
-	{
-		globalQue.execute(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				if (machineMap.containsKey(machineTag))
-				{
-					try
-					{
-						if (signal instanceof String)
-						{
-							machineMap.get(machineTag).input(machineIdx, (String)signal);
-						}
-						else if (signal instanceof Enum)
-						{
-							machineMap.get(machineTag).input(machineIdx, (Enum<?>)signal);
-						}
-						else
-						{
-							machineMap.get(machineTag).input(machineIdx, signal);
-						}
-					}
-					catch (JMException e)
-					{
-						e.printJMLog();
-					}
-				}
+				machineMap.get(machineTag).input(signal);
 			}
 		});
 	}
