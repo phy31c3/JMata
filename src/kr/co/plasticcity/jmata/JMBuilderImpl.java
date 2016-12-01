@@ -116,7 +116,7 @@ class JMBuilderImpl implements JMBuilder
 			public StateBuilder whenEnter(JMSupplier<Object> defaultWork)
 			{
 				stateCreater.putEnterFunction(defaultWork);
-				return null;
+				return this;
 			}
 			
 			@Override
