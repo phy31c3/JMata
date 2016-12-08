@@ -7,6 +7,11 @@ class JMLog
 	private static JMConsumer<String> debug;
 	private static JMConsumer<String> error;
 	
+	private JMLog()
+	{
+		/* do nothing */
+	}
+	
 	static void setLogger(JMConsumer<String> debugLogger, JMConsumer<String> errorLogger)
 	{
 		JMLog.debug = debugLogger;

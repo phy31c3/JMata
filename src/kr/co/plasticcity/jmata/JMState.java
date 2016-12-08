@@ -15,9 +15,9 @@ interface JMState
 	
 	Object runEnterFunction(String signal);
 	
-	<S> void runExitFunctionC(S signal, JMConsumer<Class<?>> nextState);
+	<S> Object runExitFunctionC(S signal, JMFunction<Class<?>, Object> nextState);
 	
-	<S extends Enum<S>> void runExitFunction(Enum<S> signal, JMConsumer<Class<?>> nextState);
+	<S extends Enum<S>> Object runExitFunction(Enum<S> signal, JMFunction<Class<?>, Object> nextState);
 	
-	void runExitFunction(String signal, JMConsumer<Class<?>> nextState);
+	Object runExitFunction(String signal, JMFunction<Class<?>, Object> nextState);
 }

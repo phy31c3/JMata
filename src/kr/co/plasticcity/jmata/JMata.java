@@ -2,7 +2,7 @@ package kr.co.plasticcity.jmata;
 
 import kr.co.plasticcity.jmata.function.*;
 
-public class JMata
+public interface JMata
 {
 	public static void initialize()
 	{

@@ -12,6 +12,9 @@ class JMMachineImpl implements JMMachine
 		CREATED, RUNNING, STOPPED, TERMINATED
 	}
 	
+	private static final String LOG_MACHINE_STATE_CHANGED = "[%s] machine state changed : [%s] -> [%s]";
+	private static final String LOG_STATE_SWITCHED = "[%s] machine : switch from [%s] to [%s] due to [%s]";
+	
 	private final Object machineTag;
 	private final Class<?> startState;
 	private final Map<Class<?>, ? extends JMState> stateMap;
@@ -38,16 +41,16 @@ class JMMachineImpl implements JMMachine
 	{
 		if (cond == COND.CREATED)
 		{
-			JMLog.debug("[%s] machine state changed : [%s] -> [%s]", machineTag, cond.name(), COND.RUNNING.name());
+			JMLog.debug(LOG_MACHINE_STATE_CHANGED, machineTag, cond.name(), COND.RUNNING.name());
 			
 			cond = COND.RUNNING;
 			machineQue = Executors.newSingleThreadExecutor();
 			machineQue.execute(() -> Thread.currentThread().setName(String.format("JMataMachineThread-%s", machineTag)));
-			machineQue.execute(() -> stateMap.get(startState).runEnterFunction());
+			machineQue.execute(stateMap.get(startState)::runEnterFunction);
 		}
 		else if (cond == COND.STOPPED)
 		{
-			JMLog.debug("[%s] machine state changed : [%s] -> [%s]", machineTag, cond.name(), COND.RUNNING.name());
+			JMLog.debug(LOG_MACHINE_STATE_CHANGED, machineTag, cond.name(), COND.RUNNING.name());
 			
 			cond = COND.RUNNING;
 			machineQue = Executors.newSingleThreadExecutor();
@@ -60,7 +63,7 @@ class JMMachineImpl implements JMMachine
 	{
 		if (cond == COND.RUNNING)
 		{
-			JMLog.debug("[%s] machine state changed : [%s] -> [%s]", machineTag, cond.name(), COND.STOPPED.name());
+			JMLog.debug(LOG_MACHINE_STATE_CHANGED, machineTag, cond.name(), COND.STOPPED.name());
 			
 			cond = COND.STOPPED;
 			machineQue.shutdownNow();
@@ -72,7 +75,7 @@ class JMMachineImpl implements JMMachine
 	{
 		if (cond == COND.CREATED)
 		{
-			JMLog.debug("[%s] machine state changed : [%s] -> [%s]", machineTag, cond.name(), COND.TERMINATED.name());
+			JMLog.debug(LOG_MACHINE_STATE_CHANGED, machineTag, cond.name(), COND.TERMINATED.name());
 			
 			cond = COND.TERMINATED;
 			if (terminateWork != null)
@@ -82,7 +85,7 @@ class JMMachineImpl implements JMMachine
 		}
 		else if (cond != COND.TERMINATED)
 		{
-			JMLog.debug("[%s] machine state changed : [%s] -> [%s]", machineTag, cond.name(), COND.TERMINATED.name());
+			JMLog.debug(LOG_MACHINE_STATE_CHANGED, machineTag, cond.name(), COND.TERMINATED.name());
 			
 			cond = COND.TERMINATED;
 			machineQue.shutdownNow();
@@ -101,7 +104,8 @@ class JMMachineImpl implements JMMachine
 				}
 				catch (InterruptedException e)
 				{
-					/* do nothing */
+					JMLog.error("[%s] machine : The shutdown operation failed because this thread interrupted before ", machineTag);
+					Thread.currentThread().interrupt();
 				}
 			}
 		}
@@ -114,63 +118,67 @@ class JMMachineImpl implements JMMachine
 		{
 			machineQue.execute(() ->
 			{
-				doInput(signal);
+				while (doInput(signal) != null);
 			});
 		}
 	}
 	
-	private <S> void doInput(S signal)
+	private <S> Object doInput(S signal)
 	{
 		if (cond == COND.RUNNING && !Thread.interrupted())
 		{
 			if (signal instanceof String)
 			{
-				stateMap.get(curState).runExitFunction((String)signal, nextState ->
+				return stateMap.get(curState).runExitFunction((String)signal, nextState ->
 				{
 					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
-						JMLog.debug("[%s] machine : switch from [%s] to [%s] due to [\"%s\"]", machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
+						JMLog.debug(LOG_STATE_SWITCHED, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
 						curState = nextState;
-						Object nextSignal = stateMap.get(curState).runEnterFunction((String)signal);
-						if (nextSignal != null)
-						{
-							doInput(nextSignal);
-						}
+						return stateMap.get(curState).runEnterFunction((String)signal);
+					}
+					else
+					{
+						return null;
 					}
 				});
 			}
 			else if (signal instanceof Enum)
 			{
-				stateMap.get(curState).runExitFunction((Enum<?>)signal, nextState ->
+				return stateMap.get(curState).runExitFunction((Enum<?>)signal, nextState ->
 				{
 					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
-						JMLog.debug("[%s] machine : switch from [%s] to [%s] due to [%s]", machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
+						JMLog.debug(LOG_STATE_SWITCHED, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
 						curState = nextState;
-						Object nextSignal = stateMap.get(curState).runEnterFunction((Enum<?>)signal);
-						if (nextSignal != null)
-						{
-							doInput(nextSignal);
-						}
+						return stateMap.get(curState).runEnterFunction((Enum<?>)signal);
+					}
+					else
+					{
+						return null;
 					}
 				});
 			}
 			else
 			{
-				stateMap.get(curState).runExitFunctionC(signal, nextState ->
+				return stateMap.get(curState).runExitFunctionC(signal, nextState ->
 				{
 					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
-						JMLog.debug("[%s] machine : switch from [%s] to [%s] due to [%s]", machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
+						JMLog.debug(LOG_STATE_SWITCHED, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
 						curState = nextState;
-						Object nextSignal = stateMap.get(curState).runEnterFunctionC(signal);
-						if (nextSignal != null)
-						{
-							doInput(nextSignal);
-						}
+						return stateMap.get(curState).runEnterFunctionC(signal);
+					}
+					else
+					{
+						return null;
 					}
 				});
 			}
+		}
+		else
+		{
+			return null;
 		}
 	}
 }

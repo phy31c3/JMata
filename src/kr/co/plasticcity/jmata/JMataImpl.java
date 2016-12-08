@@ -41,6 +41,7 @@ class JMataImpl
 		catch (InterruptedException e)
 		{
 			initialize(debugLogger, errorLogger);
+			Thread.currentThread().interrupt();
 		}
 	}
 	
@@ -73,6 +74,7 @@ class JMataImpl
 		catch (InterruptedException e)
 		{
 			release(releaseWork);
+			Thread.currentThread().interrupt();
 		}
 	}
 	
@@ -101,6 +103,9 @@ class JMataImpl
 					case RELEASED:
 						JMLog.debug("** JMata already released : JMata is released, but JMata command is called");
 						break;
+					default:
+						JMLog.error("** JMata undefined state : %s", state.name());
+						break;
 					}
 				}
 			}
@@ -111,7 +116,11 @@ class JMataImpl
 		}
 		catch (InterruptedException e)
 		{
-			/* do nothing */
+			Thread.currentThread().interrupt();
+		}
+		catch (RejectedExecutionException e)
+		{
+			JMLog.error("** JMata RejectedExecutionException occurred");
 		}
 	}
 	
@@ -119,11 +128,11 @@ class JMataImpl
 	{
 		if (instance != null)
 		{
-			instance.globalQue.shutdownNow();
 			for (JMMachine machine : instance.machineMap.values())
 			{
 				machine.terminate();
 			}
+			instance.globalQue.shutdownNow();
 			instance = null;
 		}
 	}

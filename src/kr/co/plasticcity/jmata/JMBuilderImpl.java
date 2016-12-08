@@ -129,19 +129,19 @@ class JMBuilderImpl implements JMBuilder
 			@Override
 			public <S> WhenEnter<S> whenEnterFrom(Class<S> signal)
 			{
-				return new WhenEnterImpl<S>(signal);
+				return new WhenEnterImpl<>(signal);
 			}
 			
 			@Override
 			public <S extends Enum<S>> WhenEnter<S> whenEnterFrom(Enum<S> signal)
 			{
-				return new WhenEnterImpl<S>(signal);
+				return new WhenEnterImpl<>(signal);
 			}
 			
 			@Override
 			public WhenEnter<String> whenEnterFrom(String signal)
 			{
-				return new WhenEnterImpl<String>(signal);
+				return new WhenEnterImpl<>(signal);
 			}
 			
 			@Override
@@ -154,31 +154,31 @@ class JMBuilderImpl implements JMBuilder
 			@SuppressWarnings("unchecked")
 			public <S extends Enum<S>> WhenInput<S> whenInput(S... signals)
 			{
-				return new WhenInputImpl<S>(signals);
+				return new WhenInputImpl<>(signals);
 			}
 			
 			@Override
 			public WhenInput<String> whenInput(String... signals)
 			{
-				return new WhenInputImpl<String>(signals);
+				return new WhenInputImpl<>(signals);
 			}
 			
 			@Override
 			public <S> WhenInput<S> whenInput(Class<S> signal)
 			{
-				return new WhenInputImpl<S>(signal);
+				return new WhenInputImpl<>(signal);
 			}
 			
 			@Override
 			public <S extends Enum<S>> WhenInput<S> whenInput(Enum<S> signal)
 			{
-				return new WhenInputImpl<S>(signal);
+				return new WhenInputImpl<>(signal);
 			}
 			
 			@Override
 			public WhenInput<String> whenInput(String signal)
 			{
-				return new WhenInputImpl<String>(signal);
+				return new WhenInputImpl<>(signal);
 			}
 			
 			@Override

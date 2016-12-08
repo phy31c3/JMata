@@ -103,7 +103,7 @@ class JMStateImpl implements JMStateCreater
 	}
 	
 	@Override
-	public <S> void runExitFunctionC(S signal, JMConsumer<Class<?>> nextState)
+	public <S> Object runExitFunctionC(S signal, JMFunction<Class<?>, Object> nextState)
 	{
 		if (switchRuleC != null && switchRuleC.containsKey(signal.getClass()))
 		{
@@ -116,12 +116,16 @@ class JMStateImpl implements JMStateCreater
 				exit.accept();
 			}
 			
-			nextState.accept(switchRuleC.get(signal.getClass()));
+			return nextState.apply(switchRuleC.get(signal.getClass()));
+		}
+		else
+		{
+			return null;
 		}
 	}
 	
 	@Override
-	public <S extends Enum<S>> void runExitFunction(Enum<S> signal, JMConsumer<Class<?>> nextState)
+	public <S extends Enum<S>> Object runExitFunction(Enum<S> signal, JMFunction<Class<?>, Object> nextState)
 	{
 		if (switchRuleE != null && switchRuleE.containsKey(signal))
 		{
@@ -134,7 +138,7 @@ class JMStateImpl implements JMStateCreater
 				exit.accept();
 			}
 			
-			nextState.accept(switchRuleE.get(signal));
+			return nextState.apply(switchRuleE.get(signal));
 		}
 		else if (switchRuleC != null && switchRuleC.containsKey(signal.getClass()))
 		{
@@ -147,12 +151,16 @@ class JMStateImpl implements JMStateCreater
 				exit.accept();
 			}
 			
-			nextState.accept(switchRuleC.get(signal.getClass()));
+			return nextState.apply(switchRuleC.get(signal.getClass()));
+		}
+		else
+		{
+			return null;
 		}
 	}
 	
 	@Override
-	public void runExitFunction(String signal, JMConsumer<Class<?>> nextState)
+	public Object runExitFunction(String signal, JMFunction<Class<?>, Object> nextState)
 	{
 		if (switchRuleS != null && switchRuleS.containsKey(signal))
 		{
@@ -165,7 +173,7 @@ class JMStateImpl implements JMStateCreater
 				exit.accept();
 			}
 			
-			nextState.accept(switchRuleS.get(signal));
+			return nextState.apply(switchRuleS.get(signal));
 		}
 		else if (switchRuleC != null && switchRuleC.containsKey(signal.getClass()))
 		{
@@ -178,7 +186,11 @@ class JMStateImpl implements JMStateCreater
 				exit.accept();
 			}
 			
-			nextState.accept(switchRuleC.get(signal.getClass()));
+			return nextState.apply(switchRuleC.get(signal.getClass()));
+		}
+		else
+		{
+			return null;
 		}
 	}
 	
