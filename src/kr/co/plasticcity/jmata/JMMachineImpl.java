@@ -112,13 +112,14 @@ class JMMachineImpl implements JMMachine
 	}
 	
 	@Override
-	public <S> void input(S signal)
+	public <S> void input(final S signal)
 	{
 		if (cond == COND.RUNNING)
 		{
 			machineQue.execute(() ->
 			{
-				while (doInput(signal) != null);
+				Object nextSignal = signal;
+				while ((nextSignal = doInput(nextSignal)) != null);
 			});
 		}
 	}

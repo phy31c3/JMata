@@ -20,5 +20,5 @@ interface JMMachine
 	
 	void terminate();
 	
-	<S> void input(S signal);
+	<S> void input(final S signal);
 }
