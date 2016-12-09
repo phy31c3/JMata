@@ -112,7 +112,7 @@ class JMMachineImpl implements JMMachine
 	}
 	
 	@Override
-	public <S> void input(final S signal)
+	public synchronized <S> void input(final S signal)
 	{
 		if (cond == COND.RUNNING)
 		{
