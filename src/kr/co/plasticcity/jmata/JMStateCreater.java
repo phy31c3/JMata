@@ -4,7 +4,7 @@ import kr.co.plasticcity.jmata.function.*;
 
 interface JMStateCreater extends JMState
 {
-	interface Constructor
+	class Constructor
 	{
 		static JMStateCreater getNew(Object machineTag, Class<?> stateTag)
 		{

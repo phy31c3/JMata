@@ -6,7 +6,7 @@ import kr.co.plasticcity.jmata.function.*;
 
 interface JMMachine
 {
-	interface Constructor
+	class Constructor
 	{
 		static JMMachine getNew(Object tag, Class<?> startState, Map<Class<?>, ? extends JMState> stateMap, JMVoidConsumer terminateWork)
 		{

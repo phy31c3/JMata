@@ -4,7 +4,7 @@ import kr.co.plasticcity.jmata.function.*;
 
 public interface JMBuilder
 {
-	interface Constructor
+	class Constructor
 	{
 		static JMBuilder getNew(Object machineTag, boolean isPresent, JMConsumer<JMMachine> registrator)
 		{
