@@ -145,8 +145,13 @@ class JMataImpl
 	private JMataImpl()
 	{
 		this.machineMap = new ConcurrentHashMap<>();
-		this.globalQue = Executors.newSingleThreadExecutor();
-		this.globalQue.execute(() -> Thread.currentThread().setName("JMataGlobalThread"));
+		this.globalQue = Executors.newSingleThreadExecutor(r ->
+		{
+			Thread t = Executors.defaultThreadFactory().newThread(r);
+			t.setDaemon(true);
+			t.setName("JMataGlobalThread");
+			return t;
+		});
 	}
 	
 	void buildMachine(final Object machineTag, final JMConsumer<JMBuilder> builder)

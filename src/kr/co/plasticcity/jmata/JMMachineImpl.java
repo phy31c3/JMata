@@ -44,8 +44,13 @@ class JMMachineImpl implements JMMachine
 			JMLog.debug(LOG_MACHINE_STATE_CHANGED, machineTag, cond.name(), COND.RUNNING.name());
 			
 			cond = COND.RUNNING;
-			machineQue = Executors.newSingleThreadExecutor();
-			machineQue.execute(() -> Thread.currentThread().setName(String.format("JMataMachineThread-%s", machineTag)));
+			machineQue = Executors.newSingleThreadExecutor(r ->
+			{
+				Thread t = Executors.defaultThreadFactory().newThread(r);
+				t.setDaemon(true);
+				t.setName(String.format("JMataMachineThread-%s", machineTag));
+				return t;
+			});
 			machineQue.execute(stateMap.get(startState)::runEnterFunction);
 		}
 		else if (cond == COND.STOPPED)
@@ -53,8 +58,13 @@ class JMMachineImpl implements JMMachine
 			JMLog.debug(LOG_MACHINE_STATE_CHANGED, machineTag, cond.name(), COND.RUNNING.name());
 			
 			cond = COND.RUNNING;
-			machineQue = Executors.newSingleThreadExecutor();
-			machineQue.execute(() -> Thread.currentThread().setName(String.format("JMataMachineThread-%s", machineTag)));
+			machineQue = Executors.newSingleThreadExecutor(r ->
+			{
+				Thread t = Executors.defaultThreadFactory().newThread(r);
+				t.setDaemon(true);
+				t.setName(String.format("JMataMachineThread-%s", machineTag));
+				return t;
+			});
 		}
 	}
 	
