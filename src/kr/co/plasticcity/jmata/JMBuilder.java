@@ -16,12 +16,12 @@ public interface JMBuilder
 	
 	void ifPresentThenReplaceWithThis(JMConsumer<StartStateDefiner> definer);
 	
-	public interface StartStateDefiner
+	interface StartStateDefiner
 	{
 		StateBuilder defineStartState(Class<?> stateTag);
 	}
 	
-	public interface MachineBuilder
+	interface MachineBuilder
 	{
 		StateBuilder defineState(Class<?> stateTag);
 		
@@ -32,7 +32,7 @@ public interface JMBuilder
 		void buildAndRun();
 	}
 	
-	public interface StateBuilder
+	interface StateBuilder
 	{
 		/* ================================== enter & exit ================================== */
 		StateBuilder whenEnter(JMVoidConsumer defaultWork);
@@ -64,7 +64,7 @@ public interface JMBuilder
 		/* ====================================== etc ====================================== */
 		MachineBuilder apply();
 		
-		public interface WhenEnter<S>
+		interface WhenEnter<S>
 		{
 			StateBuilder doThis(JMConsumer<S> workOnEnter);
 			
@@ -73,14 +73,14 @@ public interface JMBuilder
 			StateBuilder doNothing();
 		}
 		
-		public interface SwitchTo
+		interface SwitchTo
 		{
 			StateBuilder switchToSelf();
 			
 			StateBuilder switchTo(Class<?> stateTag);
 		}
 		
-		public interface WhenInput<S> extends SwitchTo
+		interface WhenInput<S> extends SwitchTo
 		{
 			SwitchTo doThis(JMConsumer<S> workOnExit);
 			
