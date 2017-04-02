@@ -36,7 +36,7 @@ public class JMataTest
 	
 	private Object getRandomInput()
 	{
-		int rand = (int)(Math.random() * 6);
+		int rand = (int)(Math.random() * 7);
 		switch (rand)
 		{
 		case 0: return "string";
@@ -44,8 +44,9 @@ public class JMataTest
 		case 2: return Enum.ENUM;
 		case 3: return Enum.ELSE;
 		case 4: return AnotherEnum.ENUM;
-		case 5:
-		default: return new Class();
+		case 5: return new Class();
+		case 6:
+		default: return null;
 		}
 	}
 	
