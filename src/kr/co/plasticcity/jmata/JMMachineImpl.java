@@ -51,7 +51,14 @@ class JMMachineImpl implements JMMachine
 				t.setName(String.format("JMataMachineThread-%s", machineTag));
 				return t;
 			});
-			machineQue.execute(stateMap.get(startState)::runEnterFunction);
+			machineQue.execute(() ->
+			{
+				Object nextSignal = stateMap.get(startState).runEnterFunction();
+				while (nextSignal != null)
+				{
+					nextSignal = doInput(nextSignal);
+				}
+			});
 		}
 		else if (cond == COND.STOPPED)
 		{
@@ -129,7 +136,10 @@ class JMMachineImpl implements JMMachine
 			machineQue.execute(() ->
 			{
 				Object nextSignal = signal;
-				while ((nextSignal = doInput(nextSignal)) != null);
+				while (nextSignal != null)
+				{
+					nextSignal = doInput(nextSignal);
+				}
 			});
 		}
 	}
