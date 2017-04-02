@@ -24,7 +24,7 @@ class JMStateImpl implements JMStateCreater
 	private Map<Enum<?>, Class<?>> switchRuleE;
 	private Map<String, Class<?>> switchRuleS;
 	
-	public JMStateImpl(Object machineTag, Class<?> stateTag)
+	JMStateImpl(Object machineTag, Class<?> stateTag)
 	{
 		this.machineTag = machineTag;
 		this.stateTag = stateTag;

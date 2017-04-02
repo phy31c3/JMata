@@ -16,7 +16,7 @@ class JMataImpl
 	
 	private enum STATE
 	{
-		NOT_INIT, RUNNING, RELEASED;
+		NOT_INIT, RUNNING, RELEASED
 	}
 	
 	static void initialize(JMConsumer<String> debugLogger, JMConsumer<String> errorLogger)

@@ -23,7 +23,6 @@ class JMBuilderImpl implements JMBuilder
 		if (present)
 		{
 			JMLog.debug("[%s] machine already exists, ignoring build", machineTag);
-			return;
 		}
 		else
 		{
@@ -280,21 +279,21 @@ class JMBuilderImpl implements JMBuilder
 			
 			private class SwitchToImpl implements SwitchTo
 			{
-				protected Class<?>[] signalsC;
-				protected Enum<?>[] signalsE;
-				protected String[] signalsS;
+				Class<?>[] signalsC;
+				Enum<?>[] signalsE;
+				String[] signalsS;
 				
-				protected SwitchToImpl(Class<?>... signals)
+				SwitchToImpl(Class<?>... signals)
 				{
 					this.signalsC = signals;
 				}
 				
-				protected SwitchToImpl(Enum<?>... signals)
+				SwitchToImpl(Enum<?>... signals)
 				{
 					this.signalsE = signals;
 				}
 				
-				protected SwitchToImpl(String... signals)
+				SwitchToImpl(String... signals)
 				{
 					this.signalsS = signals;
 				}
