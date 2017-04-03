@@ -48,18 +48,18 @@ public interface JMBuilder
 		WhenEnter<String> whenEnterFrom(String signal);
 		
 		/* ===================================== input ===================================== */
-		SwitchTo whenInput(Class<?>... signals);
-		
-		@SuppressWarnings("unchecked")
-		<S extends Enum<S>> WhenInput<S> whenInput(S... signals);
-		
-		WhenInput<String> whenInput(String... signals);
-		
 		<S> WhenInput<S> whenInput(Class<S> signal);
 		
-		<S extends Enum<S>> WhenInput<S> whenInput(Enum<S> signal);
+		SwitchTo whenInput(Class<?>... signals);
 		
-		WhenInput<String> whenInput(String signal);
+		<S extends Enum<S>> WhenInputPrimitive<S> whenInput(Enum<S> signal);
+		
+		@SuppressWarnings("unchecked")
+		<S extends Enum<S>> WhenInputPrimitive<S> whenInput(S... signals);
+		
+		WhenInputPrimitive<String> whenInput(String signal);
+		
+		WhenInputPrimitive<String> whenInput(String... signals);
 		
 		/* ====================================== etc ====================================== */
 		MachineBuilder apply();
@@ -73,18 +73,27 @@ public interface JMBuilder
 			StateBuilder doNothing();
 		}
 		
-		interface SwitchTo
-		{
-			StateBuilder switchToSelf();
-			
-			StateBuilder switchTo(Class<?> stateTag);
-		}
-		
 		interface WhenInput<S> extends SwitchTo
 		{
 			SwitchTo doThis(JMConsumer<S> workOnExit);
 			
 			SwitchTo doNothing();
+		}
+		
+		interface WhenInputPrimitive<S> extends SwitchTo
+		{
+			SwitchTo doThis(JMVoidConsumer workOnExit);
+			
+			SwitchTo doThis(JMConsumer<S> workOnExit);
+			
+			SwitchTo doNothing();
+		}
+		
+		interface SwitchTo
+		{
+			StateBuilder switchToSelf();
+			
+			StateBuilder switchTo(Class<?> stateTag);
 		}
 	}
 }

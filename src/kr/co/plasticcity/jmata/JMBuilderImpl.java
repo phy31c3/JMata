@@ -144,40 +144,40 @@ class JMBuilderImpl implements JMBuilder
 			}
 			
 			@Override
-			public SwitchTo whenInput(Class<?>... signals)
-			{
-				return new SwitchToImpl(signals);
-			}
-			
-			@Override
-			@SuppressWarnings("unchecked")
-			public <S extends Enum<S>> WhenInput<S> whenInput(S... signals)
-			{
-				return new WhenInputImpl<>(signals);
-			}
-			
-			@Override
-			public WhenInput<String> whenInput(String... signals)
-			{
-				return new WhenInputImpl<>(signals);
-			}
-			
-			@Override
 			public <S> WhenInput<S> whenInput(Class<S> signal)
 			{
 				return new WhenInputImpl<>(signal);
 			}
 			
 			@Override
-			public <S extends Enum<S>> WhenInput<S> whenInput(Enum<S> signal)
+			public SwitchTo whenInput(Class<?>... signals)
+			{
+				return new SwitchToImpl(signals);
+			}
+			
+			@Override
+			public <S extends Enum<S>> WhenInputPrimitive<S> whenInput(Enum<S> signal)
 			{
 				return new WhenInputImpl<>(signal);
 			}
 			
 			@Override
-			public WhenInput<String> whenInput(String signal)
+			@SuppressWarnings("unchecked")
+			public <S extends Enum<S>> WhenInputPrimitive<S> whenInput(S... signals)
+			{
+				return new WhenInputImpl<>(signals);
+			}
+			
+			@Override
+			public WhenInputPrimitive<String> whenInput(String signal)
 			{
 				return new WhenInputImpl<>(signal);
+			}
+			
+			@Override
+			public WhenInputPrimitive<String> whenInput(String... signals)
+			{
+				return new WhenInputImpl<>(signals);
 			}
 			
 			@Override
@@ -277,62 +277,7 @@ class JMBuilderImpl implements JMBuilder
 				}
 			}
 			
-			private class SwitchToImpl implements SwitchTo
-			{
-				Class<?>[] signalsC;
-				Enum<?>[] signalsE;
-				String[] signalsS;
-				
-				SwitchToImpl(Class<?>... signals)
-				{
-					this.signalsC = signals;
-				}
-				
-				SwitchToImpl(Enum<?>... signals)
-				{
-					this.signalsE = signals;
-				}
-				
-				SwitchToImpl(String... signals)
-				{
-					this.signalsS = signals;
-				}
-				
-				@Override
-				public StateBuilder switchToSelf()
-				{
-					return switchTo(stateTag);
-				}
-				
-				@Override
-				public StateBuilder switchTo(Class<?> stateTag)
-				{
-					if (signalsC != null)
-					{
-						for (Class<?> signal : signalsC)
-						{
-							stateCreater.putSwitchRule(signal, stateTag);
-						}
-					}
-					else if (signalsE != null)
-					{
-						for (Enum<?> signal : signalsE)
-						{
-							stateCreater.putSwitchRule(signal, stateTag);
-						}
-					}
-					else
-					{
-						for (String signal : signalsS)
-						{
-							stateCreater.putSwitchRule(signal, stateTag);
-						}
-					}
-					return StateBuilderImpl.this;
-				}
-			}
-			
-			private class WhenInputImpl<S> extends SwitchToImpl implements WhenInput<S>
+			private class WhenInputImpl<S> extends SwitchToImpl implements WhenInput<S>, WhenInputPrimitive<S>
 			{
 				private Class<S> signalC;
 				
@@ -350,6 +295,12 @@ class JMBuilderImpl implements JMBuilder
 				private WhenInputImpl(String... signals)
 				{
 					super(signals);
+				}
+				
+				@Override
+				public SwitchTo doThis(final JMVoidConsumer workOnExit)
+				{
+					return doThis((S s) -> workOnExit.accept());
 				}
 				
 				@Override
@@ -412,6 +363,61 @@ class JMBuilderImpl implements JMBuilder
 						}
 						return new SwitchToImpl(signalsS);
 					}
+				}
+			}
+			
+			private class SwitchToImpl implements SwitchTo
+			{
+				Class<?>[] signalsC;
+				Enum<?>[] signalsE;
+				String[] signalsS;
+				
+				SwitchToImpl(Class<?>... signals)
+				{
+					this.signalsC = signals;
+				}
+				
+				SwitchToImpl(Enum<?>... signals)
+				{
+					this.signalsE = signals;
+				}
+				
+				SwitchToImpl(String... signals)
+				{
+					this.signalsS = signals;
+				}
+				
+				@Override
+				public StateBuilder switchToSelf()
+				{
+					return switchTo(stateTag);
+				}
+				
+				@Override
+				public StateBuilder switchTo(Class<?> stateTag)
+				{
+					if (signalsC != null)
+					{
+						for (Class<?> signal : signalsC)
+						{
+							stateCreater.putSwitchRule(signal, stateTag);
+						}
+					}
+					else if (signalsE != null)
+					{
+						for (Enum<?> signal : signalsE)
+						{
+							stateCreater.putSwitchRule(signal, stateTag);
+						}
+					}
+					else
+					{
+						for (String signal : signalsS)
+						{
+							stateCreater.putSwitchRule(signal, stateTag);
+						}
+					}
+					return StateBuilderImpl.this;
 				}
 			}
 		}

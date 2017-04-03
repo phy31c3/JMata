@@ -67,10 +67,9 @@ public class JMataTest
 					       .apply()
 					
 					       .defineState(A.class)
-					       .whenInput(Enum.ENUM).switchTo(B.class)
-					       .whenInput(Enum.class).switchTo(C.class)
-					       .whenInput(AnotherEnum.class).switchTo(A.class)
-					       .whenExit(A::exit)
+					       .whenInput(Enum.ENUM).doThis(A::exit).switchTo(B.class)
+					       .whenInput(Enum.class, AnotherEnum.class).switchTo(C.class)
+					       .whenExit(A::defaultExit)
 					       .apply()
 					
 					       .defineState(B.class)
@@ -178,6 +177,12 @@ public class JMataTest
 		@StateFunc
 		public static void exit()
 		{
+			System.out.println("Enum 전이 퇴장 동작인데 파라미터가 없음");
+		}
+		
+		@StateFunc
+		public static void defaultExit()
+		{
 			System.out.println("난 A의 기본 퇴장 동작");
 		}
 	}
@@ -243,9 +248,9 @@ public class JMataTest
 		}
 		
 		@StateFunc
-		public static void exit(String s)
+		public static void exit()
 		{
-			System.out.printf("%s에 걸렸다... Finish로 간다\n", s);
+			System.out.println("5%에 걸렸다... Finish로 간다");
 		}
 	}
 	
