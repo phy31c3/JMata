@@ -21,7 +21,7 @@ public class JMataTest
 		new TestMachine();
 		while (!isFinish)
 		{
-			JMata.inputTo(TestMachine.class, getRandomInput());
+			JMata.input(TestMachine.class, getRandomInput());
 			try
 			{
 				Thread.sleep((long)(Math.random() * 100));
@@ -67,23 +67,23 @@ public class JMataTest
 					       .apply()
 					
 					       .defineState(A.class)
-					       .whenInput(Enum.ENUM).doThis(A::exit).switchTo(B.class)
+					       .whenInput(Enum.ENUM).doThis(A::exitBy).switchTo(B.class)
 					       .whenInput(Enum.class, AnotherEnum.class).switchTo(C.class)
-					       .whenExit(A::defaultExit)
+					       .whenExit(A::exit)
 					       .apply()
 					
 					       .defineState(B.class)
 					       .whenEnter(B::enter)
 					       .whenInput("string").switchTo(A.class)
-					       .whenInput(Percent10.class).doThis(B::exit).switchTo(Finish.class)
-					       .whenInput(String.class).doThis(B::exit).switchTo(C.class)
+					       .whenInput(Percent10.class).doThis(B::exitBy).switchTo(Finish.class)
+					       .whenInput(String.class).doThis(B::exitBy).switchTo(C.class)
 					       .whenExit(B::exit)
 					       .apply()
 					
 					       .defineState(C.class)
 					       .whenEnter(C::enter)
-					       .whenEnterFrom(Percent25.class).doThis(C::enterBy)
-					       .whenInput("5percent").doThis(C::exit).switchTo(Finish.class)
+					       .whenEnterBy(Percent25.class).doThis(C::enterBy)
+					       .whenInput("5percent").doThis(C::exitBy).switchTo(Finish.class)
 					       .whenInput(Percent25.class).switchToSelf()
 					       .whenInput(Class.class).switchTo(A.class)
 					       .apply()
@@ -175,13 +175,13 @@ public class JMataTest
 	public static class A
 	{
 		@StateFunc
-		public static void exit()
+		public static void exitBy()
 		{
 			System.out.println("Enum 전이 퇴장 동작인데 파라미터가 없음");
 		}
 		
 		@StateFunc
-		public static void defaultExit()
+		public static void exit()
 		{
 			System.out.println("난 A의 기본 퇴장 동작");
 		}
@@ -204,13 +204,13 @@ public class JMataTest
 		}
 		
 		@StateFunc
-		public static void exit(String s)
+		public static void exitBy(String s)
 		{
 			System.out.println("B가 이상한 String으로 전이하면 이게 불려지겠지");
 		}
 		
 		@StateFunc
-		public static void exit(Percent10 s)
+		public static void exitBy(Percent10 s)
 		{
 			System.out.println("10프로에 걸렸다... Finish로 간다");
 		}
@@ -248,7 +248,7 @@ public class JMataTest
 		}
 		
 		@StateFunc
-		public static void exit()
+		public static void exitBy()
 		{
 			System.out.println("5%에 걸렸다... Finish로 간다");
 		}

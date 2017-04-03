@@ -49,8 +49,8 @@ public interface JMata
 		JMataImpl.post(jmata -> jmata.terminateMachine(machineTag));
 	}
 	
-	static <S> void inputTo(final Object machineTag, final S signal)
+	static <S> void input(final Object machineTag, final S signal)
 	{
-		JMataImpl.post(jmata -> jmata.inputTo(machineTag, signal));
+		JMataImpl.post(jmata -> jmata.input(machineTag, signal));
 	}
 }

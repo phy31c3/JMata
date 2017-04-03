@@ -204,7 +204,7 @@ class JMataImpl
 		});
 	}
 	
-	<S> void inputTo(final Object machineTag, final S signal)
+	<S> void input(final Object machineTag, final S signal)
 	{
 		globalQue.execute(() ->
 		{

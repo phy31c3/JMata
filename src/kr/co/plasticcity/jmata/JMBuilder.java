@@ -41,11 +41,11 @@ public interface JMBuilder
 		
 		StateBuilder whenExit(JMVoidConsumer defaultWork);
 		
-		<S> WhenEnter<S> whenEnterFrom(Class<S> signal);
+		<S> WhenEnter<S> whenEnterBy(Class<S> signal);
 		
-		<S extends Enum<S>> WhenEnter<S> whenEnterFrom(Enum<S> signal);
+		<S extends Enum<S>> WhenEnter<S> whenEnterBy(Enum<S> signal);
 		
-		WhenEnter<String> whenEnterFrom(String signal);
+		WhenEnter<String> whenEnterBy(String signal);
 		
 		/* ===================================== input ===================================== */
 		<S> WhenInput<S> whenInput(Class<S> signal);

@@ -126,19 +126,19 @@ class JMBuilderImpl implements JMBuilder
 			}
 			
 			@Override
-			public <S> WhenEnter<S> whenEnterFrom(Class<S> signal)
+			public <S> WhenEnter<S> whenEnterBy(Class<S> signal)
 			{
 				return new WhenEnterImpl<>(signal);
 			}
 			
 			@Override
-			public <S extends Enum<S>> WhenEnter<S> whenEnterFrom(Enum<S> signal)
+			public <S extends Enum<S>> WhenEnter<S> whenEnterBy(Enum<S> signal)
 			{
 				return new WhenEnterImpl<>(signal);
 			}
 			
 			@Override
-			public WhenEnter<String> whenEnterFrom(String signal)
+			public WhenEnter<String> whenEnterBy(String signal)
 			{
 				return new WhenEnterImpl<>(signal);
 			}
