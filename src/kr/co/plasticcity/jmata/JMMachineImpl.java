@@ -12,9 +12,6 @@ class JMMachineImpl implements JMMachine
 		CREATED, RUNNING, STOPPED, TERMINATED
 	}
 	
-	private static final String LOG_MACHINE_STATE_CHANGED = "[%s] machine state changed : [%s] -> [%s]";
-	private static final String LOG_STATE_SWITCHED = "[%s] machine : switch from [%s] to [%s] due to [%s]";
-	
 	private final Object machineTag;
 	private final Class<?> startState;
 	private final Map<Class<?>, ? extends JMState> stateMap;
@@ -33,7 +30,7 @@ class JMMachineImpl implements JMMachine
 		this.curState = startState;
 		this.cond = COND.CREATED;
 		
-		JMLog.debug("[%s] machine has been built", tag);
+		JMLog.debug(JMLog.MACHINE_BUILT, tag);
 	}
 	
 	@Override
@@ -41,9 +38,7 @@ class JMMachineImpl implements JMMachine
 	{
 		if (cond == COND.CREATED)
 		{
-			JMLog.debug(LOG_MACHINE_STATE_CHANGED, machineTag, cond.name(), COND.RUNNING.name());
-			
-			cond = COND.RUNNING;
+			switchCond(COND.RUNNING);
 			machineQue = Executors.newSingleThreadExecutor(r ->
 			{
 				Thread t = Executors.defaultThreadFactory().newThread(r);
@@ -62,9 +57,7 @@ class JMMachineImpl implements JMMachine
 		}
 		else if (cond == COND.STOPPED)
 		{
-			JMLog.debug(LOG_MACHINE_STATE_CHANGED, machineTag, cond.name(), COND.RUNNING.name());
-			
-			cond = COND.RUNNING;
+			switchCond(COND.RUNNING);
 			machineQue = Executors.newSingleThreadExecutor(r ->
 			{
 				Thread t = Executors.defaultThreadFactory().newThread(r);
@@ -80,9 +73,7 @@ class JMMachineImpl implements JMMachine
 	{
 		if (cond == COND.RUNNING)
 		{
-			JMLog.debug(LOG_MACHINE_STATE_CHANGED, machineTag, cond.name(), COND.STOPPED.name());
-			
-			cond = COND.STOPPED;
+			switchCond(COND.STOPPED);
 			machineQue.shutdownNow();
 		}
 	}
@@ -92,9 +83,7 @@ class JMMachineImpl implements JMMachine
 	{
 		if (cond == COND.CREATED)
 		{
-			JMLog.debug(LOG_MACHINE_STATE_CHANGED, machineTag, cond.name(), COND.TERMINATED.name());
-			
-			cond = COND.TERMINATED;
+			switchCond(COND.TERMINATED);
 			if (terminateWork != null)
 			{
 				terminateWork.accept();
@@ -102,9 +91,7 @@ class JMMachineImpl implements JMMachine
 		}
 		else if (cond != COND.TERMINATED)
 		{
-			JMLog.debug(LOG_MACHINE_STATE_CHANGED, machineTag, cond.name(), COND.TERMINATED.name());
-			
-			cond = COND.TERMINATED;
+			switchCond(COND.TERMINATED);
 			machineQue.shutdownNow();
 			if (terminateWork != null)
 			{
@@ -116,12 +103,12 @@ class JMMachineImpl implements JMMachine
 					}
 					else
 					{
-						JMLog.error("[%s] machine : The shutdown operation failed because the machine shutdown took too long (over 1 second)", machineTag);
+						JMLog.error(JMLog.TERMINATION_WORK_FAILED_AS_TIMEOUT, machineTag);
 					}
 				}
 				catch (InterruptedException e)
 				{
-					JMLog.error("[%s] machine : The shutdown operation failed because this thread interrupted before ", machineTag);
+					JMLog.error(JMLog.TERMINATION_WORK_FAILED_AS_INTERRUPT, machineTag);
 					Thread.currentThread().interrupt();
 				}
 			}
@@ -154,8 +141,8 @@ class JMMachineImpl implements JMMachine
 				{
 					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
-						JMLog.debug(LOG_STATE_SWITCHED, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
 						curState = nextState;
+						JMLog.debug(JMLog.STATE_SWITCHED, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
 						return stateMap.get(curState).runEnterFunction((String)signal);
 					}
 					else
@@ -170,8 +157,8 @@ class JMMachineImpl implements JMMachine
 				{
 					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
-						JMLog.debug(LOG_STATE_SWITCHED, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
 						curState = nextState;
+						JMLog.debug(JMLog.STATE_SWITCHED, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
 						return stateMap.get(curState).runEnterFunction((Enum<?>)signal);
 					}
 					else
@@ -186,8 +173,8 @@ class JMMachineImpl implements JMMachine
 				{
 					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
-						JMLog.debug(LOG_STATE_SWITCHED, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
 						curState = nextState;
+						JMLog.debug(JMLog.STATE_SWITCHED, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
 						return stateMap.get(curState).runEnterFunctionC(signal);
 					}
 					else
@@ -201,5 +188,12 @@ class JMMachineImpl implements JMMachine
 		{
 			return null;
 		}
+	}
+	
+	private void switchCond(COND next)
+	{
+		final COND prev = cond;
+		this.cond = next;
+		JMLog.debug(JMLog.MACHINE_STATE_CHANGED, machineTag, prev.name(), next.name());
 	}
 }

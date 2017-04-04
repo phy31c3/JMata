@@ -22,7 +22,7 @@ class JMBuilderImpl implements JMBuilder
 	{
 		if (present)
 		{
-			JMLog.debug("[%s] machine already exists, ignoring build", machineTag);
+			JMLog.debug(JMLog.IGNORE_MACHINE_BUILD, machineTag);
 		}
 		else
 		{
@@ -35,7 +35,7 @@ class JMBuilderImpl implements JMBuilder
 	{
 		if (present)
 		{
-			JMLog.debug("[%s] machine already exists and will be replaced with a new machine", machineTag);
+			JMLog.debug(JMLog.REPLACE_MACHINE, machineTag);
 		}
 		definer.accept(new MachineBuilderImpl());
 	}
@@ -63,7 +63,7 @@ class JMBuilderImpl implements JMBuilder
 		{
 			if (stateMap.containsKey(stateTag))
 			{
-				JMLog.error("[%s] machine : Definition of state [%s] redundancy", machineTag, stateTag.getSimpleName());
+				JMLog.error(JMLog.STATE_DEFINITION_DUPLICATED, machineTag, stateTag.getSimpleName());
 			}
 			return new StateBuilderImpl(stateTag);
 		}

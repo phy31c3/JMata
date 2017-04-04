@@ -34,7 +34,7 @@ class JMataImpl
 			}
 			finally
 			{
-				JMLog.debug("** JMata has been initialized");
+				JMLog.debug(JMLog.JMATA_INITIALIZED);
 				permit.release(NUM_PERMITS);
 			}
 		}
@@ -57,7 +57,7 @@ class JMataImpl
 				{
 					clearInstance();
 					state = STATE.RELEASED;
-					JMLog.debug("** JMata has been released");
+					JMLog.debug(JMLog.JMATA_RELEASED);
 					JMLog.setLogger(null, null);
 					
 					if (releaseWork != null)
@@ -95,16 +95,16 @@ class JMataImpl
 					switch (state)
 					{
 					case NOT_INIT:
-						JMLog.error("** JMata initialization error : Call JMata.initialize() first");
+						JMLog.error(JMLog.JMATA_ERROR_IN_NOT_INIT);
 						break;
 					case RUNNING:
-						JMLog.error("** JMata unknown error : JMata is in RUNNIG state, but instance == null");
+						JMLog.error(JMLog.JMATA_ERROR_IN_RUNNING);
 						break;
 					case RELEASED:
-						JMLog.debug("** JMata already released : JMata is released, but JMata command is called");
+						JMLog.debug(JMLog.JMATA_ERROR_IN_RELEASED);
 						break;
 					default:
-						JMLog.error("** JMata undefined state : %s", state.name());
+						JMLog.error(JMLog.JMATA_ERROR_IN_UNDEFINED, state.name());
 						break;
 					}
 				}
@@ -120,7 +120,7 @@ class JMataImpl
 		}
 		catch (RejectedExecutionException e)
 		{
-			JMLog.error("** JMata RejectedExecutionException occurred");
+			JMLog.error(JMLog.JMATA_REJECTED_EXECUTION_EXCEPTION);
 		}
 	}
 	
@@ -158,7 +158,7 @@ class JMataImpl
 	{
 		globalQue.execute(() ->
 		{
-			JMLog.debug("[%s] machine build started", machineTag);
+			JMLog.debug(JMLog.MACHINE_BUILD_STARTED, machineTag);
 			builder.accept(JMBuilder.Constructor.getNew(machineTag, machineMap.containsKey(machineTag), machine ->
 			{
 				JMMachine oldMachine = machineMap.put(machineTag, machine);

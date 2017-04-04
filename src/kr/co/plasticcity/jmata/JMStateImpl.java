@@ -199,7 +199,7 @@ class JMStateImpl implements JMStateCreater
 	{
 		if (enter != null)
 		{
-			JMLog.error("[%s] machine : Definition of default entry function redundancy in state [%s]", machineTag, stateTag.getSimpleName());
+			JMLog.error(JMLog.ENTER_FUNC_DUPLICATED, machineTag, stateTag.getSimpleName());
 		}
 		
 		enter = func;
@@ -214,7 +214,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (enterSignalC.containsKey(signal))
 		{
-			JMLog.error("[%s] machine : Definition of entry function for input [%s] redundancy in state [%s]", machineTag, signal.getSimpleName(), stateTag.getSimpleName());
+			JMLog.error(JMLog.ENTER_BY_CLASS_FUNC_DUPLICATED, machineTag, signal.getSimpleName(), stateTag.getSimpleName());
 		}
 		
 		enterSignalC.put(signal, func);
@@ -229,7 +229,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (enterSignalE.containsKey(signal))
 		{
-			JMLog.error("[%s] machine : Definition of entry function for input [%s] redundancy in state [%s]", machineTag, signal.name(), stateTag.getSimpleName());
+			JMLog.error(JMLog.ENTER_BY_CLASS_FUNC_DUPLICATED, machineTag, signal.name(), stateTag.getSimpleName());
 		}
 		
 		enterSignalE.put(signal, func);
@@ -244,7 +244,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (enterSignalS.containsKey(signal))
 		{
-			JMLog.error("[%s] machine : Definition of entry function for input [\"%s\"] redundancy in state [%s]", machineTag, signal, stateTag.getSimpleName());
+			JMLog.error(JMLog.ENTER_BY_STRING_FUNC_DUPLICATED, machineTag, signal, stateTag.getSimpleName());
 		}
 		
 		enterSignalS.put(signal, func);
@@ -255,7 +255,7 @@ class JMStateImpl implements JMStateCreater
 	{
 		if (exit != null)
 		{
-			JMLog.error("[%s] machine : Definition of default exit function redundancy in state [%s]", machineTag, stateTag.getSimpleName());
+			JMLog.error(JMLog.EXIT_FUNC_DUPLICATED, machineTag, stateTag.getSimpleName());
 		}
 		
 		exit = func;
@@ -270,7 +270,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (exitSignalC.containsKey(signal))
 		{
-			JMLog.error("[%s] machine : Definition of exit function for input [%s] redundancy in state [%s]", machineTag, signal.getSimpleName(), stateTag.getSimpleName());
+			JMLog.error(JMLog.EXIT_BY_CLASS_FUNC_DUPLICATED, machineTag, signal.getSimpleName(), stateTag.getSimpleName());
 		}
 		
 		exitSignalC.put(signal, func);
@@ -285,7 +285,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (exitSignalE.containsKey(signal))
 		{
-			JMLog.error("[%s] machine : Definition of exit function for input [%s] redundancy in state [%s]", machineTag, signal.name(), stateTag.getSimpleName());
+			JMLog.error(JMLog.EXIT_BY_CLASS_FUNC_DUPLICATED, machineTag, signal.name(), stateTag.getSimpleName());
 		}
 		
 		exitSignalE.put(signal, func);
@@ -300,7 +300,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (exitSignalS.containsKey(signal))
 		{
-			JMLog.error("[%s] machine : Definition of exit function for input [\"%s\"] redundancy in state [%s]", machineTag, signal, stateTag.getSimpleName());
+			JMLog.error(JMLog.EXIT_BY_STRING_FUNC_DUPLICATED, machineTag, signal, stateTag.getSimpleName());
 		}
 		
 		exitSignalS.put(signal, func);
@@ -315,7 +315,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (switchRuleC.containsKey(signal))
 		{
-			JMLog.error("[%s] machine : Definition of switch rule for input [%s] redundancy in state [%s]", machineTag, signal.getSimpleName(), stateTag.getSimpleName());
+			JMLog.error(JMLog.SWITCH_RULE_BY_CLASS_DUPLICATED, machineTag, signal.getSimpleName(), stateTag.getSimpleName());
 		}
 		
 		switchRuleC.put(signal, stateTag);
@@ -330,7 +330,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (switchRuleE.containsKey(signal))
 		{
-			JMLog.error("[%s] machine : Definition of switch rule for input [%s] redundancy in state [%s]", machineTag, signal.name(), stateTag.getSimpleName());
+			JMLog.error(JMLog.SWITCH_RULE_BY_CLASS_DUPLICATED, machineTag, signal.name(), stateTag.getSimpleName());
 		}
 		
 		switchRuleE.put(signal, stateTag);
@@ -345,7 +345,7 @@ class JMStateImpl implements JMStateCreater
 		}
 		else if (switchRuleS.containsKey(signal))
 		{
-			JMLog.error("[%s] machine : Definition of switch rule for input [\"%s\"] redundancy in state [%s]", machineTag, signal, stateTag.getSimpleName());
+			JMLog.error(JMLog.SWITCH_RULE_BY_STRING_DUPLICATED, machineTag, signal, stateTag.getSimpleName());
 		}
 		
 		switchRuleS.put(signal, stateTag);
