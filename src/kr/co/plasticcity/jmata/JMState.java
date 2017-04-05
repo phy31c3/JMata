@@ -15,6 +15,11 @@ interface JMState
 	
 	Object runEnterFunction(String signal);
 	
+	/**
+	 * 머신 종료 시에만 호출
+	 */
+	void runExitFunction();
+	
 	<S> Object runExitFunctionC(S signal, JMFunction<Class<?>, Object> nextState);
 	
 	<S extends Enum<S>> Object runExitFunction(Enum<S> signal, JMFunction<Class<?>, Object> nextState);

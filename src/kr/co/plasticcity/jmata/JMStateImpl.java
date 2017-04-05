@@ -103,6 +103,15 @@ class JMStateImpl implements JMStateCreater
 	}
 	
 	@Override
+	public void runExitFunction()
+	{
+		if (exit != null)
+		{
+			exit.accept();
+		}
+	}
+	
+	@Override
 	public <S> Object runExitFunctionC(S signal, JMFunction<Class<?>, Object> nextState)
 	{
 		if (switchRuleC != null && switchRuleC.containsKey(signal.getClass()))

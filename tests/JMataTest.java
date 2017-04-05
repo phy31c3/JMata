@@ -77,6 +77,8 @@ public class JMataTest
 					       .whenInput("string").switchTo(A.class)
 					       .whenInput(Percent10.class).doThis(B::exitBy).switchTo(Finish.class)
 					       .whenInput(String.class).doThis(B::exitBy).switchTo(C.class)
+					       /* 의도적인 머신 정의 오류 */
+					       //					       .whenInput(Enum.ENUM).doThis(B::exitBy).switchTo(Unknown.class)
 					       .whenExit(B::exit)
 					       .apply()
 					
@@ -90,6 +92,7 @@ public class JMataTest
 					
 					       .defineState(Finish.class)
 					       .whenEnter(Finish::enter)
+					       .whenExit(Finish::exit)
 					       .apply()
 					
 					       .defineTerminateWork(JMataTest::onTerminate)
@@ -114,7 +117,7 @@ public class JMataTest
 				}
 				catch (InterruptedException e)
 				{
-				
+					/* do nothing */
 				}
 				finally
 				{
@@ -216,6 +219,12 @@ public class JMataTest
 		}
 		
 		@StateFunc
+		public static void exitBy(Enum s)
+		{
+			System.out.println("의도적으로 잘못 정의한 루틴을 탔다. 과연 스무스하게 넘어가는가?");
+		}
+		
+		@StateFunc
 		public static void exit()
 		{
 			System.out.println("이건 B의 기본 퇴장 동작인데 \"string\"으로 전이하면 불려져야 됨");
@@ -263,5 +272,17 @@ public class JMataTest
 			System.out.println("끝낸다...");
 			JMata.terminateMachine(TestMachine.class);
 		}
+		
+		@StateFunc
+		public static void exit()
+		{
+			System.out.println("Finish 상태의 exit()가 호출 됐다");
+		}
+	}
+	
+	@State
+	public static class Unknown
+	{
+		/* empty */
 	}
 }

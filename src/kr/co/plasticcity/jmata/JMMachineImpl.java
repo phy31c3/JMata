@@ -84,6 +84,7 @@ class JMMachineImpl implements JMMachine
 		if (cond == COND.CREATED)
 		{
 			switchCond(COND.TERMINATED);
+			stateMap.get(curState).runExitFunction();
 			if (terminateWork != null)
 			{
 				terminateWork.accept();
@@ -93,24 +94,25 @@ class JMMachineImpl implements JMMachine
 		{
 			switchCond(COND.TERMINATED);
 			machineQue.shutdownNow();
-			if (terminateWork != null)
+			try
 			{
-				try
+				if (machineQue.awaitTermination(1, TimeUnit.SECONDS))
 				{
-					if (machineQue.awaitTermination(1, TimeUnit.SECONDS))
+					stateMap.get(curState).runExitFunction();
+					if (terminateWork != null)
 					{
 						terminateWork.accept();
 					}
-					else
-					{
-						JMLog.error(JMLog.TERMINATION_WORK_FAILED_AS_TIMEOUT, machineTag);
-					}
 				}
-				catch (InterruptedException e)
+				else
 				{
-					JMLog.error(JMLog.TERMINATION_WORK_FAILED_AS_INTERRUPT, machineTag);
-					Thread.currentThread().interrupt();
+					JMLog.error(JMLog.TERMINATION_WORK_FAILED_AS_TIMEOUT, machineTag);
 				}
+			}
+			catch (InterruptedException e)
+			{
+				JMLog.error(JMLog.TERMINATION_WORK_FAILED_AS_INTERRUPT, machineTag);
+				Thread.currentThread().interrupt();
 			}
 		}
 	}
