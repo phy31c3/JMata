@@ -6,12 +6,12 @@ public interface JMata
 {
 	static void initialize()
 	{
-		initialize(null, null);
+		JMataImpl.initialize(null, null);
 	}
 	
 	static void initialize(JMConsumer<String> debugLogger)
 	{
-		initialize(debugLogger, null);
+		JMataImpl.initialize(debugLogger, null);
 	}
 	
 	static void initialize(JMConsumer<String> debugLogger, JMConsumer<String> errorLogger)
@@ -21,7 +21,7 @@ public interface JMata
 	
 	static void release()
 	{
-		release(null);
+		JMataImpl.release(null);
 	}
 	
 	static void release(final JMVoidConsumer releaseWork)

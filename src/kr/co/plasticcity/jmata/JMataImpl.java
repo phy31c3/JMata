@@ -2,6 +2,8 @@ package kr.co.plasticcity.jmata;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import kr.co.plasticcity.jmata.function.*;
 
@@ -9,8 +11,9 @@ class JMataImpl
 {
 	/* ================================== ↓ Static Part ================================== */
 	
-	private static final int NUM_PERMITS = Runtime.getRuntime().availableProcessors();
-	private static final Semaphore permit = new Semaphore(NUM_PERMITS, true);
+	private static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
+	private static final Lock readLock = lock.readLock();
+	private static final Lock writeLock = lock.writeLock();
 	private static volatile JMataImpl instance;
 	private static volatile STATE state = STATE.NOT_INIT;
 	
@@ -21,60 +24,41 @@ class JMataImpl
 	
 	static void initialize(JMConsumer<String> debugLogger, JMConsumer<String> errorLogger)
 	{
+		writeLock.lock();
+		
 		try
 		{
-			permit.acquire(NUM_PERMITS);
-			
-			try
+			if (state != STATE.RUNNING)
 			{
-				JMLog.setLogger(debugLogger, errorLogger);
-				clearInstance();
-				instance = new JMataImpl();
 				state = STATE.RUNNING;
-			}
-			finally
-			{
+				instance = new JMataImpl();
+				JMLog.setLogger(debugLogger, errorLogger);
 				JMLog.debug(JMLog.JMATA_INITIALIZED);
-				permit.release(NUM_PERMITS);
 			}
 		}
-		catch (InterruptedException e)
+		finally
 		{
-			initialize(debugLogger, errorLogger);
-			Thread.currentThread().interrupt();
+			writeLock.unlock();
 		}
 	}
 	
 	static void release(final JMVoidConsumer releaseWork)
 	{
-		try
+		if (state == STATE.RUNNING)
 		{
-			permit.acquire(NUM_PERMITS);
+			writeLock.lock();
 			
 			try
 			{
-				if (state == STATE.RUNNING)
+				if (state == STATE.RUNNING && instance != null)
 				{
-					clearInstance();
-					state = STATE.RELEASED;
-					JMLog.debug(JMLog.JMATA_RELEASED);
-					JMLog.setLogger(null, null);
-					
-					if (releaseWork != null)
-					{
-						releaseWork.accept();
-					}
+					instance.destroy(releaseWork);
 				}
 			}
 			finally
 			{
-				permit.release(NUM_PERMITS);
+				writeLock.unlock();
 			}
-		}
-		catch (InterruptedException e)
-		{
-			release(releaseWork);
-			Thread.currentThread().interrupt();
 		}
 	}
 	
@@ -82,7 +66,7 @@ class JMataImpl
 	{
 		try
 		{
-			permit.acquire();
+			readLock.lock();
 			
 			try
 			{
@@ -111,29 +95,12 @@ class JMataImpl
 			}
 			finally
 			{
-				permit.release();
+				readLock.unlock();
 			}
-		}
-		catch (InterruptedException e)
-		{
-			Thread.currentThread().interrupt();
 		}
 		catch (RejectedExecutionException e)
 		{
 			JMLog.error(JMLog.JMATA_REJECTED_EXECUTION_EXCEPTION);
-		}
-	}
-	
-	private static void clearInstance()
-	{
-		if (instance != null)
-		{
-			for (JMMachine machine : instance.machineMap.values())
-			{
-				machine.terminate();
-			}
-			instance.globalQue.shutdownNow();
-			instance = null;
 		}
 	}
 	
@@ -144,13 +111,46 @@ class JMataImpl
 	
 	private JMataImpl()
 	{
-		this.machineMap = new ConcurrentHashMap<>();
+		this.machineMap = new HashMap<>();
 		this.globalQue = Executors.newSingleThreadExecutor(r ->
 		{
 			Thread t = Executors.defaultThreadFactory().newThread(r);
 			t.setDaemon(true);
 			t.setName("JMataGlobalThread");
 			return t;
+		});
+	}
+	
+	private void destroy(final JMVoidConsumer releaseWork)
+	{
+		globalQue.execute(() ->
+		{
+			writeLock.lock();
+			
+			try
+			{
+				state = STATE.RELEASED;
+				
+				for (JMMachine machine : instance.machineMap.values())
+				{
+					machine.terminate();
+				}
+				
+				if (releaseWork != null)
+				{
+					releaseWork.accept();
+				}
+				
+				instance.globalQue.shutdownNow();
+				instance = null;
+				
+				JMLog.debug(JMLog.JMATA_RELEASED);
+				JMLog.setLogger(null, null);
+			}
+			finally
+			{
+				writeLock.unlock();
+			}
 		});
 	}
 	
@@ -198,8 +198,11 @@ class JMataImpl
 		{
 			if (machineMap.containsKey(machineTag))
 			{
-				machineMap.get(machineTag).terminate();
-				machineMap.remove(machineTag);
+				JMMachine machineToTerminate = machineMap.remove(machineTag);
+				if (machineToTerminate != null)
+				{
+					machineToTerminate.terminate();
+				}
 			}
 		});
 	}

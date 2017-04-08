@@ -270,13 +270,32 @@ public class JMataTest
 		public static void enter()
 		{
 			System.out.println("끝낸다...");
-			JMata.terminateMachine(TestMachine.class);
+			JMata.release(() ->
+			{
+				System.out.println("JMata 해제 됨");
+				new Thread(() ->
+				{
+					try
+					{
+						Thread.sleep(100);
+					}
+					catch (InterruptedException e)
+					{
+					/* do nothing */
+					}
+					finally
+					{
+						isFinish = true;
+					}
+				}).start();
+			});
 		}
 		
 		@StateFunc
 		public static void exit()
 		{
 			System.out.println("Finish 상태의 exit()가 호출 됐다");
+			JMata.terminateMachine(TestMachine.class);
 		}
 	}
 	
