@@ -1,9 +1,11 @@
 package kr.co.plasticcity.jmata;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
-import kr.co.plasticcity.jmata.function.*;
+import kr.co.plasticcity.jmata.function.JMVoidConsumer;
 
 class JMMachineImpl implements JMMachine
 {
@@ -143,8 +145,8 @@ class JMMachineImpl implements JMMachine
 				{
 					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
+						JMLog.debug(JMLog.STATE_SWITCHED_BY_STRING, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
 						curState = nextState;
-						JMLog.debug(JMLog.STATE_SWITCHED, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
 						return stateMap.get(curState).runEnterFunction((String)signal);
 					}
 					else
@@ -159,8 +161,8 @@ class JMMachineImpl implements JMMachine
 				{
 					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
+						JMLog.debug(JMLog.STATE_SWITCHED_BY_CLASS, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal.getClass().getSimpleName() + "." + signal);
 						curState = nextState;
-						JMLog.debug(JMLog.STATE_SWITCHED, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
 						return stateMap.get(curState).runEnterFunction((Enum<?>)signal);
 					}
 					else
@@ -175,8 +177,8 @@ class JMMachineImpl implements JMMachine
 				{
 					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
+						JMLog.debug(JMLog.STATE_SWITCHED_BY_CLASS, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
 						curState = nextState;
-						JMLog.debug(JMLog.STATE_SWITCHED, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
 						return stateMap.get(curState).runEnterFunctionC(signal);
 					}
 					else

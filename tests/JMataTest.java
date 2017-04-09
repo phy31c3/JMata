@@ -170,7 +170,7 @@ public class JMataTest
 		@StateFunc
 		public static void exit(String s)
 		{
-			System.out.printf("Start 상태는 %s로 물러난다...\n", s);
+			System.out.printf("Start 상태는 \"%s\"로 물러난다...\n", s);
 		}
 	}
 	

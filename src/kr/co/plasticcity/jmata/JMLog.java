@@ -1,6 +1,6 @@
 package kr.co.plasticcity.jmata;
 
-import kr.co.plasticcity.jmata.function.*;
+import kr.co.plasticcity.jmata.function.JMConsumer;
 
 class JMLog
 {
@@ -22,7 +22,8 @@ class JMLog
 	/* log in JMMachineImpl */
 	static final String MACHINE_BUILT = "[%s] machine has been built";
 	static final String MACHINE_STATE_CHANGED = "[%s] machine state changed : [%s] -> [%s]";
-	static final String STATE_SWITCHED = "[%s] machine : switched from [%s] to [%s] due to [%s]";
+	static final String STATE_SWITCHED_BY_CLASS = "[%s] machine : switched from [%s] to [%s] due to [%s]";
+	static final String STATE_SWITCHED_BY_STRING = "[%s] machine : switched from [%s] to [%s] due to [\"%s\"]";
 	static final String TERMINATION_WORK_FAILED_AS_TIMEOUT = "[%s] machine : The termination work failed because the machine shutdown took too long (over 1 second)";
 	static final String TERMINATION_WORK_FAILED_AS_INTERRUPT = "[%s] machine : The termination work failed because this thread interrupted during termination";
 	

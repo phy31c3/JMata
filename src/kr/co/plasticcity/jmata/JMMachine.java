@@ -1,8 +1,8 @@
 package kr.co.plasticcity.jmata;
 
-import java.util.*;
+import java.util.Map;
 
-import kr.co.plasticcity.jmata.function.*;
+import kr.co.plasticcity.jmata.function.JMVoidConsumer;
 
 interface JMMachine
 {

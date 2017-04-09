@@ -1,6 +1,7 @@
 package kr.co.plasticcity.jmata;
 
-import kr.co.plasticcity.jmata.function.*;
+import kr.co.plasticcity.jmata.function.JMConsumer;
+import kr.co.plasticcity.jmata.function.JMVoidConsumer;
 
 public interface JMata
 {
