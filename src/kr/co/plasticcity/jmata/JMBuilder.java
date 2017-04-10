@@ -1,6 +1,9 @@
 package kr.co.plasticcity.jmata;
 
-import kr.co.plasticcity.jmata.function.*;
+import kr.co.plasticcity.jmata.function.JMConsumer;
+import kr.co.plasticcity.jmata.function.JMFunction;
+import kr.co.plasticcity.jmata.function.JMSupplier;
+import kr.co.plasticcity.jmata.function.JMVoidConsumer;
 
 public interface JMBuilder
 {
@@ -16,12 +19,12 @@ public interface JMBuilder
 	
 	void ifPresentThenReplaceWithThis(JMConsumer<StartStateDefiner> definer);
 	
-	public interface StartStateDefiner
+	interface StartStateDefiner
 	{
 		StateBuilder defineStartState(Class<?> stateTag);
 	}
 	
-	public interface MachineBuilder
+	interface MachineBuilder
 	{
 		StateBuilder defineState(Class<?> stateTag);
 		
@@ -32,7 +35,7 @@ public interface JMBuilder
 		void buildAndRun();
 	}
 	
-	public interface StateBuilder
+	interface StateBuilder
 	{
 		/* ================================== enter & exit ================================== */
 		StateBuilder whenEnter(JMVoidConsumer defaultWork);
@@ -41,30 +44,30 @@ public interface JMBuilder
 		
 		StateBuilder whenExit(JMVoidConsumer defaultWork);
 		
-		<S> WhenEnter<S> whenEnterFrom(Class<S> signal);
+		<S> WhenEnter<S> whenEnterBy(Class<S> signal);
 		
-		<S extends Enum<S>> WhenEnter<S> whenEnterFrom(Enum<S> signal);
+		<S extends Enum<S>> WhenEnter<S> whenEnterBy(Enum<S> signal);
 		
-		WhenEnter<String> whenEnterFrom(String signal);
+		WhenEnter<String> whenEnterBy(String signal);
 		
 		/* ===================================== input ===================================== */
-		SwitchTo whenInput(Class<?>... signals);
-		
-		@SuppressWarnings("unchecked")
-		<S extends Enum<S>> WhenInput<S> whenInput(S... signals);
-		
-		WhenInput<String> whenInput(String... signals);
-		
 		<S> WhenInput<S> whenInput(Class<S> signal);
 		
-		<S extends Enum<S>> WhenInput<S> whenInput(Enum<S> signal);
+		SwitchTo whenInput(Class<?>... signals);
 		
-		WhenInput<String> whenInput(String signal);
+		<S extends Enum<S>> WhenInputPrimitive<S> whenInput(Enum<S> signal);
+		
+		@SuppressWarnings("unchecked")
+		<S extends Enum<S>> WhenInputPrimitive<S> whenInput(S... signals);
+		
+		WhenInputPrimitive<String> whenInput(String signal);
+		
+		WhenInputPrimitive<String> whenInput(String... signals);
 		
 		/* ====================================== etc ====================================== */
 		MachineBuilder apply();
 		
-		public interface WhenEnter<S>
+		interface WhenEnter<S>
 		{
 			StateBuilder doThis(JMConsumer<S> workOnEnter);
 			
@@ -73,18 +76,27 @@ public interface JMBuilder
 			StateBuilder doNothing();
 		}
 		
-		public interface SwitchTo
-		{
-			StateBuilder switchToSelf();
-			
-			StateBuilder switchTo(Class<?> stateTag);
-		}
-		
-		public interface WhenInput<S> extends SwitchTo
+		interface WhenInput<S> extends SwitchTo
 		{
 			SwitchTo doThis(JMConsumer<S> workOnExit);
 			
 			SwitchTo doNothing();
+		}
+		
+		interface WhenInputPrimitive<S> extends SwitchTo
+		{
+			SwitchTo doThis(JMVoidConsumer workOnExit);
+			
+			SwitchTo doThis(JMConsumer<S> workOnExit);
+			
+			SwitchTo doNothing();
+		}
+		
+		interface SwitchTo
+		{
+			StateBuilder switchToSelf();
+			
+			StateBuilder switchTo(Class<?> stateTag);
 		}
 	}
 }

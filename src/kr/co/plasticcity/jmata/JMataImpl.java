@@ -1,78 +1,68 @@
 package kr.co.plasticcity.jmata;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import kr.co.plasticcity.jmata.function.*;
+import kr.co.plasticcity.jmata.function.JMConsumer;
+import kr.co.plasticcity.jmata.function.JMVoidConsumer;
 
 class JMataImpl
 {
 	/* ================================== ↓ Static Part ================================== */
 	
-	private static final int NUM_PERMITS = Runtime.getRuntime().availableProcessors();
-	private static final Semaphore permit = new Semaphore(NUM_PERMITS, true);
+	private static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
+	private static final Lock readLock = lock.readLock();
+	private static final Lock writeLock = lock.writeLock();
 	private static volatile JMataImpl instance;
 	private static volatile STATE state = STATE.NOT_INIT;
 	
 	private enum STATE
 	{
-		NOT_INIT, RUNNING, RELEASED;
+		NOT_INIT, RUNNING, RELEASED
 	}
 	
 	static void initialize(JMConsumer<String> debugLogger, JMConsumer<String> errorLogger)
 	{
+		writeLock.lock();
+		
 		try
 		{
-			permit.acquire(NUM_PERMITS);
-			
-			try
+			if (state != STATE.RUNNING)
 			{
-				JMLog.setLogger(debugLogger, errorLogger);
-				clearInstance();
-				instance = new JMataImpl();
 				state = STATE.RUNNING;
-			}
-			finally
-			{
-				JMLog.debug("** JMata has been initialized");
-				permit.release(NUM_PERMITS);
+				instance = new JMataImpl();
+				JMLog.setLogger(debugLogger, errorLogger);
+				JMLog.debug(JMLog.JMATA_INITIALIZED);
 			}
 		}
-		catch (InterruptedException e)
+		finally
 		{
-			initialize(debugLogger, errorLogger);
+			writeLock.unlock();
 		}
 	}
 	
 	static void release(final JMVoidConsumer releaseWork)
 	{
-		try
+		if (state == STATE.RUNNING)
 		{
-			permit.acquire(NUM_PERMITS);
+			writeLock.lock();
 			
 			try
 			{
-				if (state == STATE.RUNNING)
+				if (state == STATE.RUNNING && instance != null)
 				{
-					clearInstance();
-					state = STATE.RELEASED;
-					JMLog.debug("** JMata has been released");
-					JMLog.setLogger(null, null);
-					
-					if (releaseWork != null)
-					{
-						releaseWork.accept();
-					}
+					instance.destroy(releaseWork);
 				}
 			}
 			finally
 			{
-				permit.release(NUM_PERMITS);
+				writeLock.unlock();
 			}
-		}
-		catch (InterruptedException e)
-		{
-			release(releaseWork);
 		}
 	}
 	
@@ -80,7 +70,7 @@ class JMataImpl
 	{
 		try
 		{
-			permit.acquire();
+			readLock.lock();
 			
 			try
 			{
@@ -93,38 +83,28 @@ class JMataImpl
 					switch (state)
 					{
 					case NOT_INIT:
-						JMLog.error("** JMata initialization error : Call JMata.initialize() first");
+						JMLog.error(JMLog.JMATA_ERROR_IN_NOT_INIT);
 						break;
 					case RUNNING:
-						JMLog.error("** JMata unknown error : JMata is in RUNNIG state, but instance == null");
+						JMLog.error(JMLog.JMATA_ERROR_IN_RUNNING);
 						break;
 					case RELEASED:
-						JMLog.debug("** JMata already released : JMata is released, but JMata command is called");
+						JMLog.debug(JMLog.JMATA_ERROR_IN_RELEASED);
+						break;
+					default:
+						JMLog.error(JMLog.JMATA_ERROR_IN_UNDEFINED, state.name());
 						break;
 					}
 				}
 			}
 			finally
 			{
-				permit.release();
+				readLock.unlock();
 			}
 		}
-		catch (InterruptedException e)
+		catch (RejectedExecutionException e)
 		{
-			/* do nothing */
-		}
-	}
-	
-	private static void clearInstance()
-	{
-		if (instance != null)
-		{
-			instance.globalQue.shutdownNow();
-			for (JMMachine machine : instance.machineMap.values())
-			{
-				machine.terminate();
-			}
-			instance = null;
+			JMLog.error(JMLog.JMATA_REJECTED_EXECUTION_EXCEPTION);
 		}
 	}
 	
@@ -135,16 +115,54 @@ class JMataImpl
 	
 	private JMataImpl()
 	{
-		this.machineMap = new ConcurrentHashMap<>();
-		this.globalQue = Executors.newSingleThreadExecutor();
-		this.globalQue.execute(() -> Thread.currentThread().setName("JMataGlobalThread"));
+		this.machineMap = new HashMap<>();
+		this.globalQue = Executors.newSingleThreadExecutor(r ->
+		{
+			Thread t = Executors.defaultThreadFactory().newThread(r);
+			t.setDaemon(true);
+			t.setName("JMataGlobalThread");
+			return t;
+		});
+	}
+	
+	private void destroy(final JMVoidConsumer releaseWork)
+	{
+		globalQue.execute(() ->
+		{
+			writeLock.lock();
+			
+			try
+			{
+				state = STATE.RELEASED;
+				
+				for (JMMachine machine : instance.machineMap.values())
+				{
+					machine.terminate();
+				}
+				
+				if (releaseWork != null)
+				{
+					releaseWork.accept();
+				}
+				
+				instance.globalQue.shutdownNow();
+				instance = null;
+				
+				JMLog.debug(JMLog.JMATA_RELEASED);
+				JMLog.setLogger(null, null);
+			}
+			finally
+			{
+				writeLock.unlock();
+			}
+		});
 	}
 	
 	void buildMachine(final Object machineTag, final JMConsumer<JMBuilder> builder)
 	{
 		globalQue.execute(() ->
 		{
-			JMLog.debug("[%s] machine build started", machineTag);
+			JMLog.debug(JMLog.MACHINE_BUILD_STARTED, machineTag);
 			builder.accept(JMBuilder.Constructor.getNew(machineTag, machineMap.containsKey(machineTag), machine ->
 			{
 				JMMachine oldMachine = machineMap.put(machineTag, machine);
@@ -184,13 +202,16 @@ class JMataImpl
 		{
 			if (machineMap.containsKey(machineTag))
 			{
-				machineMap.get(machineTag).terminate();
-				machineMap.remove(machineTag);
+				JMMachine machineToTerminate = machineMap.remove(machineTag);
+				if (machineToTerminate != null)
+				{
+					machineToTerminate.terminate();
+				}
 			}
 		});
 	}
 	
-	<S> void inputTo(final Object machineTag, final S signal)
+	<S> void input(final Object machineTag, final S signal)
 	{
 		globalQue.execute(() ->
 		{

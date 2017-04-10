@@ -1,33 +1,66 @@
 package kr.co.plasticcity.jmata;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-import kr.co.plasticcity.jmata.function.*;
+import kr.co.plasticcity.jmata.function.JMConsumer;
+import kr.co.plasticcity.jmata.function.JMFunction;
+import kr.co.plasticcity.jmata.function.JMSupplier;
+import kr.co.plasticcity.jmata.function.JMVoidConsumer;
 
-class JMStateImpl implements JMStateCreater
+class JMStateImpl implements JMState
 {
+	private static class FuncSet<C, E, S>
+	{
+		private C classFunc;
+		private E enumFunc;
+		private S stringFunc;
+		
+		private FuncSet setClassFunc(final C classFunc)
+		{
+			this.classFunc = classFunc;
+			return this;
+		}
+		
+		private FuncSet setEnumFunc(final E enumFunc)
+		{
+			this.enumFunc = enumFunc;
+			return this;
+		}
+		
+		private FuncSet setStringFunc(final S stringFunc)
+		{
+			this.stringFunc = stringFunc;
+			return this;
+		}
+	}
+	
 	private Object machineTag;
 	private Class<?> stateTag;
 	
 	private JMSupplier<Object> enter;
 	private JMVoidConsumer exit;
 	
-	private Map<Class<?>, JMFunction<? super Object, Object>> enterSignalC;
-	private Map<Enum<?>, JMFunction<Enum<?>, Object>> enterSignalE;
-	private Map<String, JMFunction<String, Object>> enterSignalS;
+	private Map<Object, FuncSet<
+			JMFunction<? super Object, Object>,
+			JMFunction<Enum<?>, Object>,
+			JMFunction<String, Object>>> enterMap;
 	
-	private Map<Class<?>, JMConsumer<? super Object>> exitSignalC;
-	private Map<Enum<?>, JMConsumer<Enum<?>>> exitSignalE;
-	private Map<String, JMConsumer<String>> exitSignalS;
+	private Map<Object, FuncSet<
+			JMConsumer<? super Object>,
+			JMConsumer<Enum<?>>,
+			JMConsumer<String>>> exitMap;
 	
-	private Map<Class<?>, Class<?>> switchRuleC;
-	private Map<Enum<?>, Class<?>> switchRuleE;
-	private Map<String, Class<?>> switchRuleS;
+	private Map<Object, Class<?>> switchRule;
 	
-	public JMStateImpl(Object machineTag, Class<?> stateTag)
+	JMStateImpl(Object machineTag, Class<?> stateTag)
 	{
 		this.machineTag = machineTag;
 		this.stateTag = stateTag;
+		
+		this.enterMap = new HashMap<>();
+		this.exitMap = new HashMap<>();
+		this.switchRule = new HashMap<>();
 	}
 	
 	@Override
@@ -46,9 +79,9 @@ class JMStateImpl implements JMStateCreater
 	@Override
 	public <S> Object runEnterFunctionC(S signal)
 	{
-		if (enterSignalC != null && enterSignalC.containsKey(signal.getClass()))
+		if (enterMap.containsKey(signal.getClass()))
 		{
-			return enterSignalC.get(signal.getClass()).apply(signal);
+			return enterMap.get(signal.getClass()).classFunc.apply(signal);
 		}
 		else if (enter != null)
 		{
@@ -63,13 +96,13 @@ class JMStateImpl implements JMStateCreater
 	@Override
 	public <S extends Enum<S>> Object runEnterFunction(Enum<S> signal)
 	{
-		if (enterSignalE != null && enterSignalE.containsKey(signal))
+		if (enterMap.containsKey(signal))
 		{
-			return enterSignalE.get(signal).apply(signal);
+			return enterMap.get(signal).enumFunc.apply(signal);
 		}
-		else if (enterSignalC != null && enterSignalC.containsKey(signal.getClass()))
+		else if (enterMap.containsKey(signal.getClass()))
 		{
-			return enterSignalC.get(signal.getClass()).apply(signal);
+			return enterMap.get(signal.getClass()).classFunc.apply(signal);
 		}
 		else if (enter != null)
 		{
@@ -84,13 +117,13 @@ class JMStateImpl implements JMStateCreater
 	@Override
 	public Object runEnterFunction(String signal)
 	{
-		if (enterSignalS != null && enterSignalS.containsKey(signal))
+		if (enterMap.containsKey(signal))
 		{
-			return enterSignalS.get(signal).apply(signal);
+			return enterMap.get(signal).stringFunc.apply(signal);
 		}
-		else if (enterSignalC != null && enterSignalC.containsKey(signal.getClass()))
+		else if (enterMap.containsKey(signal.getClass()))
 		{
-			return enterSignalC.get(signal.getClass()).apply(signal);
+			return enterMap.get(signal.getClass()).classFunc.apply(signal);
 		}
 		else if (enter != null)
 		{
@@ -103,82 +136,103 @@ class JMStateImpl implements JMStateCreater
 	}
 	
 	@Override
-	public <S> void runExitFunctionC(S signal, JMConsumer<Class<?>> nextState)
+	public void runExitFunction()
 	{
-		if (switchRuleC != null && switchRuleC.containsKey(signal.getClass()))
+		if (exit != null)
 		{
-			if (exitSignalC != null && exitSignalC.containsKey(signal.getClass()))
-			{
-				exitSignalC.get(signal.getClass()).accept(signal);
-			}
-			else if (exit != null)
-			{
-				exit.accept();
-			}
-			
-			nextState.accept(switchRuleC.get(signal.getClass()));
+			exit.accept();
 		}
 	}
 	
 	@Override
-	public <S extends Enum<S>> void runExitFunction(Enum<S> signal, JMConsumer<Class<?>> nextState)
+	public <S> Object runExitFunctionC(S signal, JMFunction<Class<?>, Object> nextState)
 	{
-		if (switchRuleE != null && switchRuleE.containsKey(signal))
+		if (switchRule.containsKey(signal.getClass()))
 		{
-			if (exitSignalE != null && exitSignalE.containsKey(signal))
+			if (exitMap.containsKey(signal.getClass()))
 			{
-				exitSignalE.get(signal).accept(signal);
+				exitMap.get(signal.getClass()).classFunc.accept(signal);
 			}
 			else if (exit != null)
 			{
 				exit.accept();
 			}
 			
-			nextState.accept(switchRuleE.get(signal));
+			return nextState.apply(switchRule.get(signal.getClass()));
 		}
-		else if (switchRuleC != null && switchRuleC.containsKey(signal.getClass()))
+		else
 		{
-			if (exitSignalC != null && exitSignalC.containsKey(signal.getClass()))
-			{
-				exitSignalC.get(signal.getClass()).accept(signal);
-			}
-			else if (exit != null)
-			{
-				exit.accept();
-			}
-			
-			nextState.accept(switchRuleC.get(signal.getClass()));
+			return null;
 		}
 	}
 	
 	@Override
-	public void runExitFunction(String signal, JMConsumer<Class<?>> nextState)
+	public <S extends Enum<S>> Object runExitFunction(Enum<S> signal, JMFunction<Class<?>, Object> nextState)
 	{
-		if (switchRuleS != null && switchRuleS.containsKey(signal))
+		if (switchRule.containsKey(signal))
 		{
-			if (exitSignalS != null && exitSignalS.containsKey(signal))
+			if (exitMap.containsKey(signal))
 			{
-				exitSignalS.get(signal).accept(signal);
+				exitMap.get(signal).enumFunc.accept(signal);
 			}
 			else if (exit != null)
 			{
 				exit.accept();
 			}
 			
-			nextState.accept(switchRuleS.get(signal));
+			return nextState.apply(switchRule.get(signal));
 		}
-		else if (switchRuleC != null && switchRuleC.containsKey(signal.getClass()))
+		else if (switchRule.containsKey(signal.getClass()))
 		{
-			if (exitSignalC != null && exitSignalC.containsKey(signal.getClass()))
+			if (exitMap.containsKey(signal.getClass()))
 			{
-				exitSignalC.get(signal.getClass()).accept(signal);
+				exitMap.get(signal.getClass()).classFunc.accept(signal);
 			}
 			else if (exit != null)
 			{
 				exit.accept();
 			}
 			
-			nextState.accept(switchRuleC.get(signal.getClass()));
+			return nextState.apply(switchRule.get(signal.getClass()));
+		}
+		else
+		{
+			return null;
+		}
+	}
+	
+	@Override
+	public Object runExitFunction(String signal, JMFunction<Class<?>, Object> nextState)
+	{
+		if (switchRule.containsKey(signal))
+		{
+			if (exitMap.containsKey(signal))
+			{
+				exitMap.get(signal).stringFunc.accept(signal);
+			}
+			else if (exit != null)
+			{
+				exit.accept();
+			}
+			
+			return nextState.apply(switchRule.get(signal));
+		}
+		else if (switchRule.containsKey(signal.getClass()))
+		{
+			if (exitMap.containsKey(signal.getClass()))
+			{
+				exitMap.get(signal.getClass()).classFunc.accept(signal);
+			}
+			else if (exit != null)
+			{
+				exit.accept();
+			}
+			
+			return nextState.apply(switchRule.get(signal.getClass()));
+		}
+		else
+		{
+			return null;
 		}
 	}
 	
@@ -187,55 +241,46 @@ class JMStateImpl implements JMStateCreater
 	{
 		if (enter != null)
 		{
-			JMLog.error("[%s] machine : Definition of default entry function redundancy in state [%s]", machineTag, stateTag.getSimpleName());
+			JMLog.error(JMLog.ENTER_FUNC_DUPLICATED, machineTag, stateTag.getSimpleName());
 		}
 		
 		enter = func;
 	}
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	public void putEnterFunction(Class<?> signal, JMFunction<? super Object, Object> func)
 	{
-		if (enterSignalC == null)
+		if (enterMap.containsKey(signal))
 		{
-			enterSignalC = new HashMap<>();
-		}
-		else if (enterSignalC.containsKey(signal))
-		{
-			JMLog.error("[%s] machine : Definition of entry function for input [%s] redundancy in state [%s]", machineTag, signal.getSimpleName(), stateTag.getSimpleName());
+			JMLog.error(JMLog.ENTER_BY_CLASS_FUNC_DUPLICATED, machineTag, signal.getSimpleName(), stateTag.getSimpleName());
 		}
 		
-		enterSignalC.put(signal, func);
+		enterMap.put(signal, new FuncSet<>().setClassFunc(func));
 	}
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	public void putEnterFunction(Enum<?> signal, JMFunction<Enum<?>, Object> func)
 	{
-		if (enterSignalE == null)
+		if (enterMap.containsKey(signal))
 		{
-			enterSignalE = new HashMap<>();
-		}
-		else if (enterSignalE.containsKey(signal))
-		{
-			JMLog.error("[%s] machine : Definition of entry function for input [%s] redundancy in state [%s]", machineTag, signal.name(), stateTag.getSimpleName());
+			JMLog.error(JMLog.ENTER_BY_CLASS_FUNC_DUPLICATED, machineTag, signal.name(), stateTag.getSimpleName());
 		}
 		
-		enterSignalE.put(signal, func);
+		enterMap.put(signal, new FuncSet<>().setEnumFunc(func));
 	}
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	public void putEnterFunction(String signal, JMFunction<String, Object> func)
 	{
-		if (enterSignalS == null)
+		if (enterMap.containsKey(signal))
 		{
-			enterSignalS = new HashMap<>();
-		}
-		else if (enterSignalS.containsKey(signal))
-		{
-			JMLog.error("[%s] machine : Definition of entry function for input [\"%s\"] redundancy in state [%s]", machineTag, signal, stateTag.getSimpleName());
+			JMLog.error(JMLog.ENTER_BY_STRING_FUNC_DUPLICATED, machineTag, signal, stateTag.getSimpleName());
 		}
 		
-		enterSignalS.put(signal, func);
+		enterMap.put(signal, new FuncSet<>().setStringFunc(func));
 	}
 	
 	@Override
@@ -243,99 +288,78 @@ class JMStateImpl implements JMStateCreater
 	{
 		if (exit != null)
 		{
-			JMLog.error("[%s] machine : Definition of default exit function redundancy in state [%s]", machineTag, stateTag.getSimpleName());
+			JMLog.error(JMLog.EXIT_FUNC_DUPLICATED, machineTag, stateTag.getSimpleName());
 		}
 		
 		exit = func;
 	}
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	public void putExitFunction(Class<?> signal, JMConsumer<? super Object> func)
 	{
-		if (exitSignalC == null)
+		if (exitMap.containsKey(signal))
 		{
-			exitSignalC = new HashMap<>();
-		}
-		else if (exitSignalC.containsKey(signal))
-		{
-			JMLog.error("[%s] machine : Definition of exit function for input [%s] redundancy in state [%s]", machineTag, signal.getSimpleName(), stateTag.getSimpleName());
+			JMLog.error(JMLog.EXIT_BY_CLASS_FUNC_DUPLICATED, machineTag, signal.getSimpleName(), stateTag.getSimpleName());
 		}
 		
-		exitSignalC.put(signal, func);
+		exitMap.put(signal, new FuncSet<>().setClassFunc(func));
 	}
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	public void putExitFunction(Enum<?> signal, JMConsumer<Enum<?>> func)
 	{
-		if (exitSignalE == null)
+		if (exitMap.containsKey(signal))
 		{
-			exitSignalE = new HashMap<>();
-		}
-		else if (exitSignalE.containsKey(signal))
-		{
-			JMLog.error("[%s] machine : Definition of exit function for input [%s] redundancy in state [%s]", machineTag, signal.name(), stateTag.getSimpleName());
+			JMLog.error(JMLog.EXIT_BY_CLASS_FUNC_DUPLICATED, machineTag, signal.name(), stateTag.getSimpleName());
 		}
 		
-		exitSignalE.put(signal, func);
+		exitMap.put(signal, new FuncSet<>().setEnumFunc(func));
 	}
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	public void putExitFunction(String signal, JMConsumer<String> func)
 	{
-		if (exitSignalS == null)
+		if (exitMap.containsKey(signal))
 		{
-			exitSignalS = new HashMap<>();
-		}
-		else if (exitSignalS.containsKey(signal))
-		{
-			JMLog.error("[%s] machine : Definition of exit function for input [\"%s\"] redundancy in state [%s]", machineTag, signal, stateTag.getSimpleName());
+			JMLog.error(JMLog.EXIT_BY_STRING_FUNC_DUPLICATED, machineTag, signal, stateTag.getSimpleName());
 		}
 		
-		exitSignalS.put(signal, func);
+		exitMap.put(signal, new FuncSet<>().setStringFunc(func));
 	}
 	
 	@Override
 	public void putSwitchRule(Class<?> signal, Class<?> stateTag)
 	{
-		if (switchRuleC == null)
+		if (switchRule.containsKey(signal))
 		{
-			switchRuleC = new HashMap<>();
-		}
-		else if (switchRuleC.containsKey(signal))
-		{
-			JMLog.error("[%s] machine : Definition of switch rule for input [%s] redundancy in state [%s]", machineTag, signal.getSimpleName(), stateTag.getSimpleName());
+			JMLog.error(JMLog.SWITCH_RULE_BY_CLASS_DUPLICATED, machineTag, signal.getSimpleName(), stateTag.getSimpleName());
 		}
 		
-		switchRuleC.put(signal, stateTag);
+		switchRule.put(signal, stateTag);
 	}
 	
 	@Override
 	public void putSwitchRule(Enum<?> signal, Class<?> stateTag)
 	{
-		if (switchRuleE == null)
+		if (switchRule.containsKey(signal))
 		{
-			switchRuleE = new HashMap<>();
-		}
-		else if (switchRuleE.containsKey(signal))
-		{
-			JMLog.error("[%s] machine : Definition of switch rule for input [%s] redundancy in state [%s]", machineTag, signal.name(), stateTag.getSimpleName());
+			JMLog.error(JMLog.SWITCH_RULE_BY_CLASS_DUPLICATED, machineTag, signal.name(), stateTag.getSimpleName());
 		}
 		
-		switchRuleE.put(signal, stateTag);
+		switchRule.put(signal, stateTag);
 	}
 	
 	@Override
 	public void putSwitchRule(String signal, Class<?> stateTag)
 	{
-		if (switchRuleS == null)
+		if (switchRule.containsKey(signal))
 		{
-			switchRuleS = new HashMap<>();
-		}
-		else if (switchRuleS.containsKey(signal))
-		{
-			JMLog.error("[%s] machine : Definition of switch rule for input [\"%s\"] redundancy in state [%s]", machineTag, signal, stateTag.getSimpleName());
+			JMLog.error(JMLog.SWITCH_RULE_BY_STRING_DUPLICATED, machineTag, signal, stateTag.getSimpleName());
 		}
 		
-		switchRuleS.put(signal, stateTag);
+		switchRule.put(signal, stateTag);
 	}
 }

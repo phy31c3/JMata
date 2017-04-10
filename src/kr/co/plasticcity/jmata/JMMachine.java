@@ -1,8 +1,8 @@
 package kr.co.plasticcity.jmata;
 
-import java.util.*;
+import java.util.Map;
 
-import kr.co.plasticcity.jmata.function.*;
+import kr.co.plasticcity.jmata.function.JMVoidConsumer;
 
 interface JMMachine
 {
@@ -20,5 +20,5 @@ interface JMMachine
 	
 	void terminate();
 	
-	<S> void input(S signal);
+	<S> void input(final S signal);
 }

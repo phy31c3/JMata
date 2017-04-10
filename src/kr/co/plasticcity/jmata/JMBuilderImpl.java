@@ -1,8 +1,12 @@
 package kr.co.plasticcity.jmata;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-import kr.co.plasticcity.jmata.function.*;
+import kr.co.plasticcity.jmata.function.JMConsumer;
+import kr.co.plasticcity.jmata.function.JMFunction;
+import kr.co.plasticcity.jmata.function.JMSupplier;
+import kr.co.plasticcity.jmata.function.JMVoidConsumer;
 
 class JMBuilderImpl implements JMBuilder
 {
@@ -22,8 +26,7 @@ class JMBuilderImpl implements JMBuilder
 	{
 		if (present)
 		{
-			JMLog.debug("[%s] machine already exists, ignoring build", machineTag);
-			return;
+			JMLog.debug(JMLog.IGNORE_MACHINE_BUILD, machineTag);
 		}
 		else
 		{
@@ -36,7 +39,7 @@ class JMBuilderImpl implements JMBuilder
 	{
 		if (present)
 		{
-			JMLog.debug("[%s] machine already exists and will be replaced with a new machine", machineTag);
+			JMLog.debug(JMLog.REPLACE_MACHINE, machineTag);
 		}
 		definer.accept(new MachineBuilderImpl());
 	}
@@ -44,7 +47,7 @@ class JMBuilderImpl implements JMBuilder
 	private class MachineBuilderImpl implements MachineBuilder, StartStateDefiner
 	{
 		private Class<?> startState;
-		private Map<Class<?>, JMStateCreater> stateMap;
+		private Map<Class<?>, JMState> stateMap;
 		private JMVoidConsumer terminateWork;
 		
 		private MachineBuilderImpl()
@@ -64,7 +67,7 @@ class JMBuilderImpl implements JMBuilder
 		{
 			if (stateMap.containsKey(stateTag))
 			{
-				JMLog.error("[%s] machine : Definition of state [%s] redundancy", machineTag, stateTag.getSimpleName());
+				JMLog.error(JMLog.STATE_DEFINITION_DUPLICATED, machineTag, stateTag.getSimpleName());
 			}
 			return new StateBuilderImpl(stateTag);
 		}
@@ -93,18 +96,18 @@ class JMBuilderImpl implements JMBuilder
 		private class StateBuilderImpl implements StateBuilder
 		{
 			private Class<?> stateTag;
-			private JMStateCreater stateCreater;
+			private JMState state;
 			
 			private StateBuilderImpl(Class<?> stateTag)
 			{
 				this.stateTag = stateTag;
-				this.stateCreater = JMStateCreater.Constructor.getNew(machineTag, stateTag);
+				this.state = JMState.Constructor.getNew(machineTag, stateTag);
 			}
 			
 			@Override
 			public StateBuilder whenEnter(JMVoidConsumer defaultWork)
 			{
-				stateCreater.putEnterFunction(() ->
+				state.putEnterFunction(() ->
 				{
 					defaultWork.accept();
 					return null;
@@ -115,33 +118,39 @@ class JMBuilderImpl implements JMBuilder
 			@Override
 			public StateBuilder whenEnter(JMSupplier<Object> defaultWork)
 			{
-				stateCreater.putEnterFunction(defaultWork);
+				state.putEnterFunction(defaultWork);
 				return this;
 			}
 			
 			@Override
 			public StateBuilder whenExit(JMVoidConsumer defaultWork)
 			{
-				stateCreater.putExitFunction(defaultWork);
+				state.putExitFunction(defaultWork);
 				return this;
 			}
 			
 			@Override
-			public <S> WhenEnter<S> whenEnterFrom(Class<S> signal)
+			public <S> WhenEnter<S> whenEnterBy(Class<S> signal)
 			{
-				return new WhenEnterImpl<S>(signal);
+				return new WhenEnterImpl<>(signal);
 			}
 			
 			@Override
-			public <S extends Enum<S>> WhenEnter<S> whenEnterFrom(Enum<S> signal)
+			public <S extends Enum<S>> WhenEnter<S> whenEnterBy(Enum<S> signal)
 			{
-				return new WhenEnterImpl<S>(signal);
+				return new WhenEnterImpl<>(signal);
 			}
 			
 			@Override
-			public WhenEnter<String> whenEnterFrom(String signal)
+			public WhenEnter<String> whenEnterBy(String signal)
 			{
-				return new WhenEnterImpl<String>(signal);
+				return new WhenEnterImpl<>(signal);
+			}
+			
+			@Override
+			public <S> WhenInput<S> whenInput(Class<S> signal)
+			{
+				return new WhenInputImpl<>(signal);
 			}
 			
 			@Override
@@ -151,40 +160,34 @@ class JMBuilderImpl implements JMBuilder
 			}
 			
 			@Override
+			public <S extends Enum<S>> WhenInputPrimitive<S> whenInput(Enum<S> signal)
+			{
+				return new WhenInputImpl<>(signal);
+			}
+			
+			@Override
 			@SuppressWarnings("unchecked")
-			public <S extends Enum<S>> WhenInput<S> whenInput(S... signals)
+			public <S extends Enum<S>> WhenInputPrimitive<S> whenInput(S... signals)
 			{
-				return new WhenInputImpl<S>(signals);
+				return new WhenInputImpl<>(signals);
 			}
 			
 			@Override
-			public WhenInput<String> whenInput(String... signals)
+			public WhenInputPrimitive<String> whenInput(String signal)
 			{
-				return new WhenInputImpl<String>(signals);
+				return new WhenInputImpl<>(signal);
 			}
 			
 			@Override
-			public <S> WhenInput<S> whenInput(Class<S> signal)
+			public WhenInputPrimitive<String> whenInput(String... signals)
 			{
-				return new WhenInputImpl<S>(signal);
-			}
-			
-			@Override
-			public <S extends Enum<S>> WhenInput<S> whenInput(Enum<S> signal)
-			{
-				return new WhenInputImpl<S>(signal);
-			}
-			
-			@Override
-			public WhenInput<String> whenInput(String signal)
-			{
-				return new WhenInputImpl<String>(signal);
+				return new WhenInputImpl<>(signals);
 			}
 			
 			@Override
 			public MachineBuilder apply()
 			{
-				stateMap.put(stateTag, stateCreater);
+				stateMap.put(stateTag, state);
 				return MachineBuilderImpl.this;
 			}
 			
@@ -215,7 +218,7 @@ class JMBuilderImpl implements JMBuilder
 				{
 					if (signalC != null)
 					{
-						stateCreater.putEnterFunction(signalC, s ->
+						state.putEnterFunction(signalC, s ->
 						{
 							workOnEnter.accept((S)s);
 							return null;
@@ -223,7 +226,7 @@ class JMBuilderImpl implements JMBuilder
 					}
 					else if (signalE != null)
 					{
-						stateCreater.putEnterFunction(signalE, s ->
+						state.putEnterFunction(signalE, s ->
 						{
 							workOnEnter.accept((S)s);
 							return null;
@@ -231,7 +234,7 @@ class JMBuilderImpl implements JMBuilder
 					}
 					else
 					{
-						stateCreater.putEnterFunction(signalS, s ->
+						state.putEnterFunction(signalS, s ->
 						{
 							workOnEnter.accept((S)s);
 							return null;
@@ -246,15 +249,15 @@ class JMBuilderImpl implements JMBuilder
 				{
 					if (signalC != null)
 					{
-						stateCreater.putEnterFunction(signalC, (JMFunction<Object, Object>)workOnEnter);
+						state.putEnterFunction(signalC, (JMFunction<Object, Object>)workOnEnter);
 					}
 					else if (signalE != null)
 					{
-						stateCreater.putEnterFunction(signalE, (JMFunction<Enum<?>, Object>)workOnEnter);
+						state.putEnterFunction(signalE, (JMFunction<Enum<?>, Object>)workOnEnter);
 					}
 					else
 					{
-						stateCreater.putEnterFunction(signalS, (JMFunction<String, Object>)workOnEnter);
+						state.putEnterFunction(signalS, (JMFunction<String, Object>)workOnEnter);
 					}
 					return StateBuilderImpl.this;
 				}
@@ -264,76 +267,21 @@ class JMBuilderImpl implements JMBuilder
 				{
 					if (signalC != null)
 					{
-						stateCreater.putEnterFunction(signalC, s -> null);
+						state.putEnterFunction(signalC, s -> null);
 					}
 					else if (signalE != null)
 					{
-						stateCreater.putEnterFunction(signalE, s -> null);
+						state.putEnterFunction(signalE, s -> null);
 					}
 					else
 					{
-						stateCreater.putEnterFunction(signalS, s -> null);
+						state.putEnterFunction(signalS, s -> null);
 					}
 					return StateBuilderImpl.this;
 				}
 			}
 			
-			private class SwitchToImpl implements SwitchTo
-			{
-				protected Class<?>[] signalsC;
-				protected Enum<?>[] signalsE;
-				protected String[] signalsS;
-				
-				protected SwitchToImpl(Class<?>... signals)
-				{
-					this.signalsC = signals;
-				}
-				
-				protected SwitchToImpl(Enum<?>... signals)
-				{
-					this.signalsE = signals;
-				}
-				
-				protected SwitchToImpl(String... signals)
-				{
-					this.signalsS = signals;
-				}
-				
-				@Override
-				public StateBuilder switchToSelf()
-				{
-					return switchTo(stateTag);
-				}
-				
-				@Override
-				public StateBuilder switchTo(Class<?> stateTag)
-				{
-					if (signalsC != null)
-					{
-						for (Class<?> signal : signalsC)
-						{
-							stateCreater.putSwitchRule(signal, stateTag);
-						}
-					}
-					else if (signalsE != null)
-					{
-						for (Enum<?> signal : signalsE)
-						{
-							stateCreater.putSwitchRule(signal, stateTag);
-						}
-					}
-					else
-					{
-						for (String signal : signalsS)
-						{
-							stateCreater.putSwitchRule(signal, stateTag);
-						}
-					}
-					return StateBuilderImpl.this;
-				}
-			}
-			
-			private class WhenInputImpl<S> extends SwitchToImpl implements WhenInput<S>
+			private class WhenInputImpl<S> extends SwitchToImpl implements WhenInput<S>, WhenInputPrimitive<S>
 			{
 				private Class<S> signalC;
 				
@@ -354,19 +302,25 @@ class JMBuilderImpl implements JMBuilder
 				}
 				
 				@Override
+				public SwitchTo doThis(final JMVoidConsumer workOnExit)
+				{
+					return doThis((S s) -> workOnExit.accept());
+				}
+				
+				@Override
 				@SuppressWarnings("unchecked")
 				public SwitchTo doThis(JMConsumer<S> workOnExit)
 				{
 					if (signalC != null)
 					{
-						stateCreater.putExitFunction(signalC, (JMConsumer<Object>)workOnExit);
+						state.putExitFunction(signalC, (JMConsumer<Object>)workOnExit);
 						return new SwitchToImpl(signalC);
 					}
 					else if (signalsE != null)
 					{
 						for (Enum<?> signal : signalsE)
 						{
-							stateCreater.putExitFunction(signal, (JMConsumer<Enum<?>>)workOnExit);
+							state.putExitFunction(signal, (JMConsumer<Enum<?>>)workOnExit);
 						}
 						return new SwitchToImpl(signalsE);
 					}
@@ -374,7 +328,7 @@ class JMBuilderImpl implements JMBuilder
 					{
 						for (String signal : signalsS)
 						{
-							stateCreater.putExitFunction(signal, (JMConsumer<String>)workOnExit);
+							state.putExitFunction(signal, (JMConsumer<String>)workOnExit);
 						}
 						return new SwitchToImpl(signalsS);
 					}
@@ -385,7 +339,7 @@ class JMBuilderImpl implements JMBuilder
 				{
 					if (signalC != null)
 					{
-						stateCreater.putExitFunction(signalC, s ->
+						state.putExitFunction(signalC, s ->
 						{
 							/* do nothing */
 						});
@@ -395,7 +349,7 @@ class JMBuilderImpl implements JMBuilder
 					{
 						for (Enum<?> signal : signalsE)
 						{
-							stateCreater.putExitFunction(signal, s ->
+							state.putExitFunction(signal, s ->
 							{
 								/* do nothing */
 							});
@@ -406,13 +360,68 @@ class JMBuilderImpl implements JMBuilder
 					{
 						for (String signal : signalsS)
 						{
-							stateCreater.putExitFunction(signal, s ->
+							state.putExitFunction(signal, s ->
 							{
 								/* do nothing */
 							});
 						}
 						return new SwitchToImpl(signalsS);
 					}
+				}
+			}
+			
+			private class SwitchToImpl implements SwitchTo
+			{
+				Class<?>[] signalsC;
+				Enum<?>[] signalsE;
+				String[] signalsS;
+				
+				SwitchToImpl(Class<?>... signals)
+				{
+					this.signalsC = signals;
+				}
+				
+				SwitchToImpl(Enum<?>... signals)
+				{
+					this.signalsE = signals;
+				}
+				
+				SwitchToImpl(String... signals)
+				{
+					this.signalsS = signals;
+				}
+				
+				@Override
+				public StateBuilder switchToSelf()
+				{
+					return switchTo(stateTag);
+				}
+				
+				@Override
+				public StateBuilder switchTo(Class<?> stateTag)
+				{
+					if (signalsC != null)
+					{
+						for (Class<?> signal : signalsC)
+						{
+							state.putSwitchRule(signal, stateTag);
+						}
+					}
+					else if (signalsE != null)
+					{
+						for (Enum<?> signal : signalsE)
+						{
+							state.putSwitchRule(signal, stateTag);
+						}
+					}
+					else
+					{
+						for (String signal : signalsS)
+						{
+							state.putSwitchRule(signal, stateTag);
+						}
+					}
+					return StateBuilderImpl.this;
 				}
 			}
 		}
