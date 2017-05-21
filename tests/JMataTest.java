@@ -1,6 +1,7 @@
 import org.junit.Test;
 
 import kr.co.plasticcity.jmata.JMata;
+import kr.co.plasticcity.jmata.annotation.Signal;
 import kr.co.plasticcity.jmata.annotation.State;
 import kr.co.plasticcity.jmata.annotation.StateFunc;
 
@@ -130,26 +131,31 @@ public class JMataTest
 	/*#########################################
 	 * Signals
 	 #########################################*/
+	@Signal
 	public enum Enum
 	{
 		ENUM, ELSE
 	}
 	
+	@Signal
 	public enum AnotherEnum
 	{
 		ENUM
 	}
 	
+	@Signal
 	public static class Class
 	{
 	
 	}
 	
+	@Signal
 	public static class Percent10
 	{
 	
 	}
 	
+	@Signal
 	public static class Percent25
 	{
 	
