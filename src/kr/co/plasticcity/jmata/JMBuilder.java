@@ -9,26 +9,26 @@ public interface JMBuilder
 {
 	class Constructor
 	{
-		static JMBuilder getNew(Object machineTag, boolean isPresent, JMConsumer<JMMachine> registrator)
+		static JMBuilder getNew(final Object machineTag, final boolean isPresent, final JMConsumer<JMMachine> registrator)
 		{
 			return new JMBuilderImpl(machineTag, isPresent, registrator);
 		}
 	}
 	
-	void ifPresentThenIgnoreThis(JMConsumer<StartStateDefiner> definer);
+	void ifPresentThenIgnoreThis(final JMConsumer<StartStateDefiner> definer);
 	
-	void ifPresentThenReplaceWithThis(JMConsumer<StartStateDefiner> definer);
+	void ifPresentThenReplaceWithThis(final JMConsumer<StartStateDefiner> definer);
 	
 	interface StartStateDefiner
 	{
-		StateBuilder defineStartState(Class<?> stateTag);
+		StateBuilder defineStartState(final Class<?> stateTag);
 	}
 	
 	interface MachineBuilder
 	{
-		StateBuilder defineState(Class<?> stateTag);
+		StateBuilder defineState(final Class<?> stateTag);
 		
-		MachineBuilder defineTerminateWork(JMVoidConsumer work);
+		MachineBuilder defineTerminateWork(final JMVoidConsumer work);
 		
 		void build();
 		
@@ -38,68 +38,73 @@ public interface JMBuilder
 	interface StateBuilder
 	{
 		/* ================================== enter & exit ================================== */
-		StateBuilder whenEnter(JMVoidConsumer defaultWork);
+		StateBuilder whenEnter(final JMVoidConsumer defaultWork);
 		
-		StateBuilder whenEnter(JMSupplier<Object> defaultWork);
+		StateBuilder whenEnter(final JMSupplier<Object> defaultWork);
 		
-		StateBuilder whenExit(JMVoidConsumer defaultWork);
+		StateBuilder whenExit(final JMVoidConsumer defaultWork);
 		
-		<S> WhenEnter<S> whenEnterBy(Class<S> signal);
+		<S> WhenEnter<S> whenEnterBy(final Class<S> signal);
 		
-		<S extends Enum<S>> WhenEnterPrimitive<S> whenEnterBy(Enum<S> signal);
-		
-		WhenEnterPrimitive<String> whenEnterBy(String signal);
-		
-		/* ===================================== input ===================================== */
-		<S> WhenInput<S> whenInput(Class<S> signal);
-		
-		SwitchTo whenInput(Class<?>... signals);
-		
-		<S extends Enum<S>> WhenInputPrimitive<S> whenInput(Enum<S> signal);
+		<S extends Enum<S>> WhenEnterPrimitive<S> whenEnterBy(final Enum<S> signal);
 		
 		@SuppressWarnings("unchecked")
-		<S extends Enum<S>> WhenInputPrimitive<S> whenInput(S... signals);
+		<S extends Enum<S>> WhenEnterPrimitive<S> whenEnterBy(final S... signals);
 		
-		WhenInputPrimitive<String> whenInput(String signal);
+		WhenEnterPrimitive<String> whenEnterBy(final String signal);
 		
-		WhenInputPrimitive<String> whenInput(String... signals);
+		WhenEnterPrimitive<String> whenEnterBy(final String... signals);
+		
+		/* ===================================== input ===================================== */
+		<S> WhenInput<S> whenInput(final Class<S> signal);
+		
+		SwitchTo whenInput(final Class<?>... signals);
+		
+		<S extends Enum<S>> WhenInputPrimitive<S> whenInput(final Enum<S> signal);
+		
+		@SuppressWarnings("unchecked")
+		<S extends Enum<S>> WhenInputPrimitive<S> whenInput(final S... signals);
+		
+		WhenInputPrimitive<String> whenInput(final String signal);
+		
+		WhenInputPrimitive<String> whenInput(final String... signals);
 		
 		/* ====================================== etc ====================================== */
 		MachineBuilder apply();
 		
 		interface WhenEnter<S>
 		{
-			StateBuilder doThis(JMConsumer<S> workOnEnter);
+			StateBuilder doThis(final JMConsumer<S> workOnEnter);
 			
-			StateBuilder doThis(JMFunction<S, Object> workOnEnter);
+			StateBuilder doThis(final JMFunction<S, Object> workOnEnter);
 			
 			StateBuilder doNothing();
 		}
 		
 		interface WhenEnterPrimitive<S> extends WhenEnter<S>
 		{
-			StateBuilder doThis(JMVoidConsumer workOnEnter);
+			StateBuilder doThis(final JMVoidConsumer workOnEnter);
 			
-			StateBuilder doThis(JMSupplier<Object> workOnEnter);
+			StateBuilder doThis(final JMSupplier<Object> workOnEnter);
 		}
 		
 		interface WhenInput<S> extends SwitchTo
 		{
-			SwitchTo doThis(JMConsumer<S> workOnExit);
+			SwitchTo doThis(final JMConsumer<S> workOnExit);
 			
 			SwitchTo doNothing();
 		}
 		
 		interface WhenInputPrimitive<S> extends WhenInput<S>, SwitchTo
 		{
-			SwitchTo doThis(JMVoidConsumer workOnExit);
+			SwitchTo doThis(final JMVoidConsumer workOnExit);
 		}
 		
 		interface SwitchTo
 		{
 			StateBuilder switchToSelf();
 			
-			StateBuilder switchTo(Class<?> stateTag);
+			StateBuilder switchTo(final Class<?> stateTag);
 		}
 	}
 }
