@@ -10,12 +10,12 @@ public class JMata
 		JMataImpl.initialize(null, null);
 	}
 	
-	public static void initialize(JMConsumer<String> debugLogger)
+	public static void initialize(final JMConsumer<String> debugLogger)
 	{
 		JMataImpl.initialize(debugLogger, null);
 	}
 	
-	public static void initialize(JMConsumer<String> debugLogger, JMConsumer<String> errorLogger)
+	public static void initialize(final JMConsumer<String> debugLogger, final JMConsumer<String> errorLogger)
 	{
 		JMataImpl.initialize(debugLogger, errorLogger);
 	}
