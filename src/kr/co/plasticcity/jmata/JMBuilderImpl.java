@@ -136,13 +136,13 @@ class JMBuilderImpl implements JMBuilder
 			}
 			
 			@Override
-			public <S extends Enum<S>> WhenEnter<S> whenEnterBy(Enum<S> signal)
+			public <S extends Enum<S>> WhenEnterPrimitive<S> whenEnterBy(Enum<S> signal)
 			{
 				return new WhenEnterImpl<>(signal);
 			}
 			
 			@Override
-			public WhenEnter<String> whenEnterBy(String signal)
+			public WhenEnterPrimitive<String> whenEnterBy(String signal)
 			{
 				return new WhenEnterImpl<>(signal);
 			}
@@ -191,7 +191,7 @@ class JMBuilderImpl implements JMBuilder
 				return MachineBuilderImpl.this;
 			}
 			
-			private class WhenEnterImpl<S> implements WhenEnter<S>
+			private class WhenEnterImpl<S> implements WhenEnterPrimitive<S>
 			{
 				private Class<S> signalC;
 				private Enum<?> signalE;
@@ -210,6 +210,12 @@ class JMBuilderImpl implements JMBuilder
 				private WhenEnterImpl(String signal)
 				{
 					this.signalS = signal;
+				}
+				
+				@Override
+				public StateBuilder doThis(final JMVoidConsumer workOnEnter)
+				{
+					return doThis((S s) -> workOnEnter.accept());
 				}
 				
 				@Override
@@ -241,6 +247,12 @@ class JMBuilderImpl implements JMBuilder
 						});
 					}
 					return StateBuilderImpl.this;
+				}
+				
+				@Override
+				public StateBuilder doThis(final JMSupplier<Object> workOnEnter)
+				{
+					return doThis((S s) -> workOnEnter.get());
 				}
 				
 				@Override
@@ -281,7 +293,7 @@ class JMBuilderImpl implements JMBuilder
 				}
 			}
 			
-			private class WhenInputImpl<S> extends SwitchToImpl implements WhenInput<S>, WhenInputPrimitive<S>
+			private class WhenInputImpl<S> extends SwitchToImpl implements WhenInputPrimitive<S>
 			{
 				private Class<S> signalC;
 				

@@ -46,9 +46,9 @@ public interface JMBuilder
 		
 		<S> WhenEnter<S> whenEnterBy(Class<S> signal);
 		
-		<S extends Enum<S>> WhenEnter<S> whenEnterBy(Enum<S> signal);
+		<S extends Enum<S>> WhenEnterPrimitive<S> whenEnterBy(Enum<S> signal);
 		
-		WhenEnter<String> whenEnterBy(String signal);
+		WhenEnterPrimitive<String> whenEnterBy(String signal);
 		
 		/* ===================================== input ===================================== */
 		<S> WhenInput<S> whenInput(Class<S> signal);
@@ -76,6 +76,13 @@ public interface JMBuilder
 			StateBuilder doNothing();
 		}
 		
+		interface WhenEnterPrimitive<S> extends WhenEnter<S>
+		{
+			StateBuilder doThis(JMVoidConsumer workOnEnter);
+			
+			StateBuilder doThis(JMSupplier<Object> workOnEnter);
+		}
+		
 		interface WhenInput<S> extends SwitchTo
 		{
 			SwitchTo doThis(JMConsumer<S> workOnExit);
@@ -83,13 +90,9 @@ public interface JMBuilder
 			SwitchTo doNothing();
 		}
 		
-		interface WhenInputPrimitive<S> extends SwitchTo
+		interface WhenInputPrimitive<S> extends WhenInput<S>, SwitchTo
 		{
 			SwitchTo doThis(JMVoidConsumer workOnExit);
-			
-			SwitchTo doThis(JMConsumer<S> workOnExit);
-			
-			SwitchTo doNothing();
 		}
 		
 		interface SwitchTo
