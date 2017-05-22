@@ -2,3 +2,4 @@
 .sonar
 .idea
 /tests/JavaTest.java
+*.~vsdx
