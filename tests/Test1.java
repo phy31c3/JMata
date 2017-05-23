@@ -8,7 +8,7 @@ import kr.co.plasticcity.jmata.annotation.EnterFunc;
 /**
  * Created by JongsunYu on 2017-04-02.
  */
-public class JMataTest
+public class Test1
 {
 	public static volatile boolean isFinish = false;
 	
@@ -96,7 +96,7 @@ public class JMataTest
 					       .whenExit(Finish::exit)
 					       .apply()
 					
-					       .defineTerminateWork(JMataTest::onTerminate)
+					       .defineTerminateWork(Test2::onTerminate)
 					
 					       .buildAndRun();
 				});

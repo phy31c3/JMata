@@ -166,9 +166,9 @@ class JMBuilderImpl implements JMBuilder
 			}
 			
 			@Override
-			public SwitchTo whenInput(final Class<?>... signals)
+			public WhenInputClasses whenInput(final Class<?>... signals)
 			{
-				return new SwitchToImpl(signals);
+				return new WhenInputImpl<>(signals);
 			}
 			
 			@Override
@@ -330,24 +330,19 @@ class JMBuilderImpl implements JMBuilder
 			
 			private class WhenInputImpl<S> extends SwitchToImpl implements WhenInputPrimitive<S>
 			{
-				private final Class<S> signalC;
-				
-				private WhenInputImpl(final Class<S> signal)
+				private WhenInputImpl(final Class<?>... signal)
 				{
 					super(signal);
-					this.signalC = signal;
 				}
 				
 				private WhenInputImpl(final Enum<?>... signals)
 				{
 					super(signals);
-					this.signalC = null;
 				}
 				
 				private WhenInputImpl(final String... signals)
 				{
 					super(signals);
-					this.signalC = null;
 				}
 				
 				@Override
@@ -360,10 +355,13 @@ class JMBuilderImpl implements JMBuilder
 				@SuppressWarnings("unchecked")
 				public SwitchTo doThis(final JMConsumer<S> workOnExit)
 				{
-					if (signalC != null)
+					if (signalsC != null)
 					{
-						state.putExitFunction(signalC, (JMConsumer<Object>)workOnExit);
-						return new SwitchToImpl(signalC);
+						for (Class<?> signal : signalsC)
+						{
+							state.putExitFunction(signal, (JMConsumer<Object>)workOnExit);
+						}
+						return this;
 					}
 					else if (signalsE != null)
 					{
@@ -371,7 +369,7 @@ class JMBuilderImpl implements JMBuilder
 						{
 							state.putExitFunction(signal, (JMConsumer<Enum<?>>)workOnExit);
 						}
-						return new SwitchToImpl(signalsE);
+						return this;
 					}
 					else
 					{
@@ -379,20 +377,23 @@ class JMBuilderImpl implements JMBuilder
 						{
 							state.putExitFunction(signal, (JMConsumer<String>)workOnExit);
 						}
-						return new SwitchToImpl(signalsS);
+						return this;
 					}
 				}
 				
 				@Override
 				public SwitchTo doNothing()
 				{
-					if (signalC != null)
+					if (signalsC != null)
 					{
-						state.putExitFunction(signalC, s ->
+						for (Class<?> signal : signalsC)
 						{
-							/* do nothing */
-						});
-						return new SwitchToImpl(signalC);
+							state.putExitFunction(signal, s ->
+							{
+								/* do nothing */
+							});
+						}
+						return this;
 					}
 					else if (signalsE != null)
 					{
@@ -403,7 +404,7 @@ class JMBuilderImpl implements JMBuilder
 								/* do nothing */
 							});
 						}
-						return new SwitchToImpl(signalsE);
+						return this;
 					}
 					else
 					{
@@ -414,7 +415,7 @@ class JMBuilderImpl implements JMBuilder
 								/* do nothing */
 							});
 						}
-						return new SwitchToImpl(signalsS);
+						return this;
 					}
 				}
 			}

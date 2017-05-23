@@ -58,7 +58,7 @@ public interface JMBuilder
 		/* ===================================== input ===================================== */
 		<S> WhenInput<S> whenInput(final Class<S> signal);
 		
-		SwitchTo whenInput(final Class<?>... signals);
+		WhenInputClasses whenInput(final Class<?>... signals);
 		
 		<S extends Enum<S>> WhenInputPrimitive<S> whenInput(final Enum<S> signal);
 		
@@ -95,9 +95,16 @@ public interface JMBuilder
 			SwitchTo doNothing();
 		}
 		
-		interface WhenInputPrimitive<S> extends WhenInput<S>, SwitchTo
+		interface WhenInputClasses extends SwitchTo
 		{
 			SwitchTo doThis(final JMVoidConsumer workOnExit);
+			
+			SwitchTo doNothing();
+		}
+		
+		interface WhenInputPrimitive<S> extends WhenInput<S>, WhenInputClasses, SwitchTo
+		{
+			/* nothing */
 		}
 		
 		interface SwitchTo
