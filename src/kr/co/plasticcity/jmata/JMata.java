@@ -3,54 +3,54 @@ package kr.co.plasticcity.jmata;
 import kr.co.plasticcity.jmata.function.JMConsumer;
 import kr.co.plasticcity.jmata.function.JMVoidConsumer;
 
-public interface JMata
+public class JMata
 {
-	static void initialize()
+	public static void initialize()
 	{
 		JMataImpl.initialize(null, null);
 	}
 	
-	static void initialize(JMConsumer<String> debugLogger)
+	public static void initialize(final JMConsumer<String> debugLogger)
 	{
 		JMataImpl.initialize(debugLogger, null);
 	}
 	
-	static void initialize(JMConsumer<String> debugLogger, JMConsumer<String> errorLogger)
+	public static void initialize(final JMConsumer<String> debugLogger, final JMConsumer<String> errorLogger)
 	{
 		JMataImpl.initialize(debugLogger, errorLogger);
 	}
 	
-	static void release()
+	public static void release()
 	{
 		JMataImpl.release(null);
 	}
 	
-	static void release(final JMVoidConsumer releaseWork)
+	public static void release(final JMVoidConsumer releaseWork)
 	{
 		JMataImpl.release(releaseWork);
 	}
 	
-	static void buildMachine(final Object machineTag, final JMConsumer<JMBuilder> builder)
+	public static void buildMachine(final Object machineTag, final JMConsumer<JMBuilder> builder)
 	{
 		JMataImpl.post(jmata -> jmata.buildMachine(machineTag, builder));
 	}
 	
-	static void runMachine(final Object machineTag)
+	public static void runMachine(final Object machineTag)
 	{
 		JMataImpl.post(jmata -> jmata.runMachine(machineTag));
 	}
 	
-	static void stopMachine(final Object machineTag)
+	public static void stopMachine(final Object machineTag)
 	{
 		JMataImpl.post(jmata -> jmata.stopMachine(machineTag));
 	}
 	
-	static void terminateMachine(final Object machineTag)
+	public static void terminateMachine(final Object machineTag)
 	{
 		JMataImpl.post(jmata -> jmata.terminateMachine(machineTag));
 	}
 	
-	static <S> void input(final Object machineTag, final S signal)
+	public static <S> void input(final Object machineTag, final S signal)
 	{
 		JMataImpl.post(jmata -> jmata.input(machineTag, signal));
 	}

@@ -1,13 +1,14 @@
 import org.junit.Test;
 
 import kr.co.plasticcity.jmata.JMata;
+import kr.co.plasticcity.jmata.annotation.Signal;
 import kr.co.plasticcity.jmata.annotation.State;
-import kr.co.plasticcity.jmata.annotation.StateFunc;
+import kr.co.plasticcity.jmata.annotation.EnterFunc;
 
 /**
  * Created by JongsunYu on 2017-04-02.
  */
-public class JMataTest
+public class Test1
 {
 	public static volatile boolean isFinish = false;
 	
@@ -95,7 +96,7 @@ public class JMataTest
 					       .whenExit(Finish::exit)
 					       .apply()
 					
-					       .defineTerminateWork(JMataTest::onTerminate)
+					       .defineTerminateWork(Test2::onTerminate)
 					
 					       .buildAndRun();
 				});
@@ -130,26 +131,31 @@ public class JMataTest
 	/*#########################################
 	 * Signals
 	 #########################################*/
+	@Signal
 	public enum Enum
 	{
 		ENUM, ELSE
 	}
 	
+	@Signal
 	public enum AnotherEnum
 	{
 		ENUM
 	}
 	
+	@Signal
 	public static class Class
 	{
 	
 	}
 	
+	@Signal
 	public static class Percent10
 	{
 	
 	}
 	
+	@Signal
 	public static class Percent25
 	{
 	
@@ -161,13 +167,13 @@ public class JMataTest
 	@State
 	public static class Start
 	{
-		@StateFunc
+		@EnterFunc
 		public static String enter()
 		{
 			return "string";
 		}
 		
-		@StateFunc
+		@EnterFunc
 		public static void exit(String s)
 		{
 			System.out.printf("Start 상태는 \"%s\"로 물러난다...\n", s);
@@ -177,13 +183,13 @@ public class JMataTest
 	@State
 	public static class A
 	{
-		@StateFunc
+		@EnterFunc
 		public static void exitBy()
 		{
 			System.out.println("Enum 전이 퇴장 동작인데 파라미터가 없음");
 		}
 		
-		@StateFunc
+		@EnterFunc
 		public static void exit()
 		{
 			System.out.println("난 A의 기본 퇴장 동작");
@@ -193,7 +199,7 @@ public class JMataTest
 	@State
 	public static class B
 	{
-		@StateFunc
+		@EnterFunc
 		public static Percent10 enter()
 		{
 			if (Math.random() < 0.1)
@@ -206,25 +212,25 @@ public class JMataTest
 			}
 		}
 		
-		@StateFunc
+		@EnterFunc
 		public static void exitBy(String s)
 		{
 			System.out.println("B가 이상한 String으로 전이하면 이게 불려지겠지");
 		}
 		
-		@StateFunc
+		@EnterFunc
 		public static void exitBy(Percent10 s)
 		{
 			System.out.println("10프로에 걸렸다... Finish로 간다");
 		}
 		
-		@StateFunc
+		@EnterFunc
 		public static void exitBy(Enum s)
 		{
 			System.out.println("의도적으로 잘못 정의한 루틴을 탔다. 과연 스무스하게 넘어가는가?");
 		}
 		
-		@StateFunc
+		@EnterFunc
 		public static void exit()
 		{
 			System.out.println("이건 B의 기본 퇴장 동작인데 \"string\"으로 전이하면 불려져야 됨");
@@ -234,7 +240,7 @@ public class JMataTest
 	@State
 	public static class C
 	{
-		@StateFunc
+		@EnterFunc
 		public static Object enter()
 		{
 			if (Math.random() < 0.05)
@@ -256,7 +262,7 @@ public class JMataTest
 			System.out.println("내 자신으로 전이된거면 인간적으로 랜덤 돌리지 말자고..");
 		}
 		
-		@StateFunc
+		@EnterFunc
 		public static void exitBy()
 		{
 			System.out.println("5%에 걸렸다... Finish로 간다");
@@ -266,7 +272,7 @@ public class JMataTest
 	@State
 	public static class Finish
 	{
-		@StateFunc
+		@EnterFunc
 		public static void enter()
 		{
 			System.out.println("끝낸다...");
@@ -291,7 +297,7 @@ public class JMataTest
 			});
 		}
 		
-		@StateFunc
+		@EnterFunc
 		public static void exit()
 		{
 			System.out.println("Finish 상태의 exit()가 호출 됐다");
