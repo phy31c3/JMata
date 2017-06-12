@@ -6,8 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.SOURCE)
-@Target(ElementType.TYPE)
-public @interface Signal
+@Target(ElementType.METHOD)
+public @interface Enter
 {
-	/* empty */
+	Class<?> state() default State.class;
 }
