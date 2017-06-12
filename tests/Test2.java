@@ -1,7 +1,8 @@
 import org.junit.Test;
 
 import kr.co.plasticcity.jmata.JMata;
-import kr.co.plasticcity.jmata.annotation.EnterFunc;
+import kr.co.plasticcity.jmata.annotation.Enter;
+import kr.co.plasticcity.jmata.annotation.Exit;
 import kr.co.plasticcity.jmata.annotation.Signal;
 import kr.co.plasticcity.jmata.annotation.State;
 
@@ -19,7 +20,6 @@ public class Test2
 	public void testMain()
 	{
 		JMata.initialize();
-//		JMata.initialize(log -> System.out.println(log));
 		new TestMachine();
 		while (!isFinish)
 		{
@@ -228,6 +228,7 @@ public class Test2
 	@State
 	public static class Start
 	{
+		@Enter(state = Start.class)
 		static void enter()
 		{
 			input("start");
@@ -237,17 +238,20 @@ public class Test2
 	@State
 	public static class EnumTest
 	{
+		@Enter
 		static void enter()
 		{
 			input(EnumSignal.SIGNAL);
 		}
 		
+		@Exit
 		static void enumSignal(EnumSignal s)
 		{
 			System.out.println("1. enum 신호 확인");
 			input(EnumSignal.UNKNOWN);
 		}
 		
+		@Exit
 		static void enumClassSignal(EnumSignal s)
 		{
 			System.out.println("2. enum 클래스형 신호 확인");
@@ -258,17 +262,20 @@ public class Test2
 	@State
 	public static class StringTest
 	{
+		@Enter
 		static void enter()
 		{
 			input("string");
 		}
 		
+		@Exit
 		static void stringSignal(String s)
 		{
 			System.out.println("3. string 신호 확인");
 			input("unknown string");
 		}
 		
+		@Exit
 		static void stringClassSignal(String s)
 		{
 			System.out.println("4. string 클래스형 신호 확인");
@@ -279,24 +286,28 @@ public class Test2
 	@State
 	public static class CommonEnterTest
 	{
+		@Enter
 		static void enter()
 		{
 			System.out.println("5. 기본 진입동작 확인");
 			input("string");
 		}
 		
+		@Enter
 		static void enterString(String s)
 		{
 			System.out.println("6. string 신호 일반 진입동작 확인");
 			input(EnumSignal.SIGNAL);
 		}
 		
+		@Enter
 		static void enterEnum(EnumSignal s)
 		{
 			System.out.println("7. enum 신호 일반 진입동작 확인");
 			input(new ClassSignal());
 		}
 		
+		@Enter
 		static void enterClass(ClassSignal s)
 		{
 			System.out.println("8. class 신호 일반 진입동작 확인");
@@ -307,17 +318,20 @@ public class Test2
 	@State
 	public static class VoidEnterTest
 	{
+		@Enter
 		static void enter()
 		{
 			input("string");
 		}
 		
+		@Enter
 		static void enterString()
 		{
 			System.out.println("9. string 신호 void 진입동작 확인");
 			input(EnumSignal.SIGNAL);
 		}
 		
+		@Enter
 		static void enterEnum()
 		{
 			System.out.println("10. enum 신호 void 진입동작 확인");
@@ -328,29 +342,34 @@ public class Test2
 	@State
 	public static class CommonExitTest
 	{
+		@Enter
 		static void enter()
 		{
 			input("string");
 		}
 		
+		@Exit
 		static void exitString(String s)
 		{
 			System.out.println("11. string 신호 일반 퇴장동작 확인");
 			input(EnumSignal.SIGNAL);
 		}
 		
+		@Exit
 		static void exitEnum(EnumSignal s)
 		{
 			System.out.println("12. enum 신호 일반 퇴장동작 확인");
 			input(new ClassSignal());
 		}
 		
+		@Exit
 		static void exitClass(ClassSignal s)
 		{
 			System.out.println("13. class 신호 일반 퇴장동작 확인");
 			input("common exit test finished");
 		}
 		
+		@Exit
 		static void exit()
 		{
 			System.out.println("14. 기본 퇴장동작 확인");
@@ -360,17 +379,20 @@ public class Test2
 	@State
 	public static class VoidExitTest
 	{
+		@Enter
 		static void enter()
 		{
 			input("string");
 		}
 		
+		@Exit
 		static void exitString()
 		{
 			System.out.println("15. string 신호 void 퇴장동작 확인");
 			input(EnumSignal.SIGNAL);
 		}
 		
+		@Exit
 		static void exitEnum()
 		{
 			System.out.println("16. enum 신호 void 퇴장동작 확인");
@@ -381,38 +403,45 @@ public class Test2
 	@State
 	public static class SignalsInputTest
 	{
+		@Enter
 		static void enter()
 		{
 			input(new Classes());
 		}
 		
+		@Exit
 		static void exitClasses()
 		{
 			System.out.println("17. 다중 class 입력 정의의 퇴장동작 확인");
 		}
 		
+		@Enter
 		static void enterClasses(Classes s)
 		{
 			System.out.println("18. 다중 class 입력 정의의 전이 및 진입동작 확인");
 			input(EnumSignal.SIGNAL);
 		}
 		
+		@Exit
 		static void exitEnums(EnumSignal s)
 		{
 			System.out.println("19. 다중 enum 입력 정의의 퇴장동작 확인");
 		}
 		
+		@Enter
 		static void enterEnums(EnumSignal s)
 		{
 			System.out.println("20. 다중 enum 입력 정의의 전이 및 진입동작 확인");
 			input("strings");
 		}
 		
+		@Exit
 		static void exitStrings(String s)
 		{
 			System.out.println("21. 다중 string 입력 정의의 퇴장동작 확인");
 		}
 		
+		@Enter
 		static void enterStrings(String s)
 		{
 			System.out.println("22. 다중 string 입력 정의의 전이 및 진입동작 확인");
@@ -423,23 +452,27 @@ public class Test2
 	@State
 	public static class RapidSwitchTest
 	{
+		@Enter
 		static Object enter()
 		{
 			return new ClassSignal();
 		}
 		
+		@Enter
 		static Object enterClass(ClassSignal s)
 		{
 			System.out.println("23. class 입력 기민한 전이 확인");
 			return EnumSignal.SIGNAL;
 		}
 		
+		@Enter
 		static Object enterEnum(EnumSignal s)
 		{
 			System.out.println("24. enum 입력 기민한 전이 확인");
 			return "string";
 		}
 		
+		@Enter
 		static void enterString(String s)
 		{
 			System.out.println("25. string 입력 기민한 전이 확인");
@@ -450,6 +483,7 @@ public class Test2
 	@State
 	public static class DoNothingTest
 	{
+		@Enter
 		static void enter()
 		{
 			input(new ClassSignal());
@@ -458,17 +492,20 @@ public class Test2
 			input("complete");
 		}
 		
+		@Enter
 		static void enterComplete()
 		{
 			System.out.println("26. doNothing 확인");
 			input("do nothing test finished");
 		}
 		
+		@Enter
 		static void defaultEnter()
 		{
 			System.out.println("실행되면 안되는 진입동작!!");
 		}
 		
+		@Exit
 		static void defaultExit()
 		{
 			System.out.println("실행되면 안되는 퇴장동작!!");
@@ -478,7 +515,7 @@ public class Test2
 	@State
 	public static class Finish
 	{
-		@EnterFunc
+		@Enter
 		static void enter()
 		{
 			System.out.println("끝낸다...");
@@ -503,7 +540,7 @@ public class Test2
 			});
 		}
 		
-		@EnterFunc
+		@Exit
 		static void exit()
 		{
 			System.out.println("Finish 상태의 exit()가 호출 됐다");

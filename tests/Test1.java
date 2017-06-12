@@ -1,9 +1,10 @@
 import org.junit.Test;
 
 import kr.co.plasticcity.jmata.JMata;
+import kr.co.plasticcity.jmata.annotation.Enter;
+import kr.co.plasticcity.jmata.annotation.Exit;
 import kr.co.plasticcity.jmata.annotation.Signal;
 import kr.co.plasticcity.jmata.annotation.State;
-import kr.co.plasticcity.jmata.annotation.EnterFunc;
 
 /**
  * Created by JongsunYu on 2017-04-02.
@@ -167,13 +168,13 @@ public class Test1
 	@State
 	public static class Start
 	{
-		@EnterFunc
+		@Enter
 		public static String enter()
 		{
 			return "string";
 		}
 		
-		@EnterFunc
+		@Exit
 		public static void exit(String s)
 		{
 			System.out.printf("Start 상태는 \"%s\"로 물러난다...\n", s);
@@ -183,13 +184,13 @@ public class Test1
 	@State
 	public static class A
 	{
-		@EnterFunc
+		@Exit
 		public static void exitBy()
 		{
 			System.out.println("Enum 전이 퇴장 동작인데 파라미터가 없음");
 		}
 		
-		@EnterFunc
+		@Exit
 		public static void exit()
 		{
 			System.out.println("난 A의 기본 퇴장 동작");
@@ -199,7 +200,7 @@ public class Test1
 	@State
 	public static class B
 	{
-		@EnterFunc
+		@Enter
 		public static Percent10 enter()
 		{
 			if (Math.random() < 0.1)
@@ -212,25 +213,25 @@ public class Test1
 			}
 		}
 		
-		@EnterFunc
+		@Exit
 		public static void exitBy(String s)
 		{
 			System.out.println("B가 이상한 String으로 전이하면 이게 불려지겠지");
 		}
 		
-		@EnterFunc
+		@Exit
 		public static void exitBy(Percent10 s)
 		{
 			System.out.println("10프로에 걸렸다... Finish로 간다");
 		}
 		
-		@EnterFunc
+		@Exit
 		public static void exitBy(Enum s)
 		{
 			System.out.println("의도적으로 잘못 정의한 루틴을 탔다. 과연 스무스하게 넘어가는가?");
 		}
 		
-		@EnterFunc
+		@Exit
 		public static void exit()
 		{
 			System.out.println("이건 B의 기본 퇴장 동작인데 \"string\"으로 전이하면 불려져야 됨");
@@ -240,7 +241,7 @@ public class Test1
 	@State
 	public static class C
 	{
-		@EnterFunc
+		@Enter
 		public static Object enter()
 		{
 			if (Math.random() < 0.05)
@@ -257,12 +258,13 @@ public class Test1
 			}
 		}
 		
+		@Enter
 		public static void enterBy(Percent25 s)
 		{
 			System.out.println("내 자신으로 전이된거면 인간적으로 랜덤 돌리지 말자고..");
 		}
 		
-		@EnterFunc
+		@Exit
 		public static void exitBy()
 		{
 			System.out.println("5%에 걸렸다... Finish로 간다");
@@ -272,7 +274,7 @@ public class Test1
 	@State
 	public static class Finish
 	{
-		@EnterFunc
+		@Enter
 		public static void enter()
 		{
 			System.out.println("끝낸다...");
@@ -297,7 +299,7 @@ public class Test1
 			});
 		}
 		
-		@EnterFunc
+		@Exit
 		public static void exit()
 		{
 			System.out.println("Finish 상태의 exit()가 호출 됐다");
