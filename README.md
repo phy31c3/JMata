@@ -1,19 +1,6 @@
 # JMata
-Automata-based programming library for Java by Jongsun Yoo.  
+Automata-based programming library for Java.  
 For more information please see the [wiki](https://github.com/phy31c3/JMata/wiki).
-## Gradle
-```
-compile 'kr.co.plasticcity:jmata:0.8.2'
-```
-## Maven
-```
-<dependency>
-	<groupId>kr.co.plasticcity</groupId>
-	<artifactId>jmata</artifactId>
-	<version>0.8.2</version>
-	<type>pom</type>
-</dependency>
-```
 ## Example Code
 ```
 JMata.initialize(log -> System.out.println(log));
