@@ -73,7 +73,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 		}
 		
 		@Override
-		public MachineBuilder defineTerminateWork(final JMVoidConsumer work)
+		public MachineBuilder whenTerminate(final JMVoidConsumer work)
 		{
 			terminateWork = work;
 			return this;

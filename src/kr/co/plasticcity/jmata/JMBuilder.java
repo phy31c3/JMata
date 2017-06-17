@@ -33,7 +33,7 @@ public interface JMBuilder
 	{
 		StateBuilder defineState(final Class<?> stateTag);
 		
-		MachineBuilder defineTerminateWork(final JMVoidConsumer work);
+		MachineBuilder whenTerminate(final JMVoidConsumer work);
 		
 		void build();
 		
