@@ -7,19 +7,24 @@ import kr.co.plasticcity.jmata.function.JMVoidConsumer;
 
 public interface JMBuilder
 {
+	interface Builder extends JMBuilder
+	{
+		/* dummy interface */
+	}
+	
 	class Constructor
 	{
-		static JMBuilder getNew(final Object machineTag, final boolean isPresent, final JMConsumer<JMMachine> registrator)
+		static Builder getNew(final Object machineTag, final boolean isPresent, final JMConsumer<JMMachine> registrator)
 		{
 			return new JMBuilderImpl(machineTag, isPresent, registrator);
 		}
 	}
 	
-	void ifPresentThenIgnoreThis(final JMConsumer<StartStateDefiner> definer);
+	void ifPresentThenIgnoreThis(final JMConsumer<Definer> definer);
 	
-	void ifPresentThenReplaceWithThis(final JMConsumer<StartStateDefiner> definer);
+	void ifPresentThenReplaceWithThis(final JMConsumer<Definer> definer);
 	
-	interface StartStateDefiner
+	interface Definer
 	{
 		StateBuilder defineStartState(final Class<?> stateTag);
 	}

@@ -9,7 +9,7 @@ import kr.co.plasticcity.jmata.annotation.State;
 /**
  * Created by JongsunYu on 2017-04-02.
  */
-public class Test2
+public class BasicTest
 {
 	static volatile boolean isFinish = false;
 	
@@ -161,7 +161,7 @@ public class Test2
 					       .whenExit(Finish::exit)
 					       .apply()
 					
-					       .defineTerminateWork(Test2::onTerminate)
+					       .defineTerminateWork(BasicTest::onTerminate)
 					
 					       .buildAndRun();
 				});

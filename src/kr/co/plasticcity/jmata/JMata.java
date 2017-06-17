@@ -30,7 +30,7 @@ public class JMata
 		JMataImpl.release(releaseWork);
 	}
 	
-	public static void buildMachine(final Object machineTag, final JMConsumer<JMBuilder> builder)
+	public static void buildMachine(final Object machineTag, final JMConsumer<JMBuilder.Builder> builder)
 	{
 		JMataImpl.post(jmata -> jmata.buildMachine(machineTag, builder));
 	}

@@ -8,7 +8,7 @@ import kr.co.plasticcity.jmata.function.JMFunction;
 import kr.co.plasticcity.jmata.function.JMSupplier;
 import kr.co.plasticcity.jmata.function.JMVoidConsumer;
 
-class JMBuilderImpl implements JMBuilder
+class JMBuilderImpl implements JMBuilder.Builder
 {
 	private final Object machineTag;
 	private final boolean present;
@@ -22,7 +22,7 @@ class JMBuilderImpl implements JMBuilder
 	}
 	
 	@Override
-	public void ifPresentThenIgnoreThis(final JMConsumer<StartStateDefiner> definer)
+	public void ifPresentThenIgnoreThis(final JMConsumer<Definer> definer)
 	{
 		if (present)
 		{
@@ -35,7 +35,7 @@ class JMBuilderImpl implements JMBuilder
 	}
 	
 	@Override
-	public void ifPresentThenReplaceWithThis(final JMConsumer<StartStateDefiner> definer)
+	public void ifPresentThenReplaceWithThis(final JMConsumer<Definer> definer)
 	{
 		if (present)
 		{
@@ -44,7 +44,7 @@ class JMBuilderImpl implements JMBuilder
 		definer.accept(new MachineBuilderImpl());
 	}
 	
-	private class MachineBuilderImpl implements MachineBuilder, StartStateDefiner
+	private class MachineBuilderImpl implements MachineBuilder, Definer
 	{
 		private final Map<Class<?>, JMState> stateMap;
 		private Class<?> startState;

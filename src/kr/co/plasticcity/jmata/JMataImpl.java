@@ -158,7 +158,7 @@ class JMataImpl
 		});
 	}
 	
-	void buildMachine(final Object machineTag, final JMConsumer<JMBuilder> builder)
+	void buildMachine(final Object machineTag, final JMConsumer<JMBuilder.Builder> builder)
 	{
 		globalQue.execute(() ->
 		{
