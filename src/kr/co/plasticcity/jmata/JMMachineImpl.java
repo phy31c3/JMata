@@ -15,15 +15,15 @@ class JMMachineImpl implements JMMachine
 	}
 	
 	private final Object machineTag;
-	private final Class<?> startState;
-	private final Map<Class<?>, ? extends JMState> stateMap;
+	private final Class startState;
+	private final Map<Class, ? extends JMState> stateMap;
 	private final JMVoidConsumer terminateWork;
 	
 	private volatile ExecutorService machineQue;
-	private volatile Class<?> curState;
+	private volatile Class curState;
 	private volatile COND cond;
 	
-	JMMachineImpl(final Object tag, final Class<?> startState, final Map<Class<?>, ? extends JMState> stateMap, final JMVoidConsumer terminateWork)
+	JMMachineImpl(final Object tag, final Class startState, final Map<Class, ? extends JMState> stateMap, final JMVoidConsumer terminateWork)
 	{
 		this.machineTag = tag;
 		this.startState = startState;
@@ -157,13 +157,13 @@ class JMMachineImpl implements JMMachine
 			}
 			else if (signal instanceof Enum)
 			{
-				return stateMap.get(curState).runExitFunction((Enum<?>)signal, stateMap::containsKey, nextState ->
+				return stateMap.get(curState).runExitFunction((Enum)signal, stateMap::containsKey, nextState ->
 				{
 					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
 						JMLog.debug(JMLog.STATE_SWITCHED_BY_CLASS, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal.getClass().getSimpleName() + "." + signal);
 						curState = nextState;
-						return stateMap.get(nextState).runEnterFunction((Enum<?>)signal);
+						return stateMap.get(nextState).runEnterFunction((Enum)signal);
 					}
 					else
 					{

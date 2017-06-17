@@ -22,7 +22,7 @@ public class InvalidMachineDefineTest
 	@Test
 	public void testMain()
 	{
-		JMata.initialize(System.out::println, System.err::println);
+		JMata.initialize(null, System.err::println);
 		new TestMachine();
 		input(new ToUndefinedState());
 		input(S.TO_UNDEFINED_STATE);

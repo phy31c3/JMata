@@ -26,12 +26,12 @@ public interface JMBuilder
 	
 	interface Definer
 	{
-		StateBuilder defineStartState(final Class<?> stateTag);
+		StateBuilder defineStartState(final Class stateTag);
 	}
 	
 	interface MachineBuilder
 	{
-		StateBuilder defineState(final Class<?> stateTag);
+		StateBuilder defineState(final Class stateTag);
 		
 		MachineBuilder whenTerminate(final JMVoidConsumer work);
 		
@@ -63,7 +63,7 @@ public interface JMBuilder
 		/* ===================================== input ===================================== */
 		<S> WhenInput<S> whenInput(final Class<S> signal);
 		
-		WhenInputClasses whenInput(final Class<?>... signals);
+		WhenInputClasses whenInput(final Class... signals);
 		
 		<S extends Enum<S>> WhenInputPrimitive<S> whenInput(final Enum<S> signal);
 		
@@ -116,7 +116,7 @@ public interface JMBuilder
 		{
 			StateBuilder switchToSelf();
 			
-			StateBuilder switchTo(final Class<?> stateTag);
+			StateBuilder switchTo(final Class stateTag);
 		}
 	}
 }
