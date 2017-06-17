@@ -23,7 +23,7 @@ class JMMachineImpl implements JMMachine
 	private volatile Class<?> curState;
 	private volatile COND cond;
 	
-	JMMachineImpl(Object tag, Class<?> startState, Map<Class<?>, ? extends JMState> stateMap, JMVoidConsumer terminateWork)
+	JMMachineImpl(final Object tag, final Class<?> startState, final Map<Class<?>, ? extends JMState> stateMap, final JMVoidConsumer terminateWork)
 	{
 		this.machineTag = tag;
 		this.startState = startState;
@@ -43,7 +43,7 @@ class JMMachineImpl implements JMMachine
 			switchCond(COND.RUNNING);
 			machineQue = Executors.newSingleThreadExecutor(r ->
 			{
-				Thread t = Executors.defaultThreadFactory().newThread(r);
+				final Thread t = Executors.defaultThreadFactory().newThread(r);
 				t.setDaemon(true);
 				t.setName(String.format("JMataMachineThread-%s", machineTag));
 				return t;
@@ -62,7 +62,7 @@ class JMMachineImpl implements JMMachine
 			switchCond(COND.RUNNING);
 			machineQue = Executors.newSingleThreadExecutor(r ->
 			{
-				Thread t = Executors.defaultThreadFactory().newThread(r);
+				final Thread t = Executors.defaultThreadFactory().newThread(r);
 				t.setDaemon(true);
 				t.setName(String.format("JMataMachineThread-%s", machineTag));
 				return t;
@@ -135,7 +135,7 @@ class JMMachineImpl implements JMMachine
 		}
 	}
 	
-	private <S> Object doInput(S signal)
+	private <S> Object doInput(final S signal)
 	{
 		if (cond == COND.RUNNING && !Thread.interrupted())
 		{
@@ -194,7 +194,7 @@ class JMMachineImpl implements JMMachine
 		}
 	}
 	
-	private void switchCond(COND next)
+	private void switchCond(final COND next)
 	{
 		final COND prev = cond;
 		this.cond = next;

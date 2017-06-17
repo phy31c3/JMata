@@ -10,7 +10,7 @@ interface JMState
 {
 	class Constructor
 	{
-		static JMState getNew(Object machineTag, Class<?> stateTag)
+		static JMState getNew(final Object machineTag, final Class<?> stateTag)
 		{
 			return new JMStateImpl(machineTag, stateTag);
 		}
@@ -23,44 +23,44 @@ interface JMState
 	 */
 	Object runEnterFunction();
 	
-	<S> Object runEnterFunctionC(S signal);
+	<S> Object runEnterFunctionC(final S signal);
 	
-	<S extends Enum<S>> Object runEnterFunction(Enum<S> signal);
+	<S extends Enum<S>> Object runEnterFunction(final Enum<S> signal);
 	
-	Object runEnterFunction(String signal);
+	Object runEnterFunction(final String signal);
 	
 	/**
 	 * Call only on machine shutdown
 	 */
 	void runExitFunction();
 	
-	<S> Object runExitFunctionC(S signal, JMPredicate<Class<?>> hasState, JMFunction<Class<?>, Object> nextEnter);
+	<S> Object runExitFunctionC(final S signal, final JMPredicate<Class<?>> hasState, final JMFunction<Class<?>, Object> nextEnter);
 	
-	<S extends Enum<S>> Object runExitFunction(Enum<S> signal, JMPredicate<Class<?>> hasState, JMFunction<Class<?>, Object> nextEnter);
+	<S extends Enum<S>> Object runExitFunction(final Enum<S> signal, final JMPredicate<Class<?>> hasState, final JMFunction<Class<?>, Object> nextEnter);
 	
-	Object runExitFunction(String signal, JMPredicate<Class<?>> hasState, JMFunction<Class<?>, Object> nextEnter);
+	Object runExitFunction(final String signal, final JMPredicate<Class<?>> hasState, final JMFunction<Class<?>, Object> nextEnter);
 	
 	/*########################### for modify ###########################*/
 	
-	void putEnterFunction(JMSupplier<Object> func);
+	void putEnterFunction(final JMSupplier<Object> func);
 	
-	void putEnterFunction(Class<?> signal, JMFunction<? super Object, Object> func);
+	void putEnterFunction(final Class<?> signal, final JMFunction<? super Object, Object> func);
 	
-	void putEnterFunction(Enum<?> signal, JMFunction<Enum<?>, Object> func);
+	void putEnterFunction(final Enum<?> signal, final JMFunction<Enum<?>, Object> func);
 	
-	void putEnterFunction(String signal, JMFunction<String, Object> func);
+	void putEnterFunction(final String signal, final JMFunction<String, Object> func);
 	
-	void putExitFunction(JMVoidConsumer func);
+	void putExitFunction(final JMVoidConsumer func);
 	
-	void putExitFunction(Class<?> signal, JMConsumer<? super Object> func);
+	void putExitFunction(final Class<?> signal, final JMConsumer<? super Object> func);
 	
-	void putExitFunction(Enum<?> signal, JMConsumer<Enum<?>> func);
+	void putExitFunction(final Enum<?> signal, final JMConsumer<Enum<?>> func);
 	
-	void putExitFunction(String signal, JMConsumer<String> func);
+	void putExitFunction(final String signal, final JMConsumer<String> func);
 	
-	void putSwitchRule(Class<?> signal, Class<?> stateTag);
+	void putSwitchRule(final Class<?> signal, final Class<?> stateTag);
 	
-	void putSwitchRule(Enum<?> signal, Class<?> stateTag);
+	void putSwitchRule(final Enum<?> signal, final Class<?> stateTag);
 	
-	void putSwitchRule(String signal, Class<?> stateTag);
+	void putSwitchRule(final String signal, final Class<?> stateTag);
 }

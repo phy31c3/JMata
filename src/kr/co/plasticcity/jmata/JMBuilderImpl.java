@@ -88,7 +88,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 		@Override
 		public void buildAndRun()
 		{
-			JMMachine machine = JMMachine.Constructor.getNew(machineTag, startState, stateMap, terminateWork);
+			final JMMachine machine = JMMachine.Constructor.getNew(machineTag, startState, stateMap, terminateWork);
 			registrator.accept(machine);
 			machine.run();
 		}

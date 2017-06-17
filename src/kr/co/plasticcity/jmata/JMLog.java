@@ -47,7 +47,7 @@ class JMLog
 		/* do nothing */
 	}
 	
-	static void setLogger(JMConsumer<String> debugLogger, JMConsumer<String> errorLogger)
+	static void setLogger(final JMConsumer<String> debugLogger, final JMConsumer<String> errorLogger)
 	{
 		JMLog.debug = debugLogger;
 		JMLog.error = errorLogger;

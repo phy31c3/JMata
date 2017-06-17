@@ -26,7 +26,7 @@ class JMataImpl
 		NOT_INIT, RUNNING, RELEASED
 	}
 	
-	static void initialize(JMConsumer<String> debugLogger, JMConsumer<String> errorLogger)
+	static void initialize(final JMConsumer<String> debugLogger, final JMConsumer<String> errorLogger)
 	{
 		writeLock.lock();
 		
@@ -66,7 +66,7 @@ class JMataImpl
 		}
 	}
 	
-	static void post(JMConsumer<JMataImpl> func)
+	static void post(final JMConsumer<JMataImpl> func)
 	{
 		try
 		{
@@ -165,7 +165,7 @@ class JMataImpl
 			JMLog.debug(JMLog.MACHINE_BUILD_STARTED, machineTag);
 			builder.accept(JMBuilder.Constructor.getNew(machineTag, machineMap.containsKey(machineTag), machine ->
 			{
-				JMMachine oldMachine = machineMap.put(machineTag, machine);
+				final JMMachine oldMachine = machineMap.put(machineTag, machine);
 				if (oldMachine != null)
 				{
 					oldMachine.terminate();
@@ -202,7 +202,7 @@ class JMataImpl
 		{
 			if (machineMap.containsKey(machineTag))
 			{
-				JMMachine machineToTerminate = machineMap.remove(machineTag);
+				final JMMachine machineToTerminate = machineMap.remove(machineTag);
 				if (machineToTerminate != null)
 				{
 					machineToTerminate.terminate();

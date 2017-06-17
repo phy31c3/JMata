@@ -36,25 +36,25 @@ class JMStateImpl implements JMState
 		}
 	}
 	
-	private Object machineTag;
-	private Class<?> stateTag;
+	private final Object machineTag;
+	private final Class<?> stateTag;
 	
 	private JMSupplier<Object> enter;
 	private JMVoidConsumer exit;
 	
-	private Map<Object, FuncSet<
+	private final Map<Object, FuncSet<
 			JMFunction<? super Object, Object>,
 			JMFunction<Enum<?>, Object>,
 			JMFunction<String, Object>>> enterMap;
 	
-	private Map<Object, FuncSet<
+	private final Map<Object, FuncSet<
 			JMConsumer<? super Object>,
 			JMConsumer<Enum<?>>,
 			JMConsumer<String>>> exitMap;
 	
-	private Map<Object, Class<?>> switchRule;
+	private final Map<Object, Class<?>> switchRule;
 	
-	JMStateImpl(Object machineTag, Class<?> stateTag)
+	JMStateImpl(final Object machineTag, final Class<?> stateTag)
 	{
 		this.machineTag = machineTag;
 		this.stateTag = stateTag;
@@ -78,7 +78,7 @@ class JMStateImpl implements JMState
 	}
 	
 	@Override
-	public <S> Object runEnterFunctionC(S signal)
+	public <S> Object runEnterFunctionC(final S signal)
 	{
 		if (enterMap.containsKey(signal.getClass()))
 		{
@@ -95,7 +95,7 @@ class JMStateImpl implements JMState
 	}
 	
 	@Override
-	public <S extends Enum<S>> Object runEnterFunction(Enum<S> signal)
+	public <S extends Enum<S>> Object runEnterFunction(final Enum<S> signal)
 	{
 		if (enterMap.containsKey(signal))
 		{
@@ -116,7 +116,7 @@ class JMStateImpl implements JMState
 	}
 	
 	@Override
-	public Object runEnterFunction(String signal)
+	public Object runEnterFunction(final String signal)
 	{
 		if (enterMap.containsKey(signal))
 		{
@@ -146,7 +146,7 @@ class JMStateImpl implements JMState
 	}
 	
 	@Override
-	public <S> Object runExitFunctionC(S signal, JMPredicate<Class<?>> hasState, JMFunction<Class<?>, Object> nextEnter)
+	public <S> Object runExitFunctionC(final S signal, final JMPredicate<Class<?>> hasState, final JMFunction<Class<?>, Object> nextEnter)
 	{
 		if (switchRule.containsKey(signal.getClass()))
 		{
@@ -177,7 +177,7 @@ class JMStateImpl implements JMState
 	}
 	
 	@Override
-	public <S extends Enum<S>> Object runExitFunction(Enum<S> signal, JMPredicate<Class<?>> hasState, JMFunction<Class<?>, Object> nextEnter)
+	public <S extends Enum<S>> Object runExitFunction(final Enum<S> signal, final JMPredicate<Class<?>> hasState, final JMFunction<Class<?>, Object> nextEnter)
 	{
 		if (switchRule.containsKey(signal))
 		{
@@ -230,7 +230,7 @@ class JMStateImpl implements JMState
 	}
 	
 	@Override
-	public Object runExitFunction(String signal, JMPredicate<Class<?>> hasState, JMFunction<Class<?>, Object> nextEnter)
+	public Object runExitFunction(final String signal, final JMPredicate<Class<?>> hasState, final JMFunction<Class<?>, Object> nextEnter)
 	{
 		if (switchRule.containsKey(signal))
 		{
@@ -283,7 +283,7 @@ class JMStateImpl implements JMState
 	}
 	
 	@Override
-	public void putEnterFunction(JMSupplier<Object> func)
+	public void putEnterFunction(final JMSupplier<Object> func)
 	{
 		if (enter != null)
 		{
@@ -295,7 +295,7 @@ class JMStateImpl implements JMState
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public void putEnterFunction(Class<?> signal, JMFunction<? super Object, Object> func)
+	public void putEnterFunction(final Class<?> signal, final JMFunction<? super Object, Object> func)
 	{
 		if (enterMap.containsKey(signal))
 		{
@@ -307,7 +307,7 @@ class JMStateImpl implements JMState
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public void putEnterFunction(Enum<?> signal, JMFunction<Enum<?>, Object> func)
+	public void putEnterFunction(final Enum<?> signal, final JMFunction<Enum<?>, Object> func)
 	{
 		if (enterMap.containsKey(signal))
 		{
@@ -319,7 +319,7 @@ class JMStateImpl implements JMState
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public void putEnterFunction(String signal, JMFunction<String, Object> func)
+	public void putEnterFunction(final String signal, final JMFunction<String, Object> func)
 	{
 		if (enterMap.containsKey(signal))
 		{
@@ -330,7 +330,7 @@ class JMStateImpl implements JMState
 	}
 	
 	@Override
-	public void putExitFunction(JMVoidConsumer func)
+	public void putExitFunction(final JMVoidConsumer func)
 	{
 		if (exit != null)
 		{
@@ -342,7 +342,7 @@ class JMStateImpl implements JMState
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public void putExitFunction(Class<?> signal, JMConsumer<? super Object> func)
+	public void putExitFunction(final Class<?> signal, final JMConsumer<? super Object> func)
 	{
 		if (exitMap.containsKey(signal))
 		{
@@ -354,7 +354,7 @@ class JMStateImpl implements JMState
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public void putExitFunction(Enum<?> signal, JMConsumer<Enum<?>> func)
+	public void putExitFunction(final Enum<?> signal, final JMConsumer<Enum<?>> func)
 	{
 		if (exitMap.containsKey(signal))
 		{
@@ -366,7 +366,7 @@ class JMStateImpl implements JMState
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public void putExitFunction(String signal, JMConsumer<String> func)
+	public void putExitFunction(final String signal, final JMConsumer<String> func)
 	{
 		if (exitMap.containsKey(signal))
 		{
@@ -377,7 +377,7 @@ class JMStateImpl implements JMState
 	}
 	
 	@Override
-	public void putSwitchRule(Class<?> signal, Class<?> stateTag)
+	public void putSwitchRule(final Class<?> signal, final Class<?> stateTag)
 	{
 		if (switchRule.containsKey(signal))
 		{
@@ -388,7 +388,7 @@ class JMStateImpl implements JMState
 	}
 	
 	@Override
-	public void putSwitchRule(Enum<?> signal, Class<?> stateTag)
+	public void putSwitchRule(final Enum<?> signal, final Class<?> stateTag)
 	{
 		if (switchRule.containsKey(signal))
 		{
@@ -399,7 +399,7 @@ class JMStateImpl implements JMState
 	}
 	
 	@Override
-	public void putSwitchRule(String signal, Class<?> stateTag)
+	public void putSwitchRule(final String signal, final Class<?> stateTag)
 	{
 		if (switchRule.containsKey(signal))
 		{
