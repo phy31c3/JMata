@@ -53,19 +53,25 @@ class JMLog
 		JMLog.error = errorLogger;
 	}
 	
-	static void debug(String format, Object... args)
+	static void debug(JMConsumer<Out> consumer)
 	{
 		if (debug != null)
 		{
-			debug.accept(String.format(format, args));
+			consumer.accept((format, args) -> debug.accept(String.format(format, args)));
 		}
 	}
 	
-	static void error(String format, Object... args)
+	static void error(JMConsumer<Out> consumer)
 	{
 		if (error != null)
 		{
-			error.accept(String.format(format, args));
+			consumer.accept((format, args) -> error.accept(String.format(format, args)));
 		}
+	}
+	
+	@FunctionalInterface
+	interface Out
+	{
+		void print(String format, Object... args);
 	}
 }
