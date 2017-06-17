@@ -10,11 +10,18 @@ public class JMata
 		JMataImpl.initialize(null, null);
 	}
 	
+	/**
+	 * @param debugLogger nullable
+	 */
 	public static void initialize(final JMConsumer<String> debugLogger)
 	{
 		JMataImpl.initialize(debugLogger, null);
 	}
 	
+	/**
+	 * @param debugLogger nullable
+	 * @param errorLogger nullable
+	 */
 	public static void initialize(final JMConsumer<String> debugLogger, final JMConsumer<String> errorLogger)
 	{
 		JMataImpl.initialize(debugLogger, errorLogger);

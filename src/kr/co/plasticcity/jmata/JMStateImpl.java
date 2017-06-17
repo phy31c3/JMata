@@ -5,6 +5,7 @@ import java.util.Map;
 
 import kr.co.plasticcity.jmata.function.JMConsumer;
 import kr.co.plasticcity.jmata.function.JMFunction;
+import kr.co.plasticcity.jmata.function.JMPredicate;
 import kr.co.plasticcity.jmata.function.JMSupplier;
 import kr.co.plasticcity.jmata.function.JMVoidConsumer;
 
@@ -145,20 +146,29 @@ class JMStateImpl implements JMState
 	}
 	
 	@Override
-	public <S> Object runExitFunctionC(S signal, JMFunction<Class<?>, Object> nextState)
+	public <S> Object runExitFunctionC(S signal, JMPredicate<Class<?>> hasState, JMFunction<Class<?>, Object> nextEnter)
 	{
 		if (switchRule.containsKey(signal.getClass()))
 		{
-			if (exitMap.containsKey(signal.getClass()))
+			final Class<?> nextState = switchRule.get(signal.getClass());
+			if (hasState.test(nextState))
 			{
-				exitMap.get(signal.getClass()).classFunc.accept(signal);
+				if (exitMap.containsKey(signal.getClass()))
+				{
+					exitMap.get(signal.getClass()).classFunc.accept(signal);
+				}
+				else if (exit != null)
+				{
+					exit.accept();
+				}
+				
+				return nextEnter.apply(nextState);
 			}
-			else if (exit != null)
+			else
 			{
-				exit.accept();
+				JMLog.error(JMLog.SWITCH_TO_UNDEFINED_STATE_BY_CLASS, machineTag, stateTag.getSimpleName(), nextState.getSimpleName(), signal, nextState.getSimpleName());
+				return null;
 			}
-			
-			return nextState.apply(switchRule.get(signal.getClass()));
 		}
 		else
 		{
@@ -167,33 +177,51 @@ class JMStateImpl implements JMState
 	}
 	
 	@Override
-	public <S extends Enum<S>> Object runExitFunction(Enum<S> signal, JMFunction<Class<?>, Object> nextState)
+	public <S extends Enum<S>> Object runExitFunction(Enum<S> signal, JMPredicate<Class<?>> hasState, JMFunction<Class<?>, Object> nextEnter)
 	{
 		if (switchRule.containsKey(signal))
 		{
-			if (exitMap.containsKey(signal))
+			final Class<?> nextState = switchRule.get(signal);
+			if (hasState.test(nextState))
 			{
-				exitMap.get(signal).enumFunc.accept(signal);
+				if (exitMap.containsKey(signal))
+				{
+					exitMap.get(signal).enumFunc.accept(signal);
+				}
+				else if (exit != null)
+				{
+					exit.accept();
+				}
+				
+				return nextEnter.apply(nextState);
 			}
-			else if (exit != null)
+			else
 			{
-				exit.accept();
+				JMLog.error(JMLog.SWITCH_TO_UNDEFINED_STATE_BY_CLASS, machineTag, stateTag.getSimpleName(), nextState.getSimpleName(), signal.getClass().getSimpleName() + "." + signal, nextState.getSimpleName());
+				return null;
 			}
-			
-			return nextState.apply(switchRule.get(signal));
 		}
 		else if (switchRule.containsKey(signal.getClass()))
 		{
-			if (exitMap.containsKey(signal.getClass()))
+			final Class<?> nextState = switchRule.get(signal.getClass());
+			if (hasState.test(nextState))
 			{
-				exitMap.get(signal.getClass()).classFunc.accept(signal);
+				if (exitMap.containsKey(signal.getClass()))
+				{
+					exitMap.get(signal.getClass()).classFunc.accept(signal);
+				}
+				else if (exit != null)
+				{
+					exit.accept();
+				}
+				
+				return nextEnter.apply(nextState);
 			}
-			else if (exit != null)
+			else
 			{
-				exit.accept();
+				JMLog.error(JMLog.SWITCH_TO_UNDEFINED_STATE_BY_CLASS, machineTag, stateTag.getSimpleName(), nextState.getSimpleName(), signal.getClass().getSimpleName() + "." + signal, nextState.getSimpleName());
+				return null;
 			}
-			
-			return nextState.apply(switchRule.get(signal.getClass()));
 		}
 		else
 		{
@@ -202,33 +230,51 @@ class JMStateImpl implements JMState
 	}
 	
 	@Override
-	public Object runExitFunction(String signal, JMFunction<Class<?>, Object> nextState)
+	public Object runExitFunction(String signal, JMPredicate<Class<?>> hasState, JMFunction<Class<?>, Object> nextEnter)
 	{
 		if (switchRule.containsKey(signal))
 		{
-			if (exitMap.containsKey(signal))
+			final Class<?> nextState = switchRule.get(signal);
+			if (hasState.test(nextState))
 			{
-				exitMap.get(signal).stringFunc.accept(signal);
+				if (exitMap.containsKey(signal))
+				{
+					exitMap.get(signal).stringFunc.accept(signal);
+				}
+				else if (exit != null)
+				{
+					exit.accept();
+				}
+				
+				return nextEnter.apply(nextState);
 			}
-			else if (exit != null)
+			else
 			{
-				exit.accept();
+				JMLog.error(JMLog.SWITCH_TO_UNDEFINED_STATE_BY_STRING, machineTag, stateTag.getSimpleName(), nextState.getSimpleName(), signal, nextState.getSimpleName());
+				return null;
 			}
-			
-			return nextState.apply(switchRule.get(signal));
 		}
 		else if (switchRule.containsKey(signal.getClass()))
 		{
-			if (exitMap.containsKey(signal.getClass()))
+			final Class<?> nextState = switchRule.get(signal.getClass());
+			if (hasState.test(nextState))
 			{
-				exitMap.get(signal.getClass()).classFunc.accept(signal);
+				if (exitMap.containsKey(signal.getClass()))
+				{
+					exitMap.get(signal.getClass()).classFunc.accept(signal);
+				}
+				else if (exit != null)
+				{
+					exit.accept();
+				}
+				
+				return nextEnter.apply(nextState);
 			}
-			else if (exit != null)
+			else
 			{
-				exit.accept();
+				JMLog.error(JMLog.SWITCH_TO_UNDEFINED_STATE_BY_CLASS, machineTag, stateTag.getSimpleName(), nextState.getSimpleName(), signal, nextState.getSimpleName());
+				return null;
 			}
-			
-			return nextState.apply(switchRule.get(signal.getClass()));
 		}
 		else
 		{

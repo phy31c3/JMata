@@ -2,6 +2,7 @@ package kr.co.plasticcity.jmata;
 
 import kr.co.plasticcity.jmata.function.JMConsumer;
 import kr.co.plasticcity.jmata.function.JMFunction;
+import kr.co.plasticcity.jmata.function.JMPredicate;
 import kr.co.plasticcity.jmata.function.JMSupplier;
 import kr.co.plasticcity.jmata.function.JMVoidConsumer;
 
@@ -18,7 +19,7 @@ interface JMState
 	/*########################### basic operation ###########################*/
 	
 	/**
-	 * 머신 생성 후 처음 Run 할 시에만 호출
+	 * Call only on first run after machine creation
 	 */
 	Object runEnterFunction();
 	
@@ -29,15 +30,15 @@ interface JMState
 	Object runEnterFunction(String signal);
 	
 	/**
-	 * 머신 종료 시에만 호출
+	 * Call only on machine shutdown
 	 */
 	void runExitFunction();
 	
-	<S> Object runExitFunctionC(S signal, JMFunction<Class<?>, Object> nextState);
+	<S> Object runExitFunctionC(S signal, JMPredicate<Class<?>> hasState, JMFunction<Class<?>, Object> nextEnter);
 	
-	<S extends Enum<S>> Object runExitFunction(Enum<S> signal, JMFunction<Class<?>, Object> nextState);
+	<S extends Enum<S>> Object runExitFunction(Enum<S> signal, JMPredicate<Class<?>> hasState, JMFunction<Class<?>, Object> nextEnter);
 	
-	Object runExitFunction(String signal, JMFunction<Class<?>, Object> nextState);
+	Object runExitFunction(String signal, JMPredicate<Class<?>> hasState, JMFunction<Class<?>, Object> nextEnter);
 	
 	/*########################### for modify ###########################*/
 	

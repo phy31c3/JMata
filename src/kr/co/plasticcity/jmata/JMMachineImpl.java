@@ -141,13 +141,13 @@ class JMMachineImpl implements JMMachine
 		{
 			if (signal instanceof String)
 			{
-				return stateMap.get(curState).runExitFunction((String)signal, nextState ->
+				return stateMap.get(curState).runExitFunction((String)signal, stateMap::containsKey, nextState ->
 				{
 					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
 						JMLog.debug(JMLog.STATE_SWITCHED_BY_STRING, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
 						curState = nextState;
-						return stateMap.get(curState).runEnterFunction((String)signal);
+						return stateMap.get(nextState).runEnterFunction((String)signal);
 					}
 					else
 					{
@@ -157,13 +157,13 @@ class JMMachineImpl implements JMMachine
 			}
 			else if (signal instanceof Enum)
 			{
-				return stateMap.get(curState).runExitFunction((Enum<?>)signal, nextState ->
+				return stateMap.get(curState).runExitFunction((Enum<?>)signal, stateMap::containsKey, nextState ->
 				{
 					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
 						JMLog.debug(JMLog.STATE_SWITCHED_BY_CLASS, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal.getClass().getSimpleName() + "." + signal);
 						curState = nextState;
-						return stateMap.get(curState).runEnterFunction((Enum<?>)signal);
+						return stateMap.get(nextState).runEnterFunction((Enum<?>)signal);
 					}
 					else
 					{
@@ -173,13 +173,13 @@ class JMMachineImpl implements JMMachine
 			}
 			else
 			{
-				return stateMap.get(curState).runExitFunctionC(signal, nextState ->
+				return stateMap.get(curState).runExitFunctionC(signal, stateMap::containsKey, nextState ->
 				{
 					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
 						JMLog.debug(JMLog.STATE_SWITCHED_BY_CLASS, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
 						curState = nextState;
-						return stateMap.get(curState).runEnterFunctionC(signal);
+						return stateMap.get(nextState).runEnterFunctionC(signal);
 					}
 					else
 					{
