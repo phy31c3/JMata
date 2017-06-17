@@ -20,7 +20,7 @@ public class BasicTest
 	@Test
 	public void testMain()
 	{
-		JMata.initialize();
+		JMata.initialize(null, System.err::println);
 		new TestMachine();
 		while (!isFinish)
 		{
