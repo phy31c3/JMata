@@ -8,7 +8,7 @@ interface JMMachine
 {
 	class Constructor
 	{
-		static JMMachine getNew(Object tag, Class<?> startState, Map<Class<?>, ? extends JMState> stateMap, JMVoidConsumer terminateWork)
+		static JMMachine getNew(final Object tag, final Class startState, final Map<Class, ? extends JMState> stateMap, final JMVoidConsumer terminateWork)
 		{
 			return new JMMachineImpl(tag, startState, stateMap, terminateWork);
 		}

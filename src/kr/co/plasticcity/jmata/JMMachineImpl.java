@@ -15,15 +15,15 @@ class JMMachineImpl implements JMMachine
 	}
 	
 	private final Object machineTag;
-	private final Class<?> startState;
-	private final Map<Class<?>, ? extends JMState> stateMap;
+	private final Class startState;
+	private final Map<Class, ? extends JMState> stateMap;
 	private final JMVoidConsumer terminateWork;
 	
 	private volatile ExecutorService machineQue;
-	private volatile Class<?> curState;
+	private volatile Class curState;
 	private volatile COND cond;
 	
-	JMMachineImpl(Object tag, Class<?> startState, Map<Class<?>, ? extends JMState> stateMap, JMVoidConsumer terminateWork)
+	JMMachineImpl(final Object tag, final Class startState, final Map<Class, ? extends JMState> stateMap, final JMVoidConsumer terminateWork)
 	{
 		this.machineTag = tag;
 		this.startState = startState;
@@ -32,7 +32,7 @@ class JMMachineImpl implements JMMachine
 		this.curState = startState;
 		this.cond = COND.CREATED;
 		
-		JMLog.debug(JMLog.MACHINE_BUILT, tag);
+		JMLog.debug(out -> out.print(JMLog.MACHINE_BUILT, tag));
 	}
 	
 	@Override
@@ -43,7 +43,7 @@ class JMMachineImpl implements JMMachine
 			switchCond(COND.RUNNING);
 			machineQue = Executors.newSingleThreadExecutor(r ->
 			{
-				Thread t = Executors.defaultThreadFactory().newThread(r);
+				final Thread t = Executors.defaultThreadFactory().newThread(r);
 				t.setDaemon(true);
 				t.setName(String.format("JMataMachineThread-%s", machineTag));
 				return t;
@@ -62,7 +62,7 @@ class JMMachineImpl implements JMMachine
 			switchCond(COND.RUNNING);
 			machineQue = Executors.newSingleThreadExecutor(r ->
 			{
-				Thread t = Executors.defaultThreadFactory().newThread(r);
+				final Thread t = Executors.defaultThreadFactory().newThread(r);
 				t.setDaemon(true);
 				t.setName(String.format("JMataMachineThread-%s", machineTag));
 				return t;
@@ -108,12 +108,12 @@ class JMMachineImpl implements JMMachine
 				}
 				else
 				{
-					JMLog.error(JMLog.TERMINATION_WORK_FAILED_AS_TIMEOUT, machineTag);
+					JMLog.error(out -> out.print(JMLog.TERMINATION_WORK_FAILED_AS_TIMEOUT, machineTag));
 				}
 			}
 			catch (InterruptedException e)
 			{
-				JMLog.error(JMLog.TERMINATION_WORK_FAILED_AS_INTERRUPT, machineTag);
+				JMLog.error(out -> out.print(JMLog.TERMINATION_WORK_FAILED_AS_INTERRUPT, machineTag));
 				Thread.currentThread().interrupt();
 			}
 		}
@@ -135,19 +135,19 @@ class JMMachineImpl implements JMMachine
 		}
 	}
 	
-	private <S> Object doInput(S signal)
+	private <S> Object doInput(final S signal)
 	{
 		if (cond == COND.RUNNING && !Thread.interrupted())
 		{
 			if (signal instanceof String)
 			{
-				return stateMap.get(curState).runExitFunction((String)signal, nextState ->
+				return stateMap.get(curState).runExitFunction((String)signal, stateMap::containsKey, nextState ->
 				{
 					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
-						JMLog.debug(JMLog.STATE_SWITCHED_BY_STRING, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
+						JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_STRING, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal));
 						curState = nextState;
-						return stateMap.get(curState).runEnterFunction((String)signal);
+						return stateMap.get(nextState).runEnterFunction((String)signal);
 					}
 					else
 					{
@@ -157,13 +157,13 @@ class JMMachineImpl implements JMMachine
 			}
 			else if (signal instanceof Enum)
 			{
-				return stateMap.get(curState).runExitFunction((Enum<?>)signal, nextState ->
+				return stateMap.get(curState).runExitFunction((Enum)signal, stateMap::containsKey, nextState ->
 				{
 					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
-						JMLog.debug(JMLog.STATE_SWITCHED_BY_CLASS, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal.getClass().getSimpleName() + "." + signal);
+						JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal.getClass().getSimpleName() + "." + signal));
 						curState = nextState;
-						return stateMap.get(curState).runEnterFunction((Enum<?>)signal);
+						return stateMap.get(nextState).runEnterFunction((Enum)signal);
 					}
 					else
 					{
@@ -173,13 +173,13 @@ class JMMachineImpl implements JMMachine
 			}
 			else
 			{
-				return stateMap.get(curState).runExitFunctionC(signal, nextState ->
+				return stateMap.get(curState).runExitFunctionC(signal, stateMap::containsKey, nextState ->
 				{
 					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
-						JMLog.debug(JMLog.STATE_SWITCHED_BY_CLASS, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal);
+						JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal));
 						curState = nextState;
-						return stateMap.get(curState).runEnterFunctionC(signal);
+						return stateMap.get(nextState).runEnterFunctionC(signal);
 					}
 					else
 					{
@@ -194,10 +194,10 @@ class JMMachineImpl implements JMMachine
 		}
 	}
 	
-	private void switchCond(COND next)
+	private void switchCond(final COND next)
 	{
 		final COND prev = cond;
 		this.cond = next;
-		JMLog.debug(JMLog.MACHINE_STATE_CHANGED, machineTag, prev.name(), next.name());
+		JMLog.debug(out -> out.print(JMLog.MACHINE_STATE_CHANGED, machineTag, prev.name(), next.name()));
 	}
 }

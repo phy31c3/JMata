@@ -2,6 +2,7 @@ package kr.co.plasticcity.jmata;
 
 import kr.co.plasticcity.jmata.function.JMConsumer;
 import kr.co.plasticcity.jmata.function.JMFunction;
+import kr.co.plasticcity.jmata.function.JMPredicate;
 import kr.co.plasticcity.jmata.function.JMSupplier;
 import kr.co.plasticcity.jmata.function.JMVoidConsumer;
 
@@ -9,7 +10,7 @@ interface JMState
 {
 	class Constructor
 	{
-		static JMState getNew(Object machineTag, Class<?> stateTag)
+		static JMState getNew(final Object machineTag, final Class stateTag)
 		{
 			return new JMStateImpl(machineTag, stateTag);
 		}
@@ -18,48 +19,48 @@ interface JMState
 	/*########################### basic operation ###########################*/
 	
 	/**
-	 * 머신 생성 후 처음 Run 할 시에만 호출
+	 * Call only on first run after machine creation
 	 */
 	Object runEnterFunction();
 	
-	<S> Object runEnterFunctionC(S signal);
+	<S> Object runEnterFunctionC(final S signal);
 	
-	<S extends Enum<S>> Object runEnterFunction(Enum<S> signal);
+	Object runEnterFunction(final Enum signal);
 	
-	Object runEnterFunction(String signal);
+	Object runEnterFunction(final String signal);
 	
 	/**
-	 * 머신 종료 시에만 호출
+	 * Call only on machine shutdown
 	 */
 	void runExitFunction();
 	
-	<S> Object runExitFunctionC(S signal, JMFunction<Class<?>, Object> nextState);
+	<S> Object runExitFunctionC(final S signal, final JMPredicate<Class> hasState, final JMFunction<Class, Object> nextEnter);
 	
-	<S extends Enum<S>> Object runExitFunction(Enum<S> signal, JMFunction<Class<?>, Object> nextState);
+	Object runExitFunction(final Enum signal, final JMPredicate<Class> hasState, final JMFunction<Class, Object> nextEnter);
 	
-	Object runExitFunction(String signal, JMFunction<Class<?>, Object> nextState);
+	Object runExitFunction(final String signal, final JMPredicate<Class> hasState, final JMFunction<Class, Object> nextEnter);
 	
 	/*########################### for modify ###########################*/
 	
-	void putEnterFunction(JMSupplier<Object> func);
+	void putEnterFunction(final JMSupplier<Object> func);
 	
-	void putEnterFunction(Class<?> signal, JMFunction<? super Object, Object> func);
+	void putEnterFunction(final Class signal, final JMFunction<? super Object, Object> func);
 	
-	void putEnterFunction(Enum<?> signal, JMFunction<Enum<?>, Object> func);
+	void putEnterFunction(final Enum signal, final JMFunction<Enum, Object> func);
 	
-	void putEnterFunction(String signal, JMFunction<String, Object> func);
+	void putEnterFunction(final String signal, final JMFunction<String, Object> func);
 	
-	void putExitFunction(JMVoidConsumer func);
+	void putExitFunction(final JMVoidConsumer func);
 	
-	void putExitFunction(Class<?> signal, JMConsumer<? super Object> func);
+	void putExitFunction(final Class signal, final JMConsumer<? super Object> func);
 	
-	void putExitFunction(Enum<?> signal, JMConsumer<Enum<?>> func);
+	void putExitFunction(final Enum signal, final JMConsumer<Enum> func);
 	
-	void putExitFunction(String signal, JMConsumer<String> func);
+	void putExitFunction(final String signal, final JMConsumer<String> func);
 	
-	void putSwitchRule(Class<?> signal, Class<?> stateTag);
+	void putSwitchRule(final Class signal, final Class stateTag);
 	
-	void putSwitchRule(Enum<?> signal, Class<?> stateTag);
+	void putSwitchRule(final Enum signal, final Class stateTag);
 	
-	void putSwitchRule(String signal, Class<?> stateTag);
+	void putSwitchRule(final String signal, final Class stateTag);
 }

@@ -22,10 +22,12 @@ class JMLog
 	/* log in JMMachineImpl */
 	static final String MACHINE_BUILT = "[%s] machine has been built";
 	static final String MACHINE_STATE_CHANGED = "[%s] machine state changed : [%s] -> [%s]";
-	static final String STATE_SWITCHED_BY_CLASS = "[%s] machine : switched from [%s] to [%s] due to [%s]";
-	static final String STATE_SWITCHED_BY_STRING = "[%s] machine : switched from [%s] to [%s] due to [\"%s\"]";
+	static final String STATE_SWITCHED_BY_CLASS = "[%s] machine : Switched from [%s] to [%s] by [%s]";
+	static final String STATE_SWITCHED_BY_STRING = "[%s] machine : Switched from [%s] to [%s] by [\"%s\"]";
 	static final String TERMINATION_WORK_FAILED_AS_TIMEOUT = "[%s] machine : The termination work failed because the machine shutdown took too long (over 1 second)";
 	static final String TERMINATION_WORK_FAILED_AS_INTERRUPT = "[%s] machine : The termination work failed because this thread interrupted during termination";
+	static final String SWITCH_TO_UNDEFINED_STATE_BY_CLASS = "[%s] machine : Tried to switch from [%s] to [%s] by [%s], but machine has no definition for [%s]";
+	static final String SWITCH_TO_UNDEFINED_STATE_BY_STRING = "[%s] machine : Tried to switch from [%s] to [%s] by [\"%s\"], but machine has no definition for [%s]";
 	
 	/* log in JMStateImpl */
 	static final String ENTER_FUNC_DUPLICATED = "[%s] machine : Definition of default entry function duplicated in state [%s]";
@@ -45,25 +47,31 @@ class JMLog
 		/* do nothing */
 	}
 	
-	static void setLogger(JMConsumer<String> debugLogger, JMConsumer<String> errorLogger)
+	static void setLogger(final JMConsumer<String> debugLogger, final JMConsumer<String> errorLogger)
 	{
 		JMLog.debug = debugLogger;
 		JMLog.error = errorLogger;
 	}
 	
-	static void debug(String format, Object... args)
+	static void debug(JMConsumer<Out> consumer)
 	{
 		if (debug != null)
 		{
-			debug.accept(String.format(format, args));
+			consumer.accept((format, args) -> debug.accept(String.format(format, args)));
 		}
 	}
 	
-	static void error(String format, Object... args)
+	static void error(JMConsumer<Out> consumer)
 	{
 		if (error != null)
 		{
-			error.accept(String.format(format, args));
+			consumer.accept((format, args) -> error.accept(String.format(format, args)));
 		}
+	}
+	
+	@FunctionalInterface
+	interface Out
+	{
+		void print(String format, Object... args);
 	}
 }

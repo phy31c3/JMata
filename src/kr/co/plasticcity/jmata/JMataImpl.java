@@ -26,7 +26,7 @@ class JMataImpl
 		NOT_INIT, RUNNING, RELEASED
 	}
 	
-	static void initialize(JMConsumer<String> debugLogger, JMConsumer<String> errorLogger)
+	static void initialize(final JMConsumer<String> debugLogger, final JMConsumer<String> errorLogger)
 	{
 		writeLock.lock();
 		
@@ -37,7 +37,7 @@ class JMataImpl
 				state = STATE.RUNNING;
 				instance = new JMataImpl();
 				JMLog.setLogger(debugLogger, errorLogger);
-				JMLog.debug(JMLog.JMATA_INITIALIZED);
+				JMLog.debug(out -> out.print(JMLog.JMATA_INITIALIZED));
 			}
 		}
 		finally
@@ -66,7 +66,7 @@ class JMataImpl
 		}
 	}
 	
-	static void post(JMConsumer<JMataImpl> func)
+	static void post(final JMConsumer<JMataImpl> func)
 	{
 		try
 		{
@@ -83,16 +83,16 @@ class JMataImpl
 					switch (state)
 					{
 					case NOT_INIT:
-						JMLog.error(JMLog.JMATA_ERROR_IN_NOT_INIT);
+						JMLog.error(out -> out.print(JMLog.JMATA_ERROR_IN_NOT_INIT));
 						break;
 					case RUNNING:
-						JMLog.error(JMLog.JMATA_ERROR_IN_RUNNING);
+						JMLog.error(out -> out.print(JMLog.JMATA_ERROR_IN_RUNNING));
 						break;
 					case RELEASED:
-						JMLog.debug(JMLog.JMATA_ERROR_IN_RELEASED);
+						JMLog.debug(out -> out.print(JMLog.JMATA_ERROR_IN_RELEASED));
 						break;
 					default:
-						JMLog.error(JMLog.JMATA_ERROR_IN_UNDEFINED, state.name());
+						JMLog.error(out -> out.print(JMLog.JMATA_ERROR_IN_UNDEFINED, state.name()));
 						break;
 					}
 				}
@@ -104,7 +104,7 @@ class JMataImpl
 		}
 		catch (RejectedExecutionException e)
 		{
-			JMLog.error(JMLog.JMATA_REJECTED_EXECUTION_EXCEPTION);
+			JMLog.error(out -> out.print(JMLog.JMATA_REJECTED_EXECUTION_EXCEPTION));
 		}
 	}
 	
@@ -148,7 +148,7 @@ class JMataImpl
 				instance.globalQue.shutdownNow();
 				instance = null;
 				
-				JMLog.debug(JMLog.JMATA_RELEASED);
+				JMLog.debug(out -> out.print(JMLog.JMATA_RELEASED));
 				JMLog.setLogger(null, null);
 			}
 			finally
@@ -158,14 +158,14 @@ class JMataImpl
 		});
 	}
 	
-	void buildMachine(final Object machineTag, final JMConsumer<JMBuilder> builder)
+	void buildMachine(final Object machineTag, final JMConsumer<JMBuilder.Builder> builder)
 	{
 		globalQue.execute(() ->
 		{
-			JMLog.debug(JMLog.MACHINE_BUILD_STARTED, machineTag);
+			JMLog.debug(out -> out.print(JMLog.MACHINE_BUILD_STARTED, machineTag));
 			builder.accept(JMBuilder.Constructor.getNew(machineTag, machineMap.containsKey(machineTag), machine ->
 			{
-				JMMachine oldMachine = machineMap.put(machineTag, machine);
+				final JMMachine oldMachine = machineMap.put(machineTag, machine);
 				if (oldMachine != null)
 				{
 					oldMachine.terminate();
@@ -202,7 +202,7 @@ class JMataImpl
 		{
 			if (machineMap.containsKey(machineTag))
 			{
-				JMMachine machineToTerminate = machineMap.remove(machineTag);
+				final JMMachine machineToTerminate = machineMap.remove(machineTag);
 				if (machineToTerminate != null)
 				{
 					machineToTerminate.terminate();

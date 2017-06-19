@@ -5,11 +5,12 @@ import kr.co.plasticcity.jmata.annotation.Enter;
 import kr.co.plasticcity.jmata.annotation.Exit;
 import kr.co.plasticcity.jmata.annotation.Signal;
 import kr.co.plasticcity.jmata.annotation.State;
+import kr.co.plasticcity.jmata.annotation.Terminate;
 
 /**
  * Created by JongsunYu on 2017-04-02.
  */
-public class Test2
+public class BasicTest
 {
 	static volatile boolean isFinish = false;
 	
@@ -19,7 +20,7 @@ public class Test2
 	@Test
 	public void testMain()
 	{
-		JMata.initialize();
+		JMata.initialize(null, System.err::println);
 		new TestMachine();
 		while (!isFinish)
 		{
@@ -161,7 +162,7 @@ public class Test2
 					       .whenExit(Finish::exit)
 					       .apply()
 					
-					       .defineTerminateWork(Test2::onTerminate)
+					       .whenTerminate(BasicTest::onTerminate)
 					
 					       .buildAndRun();
 				});
@@ -169,6 +170,7 @@ public class Test2
 		}
 	}
 	
+	@Terminate
 	public static void onTerminate()
 	{
 		System.out.println("머신이 종료 됨");
@@ -207,19 +209,19 @@ public class Test2
 	@Signal
 	public static class ClassSignal
 	{
-		
+		/* empty */
 	}
 	
 	@Signal
 	public static class Classes
 	{
-		
+		/* empty */
 	}
 	
 	@Signal
 	public static class Noise
 	{
-		
+		/* empty */
 	}
 	
 	/*#########################################
@@ -228,7 +230,7 @@ public class Test2
 	@State
 	public static class Start
 	{
-		@Enter(state = Start.class)
+		@Enter
 		static void enter()
 		{
 			input("start");

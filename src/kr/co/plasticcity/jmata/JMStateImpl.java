@@ -5,6 +5,7 @@ import java.util.Map;
 
 import kr.co.plasticcity.jmata.function.JMConsumer;
 import kr.co.plasticcity.jmata.function.JMFunction;
+import kr.co.plasticcity.jmata.function.JMPredicate;
 import kr.co.plasticcity.jmata.function.JMSupplier;
 import kr.co.plasticcity.jmata.function.JMVoidConsumer;
 
@@ -35,25 +36,25 @@ class JMStateImpl implements JMState
 		}
 	}
 	
-	private Object machineTag;
-	private Class<?> stateTag;
+	private final Object machineTag;
+	private final Class stateTag;
 	
 	private JMSupplier<Object> enter;
 	private JMVoidConsumer exit;
 	
-	private Map<Object, FuncSet<
+	private final Map<Object, FuncSet<
 			JMFunction<? super Object, Object>,
-			JMFunction<Enum<?>, Object>,
+			JMFunction<Enum, Object>,
 			JMFunction<String, Object>>> enterMap;
 	
-	private Map<Object, FuncSet<
+	private final Map<Object, FuncSet<
 			JMConsumer<? super Object>,
-			JMConsumer<Enum<?>>,
+			JMConsumer<Enum>,
 			JMConsumer<String>>> exitMap;
 	
-	private Map<Object, Class<?>> switchRule;
+	private final Map<Object, Class> switchRule;
 	
-	JMStateImpl(Object machineTag, Class<?> stateTag)
+	JMStateImpl(final Object machineTag, final Class stateTag)
 	{
 		this.machineTag = machineTag;
 		this.stateTag = stateTag;
@@ -77,7 +78,7 @@ class JMStateImpl implements JMState
 	}
 	
 	@Override
-	public <S> Object runEnterFunctionC(S signal)
+	public <S> Object runEnterFunctionC(final S signal)
 	{
 		if (enterMap.containsKey(signal.getClass()))
 		{
@@ -94,7 +95,7 @@ class JMStateImpl implements JMState
 	}
 	
 	@Override
-	public <S extends Enum<S>> Object runEnterFunction(Enum<S> signal)
+	public Object runEnterFunction(final Enum signal)
 	{
 		if (enterMap.containsKey(signal))
 		{
@@ -115,7 +116,7 @@ class JMStateImpl implements JMState
 	}
 	
 	@Override
-	public Object runEnterFunction(String signal)
+	public Object runEnterFunction(final String signal)
 	{
 		if (enterMap.containsKey(signal))
 		{
@@ -145,20 +146,29 @@ class JMStateImpl implements JMState
 	}
 	
 	@Override
-	public <S> Object runExitFunctionC(S signal, JMFunction<Class<?>, Object> nextState)
+	public <S> Object runExitFunctionC(final S signal, final JMPredicate<Class> hasState, final JMFunction<Class, Object> nextEnter)
 	{
 		if (switchRule.containsKey(signal.getClass()))
 		{
-			if (exitMap.containsKey(signal.getClass()))
+			final Class nextState = switchRule.get(signal.getClass());
+			if (hasState.test(nextState))
 			{
-				exitMap.get(signal.getClass()).classFunc.accept(signal);
+				if (exitMap.containsKey(signal.getClass()))
+				{
+					exitMap.get(signal.getClass()).classFunc.accept(signal);
+				}
+				else if (exit != null)
+				{
+					exit.accept();
+				}
+				
+				return nextEnter.apply(nextState);
 			}
-			else if (exit != null)
+			else
 			{
-				exit.accept();
+				JMLog.error(out -> out.print(JMLog.SWITCH_TO_UNDEFINED_STATE_BY_CLASS, machineTag, stateTag.getSimpleName(), nextState.getSimpleName(), signal, nextState.getSimpleName()));
+				return null;
 			}
-			
-			return nextState.apply(switchRule.get(signal.getClass()));
 		}
 		else
 		{
@@ -167,33 +177,51 @@ class JMStateImpl implements JMState
 	}
 	
 	@Override
-	public <S extends Enum<S>> Object runExitFunction(Enum<S> signal, JMFunction<Class<?>, Object> nextState)
+	public Object runExitFunction(final Enum signal, final JMPredicate<Class> hasState, final JMFunction<Class, Object> nextEnter)
 	{
 		if (switchRule.containsKey(signal))
 		{
-			if (exitMap.containsKey(signal))
+			final Class nextState = switchRule.get(signal);
+			if (hasState.test(nextState))
 			{
-				exitMap.get(signal).enumFunc.accept(signal);
+				if (exitMap.containsKey(signal))
+				{
+					exitMap.get(signal).enumFunc.accept(signal);
+				}
+				else if (exit != null)
+				{
+					exit.accept();
+				}
+				
+				return nextEnter.apply(nextState);
 			}
-			else if (exit != null)
+			else
 			{
-				exit.accept();
+				JMLog.error(out -> out.print(JMLog.SWITCH_TO_UNDEFINED_STATE_BY_CLASS, machineTag, stateTag.getSimpleName(), nextState.getSimpleName(), signal.getClass().getSimpleName() + "." + signal, nextState.getSimpleName()));
+				return null;
 			}
-			
-			return nextState.apply(switchRule.get(signal));
 		}
 		else if (switchRule.containsKey(signal.getClass()))
 		{
-			if (exitMap.containsKey(signal.getClass()))
+			final Class nextState = switchRule.get(signal.getClass());
+			if (hasState.test(nextState))
 			{
-				exitMap.get(signal.getClass()).classFunc.accept(signal);
+				if (exitMap.containsKey(signal.getClass()))
+				{
+					exitMap.get(signal.getClass()).classFunc.accept(signal);
+				}
+				else if (exit != null)
+				{
+					exit.accept();
+				}
+				
+				return nextEnter.apply(nextState);
 			}
-			else if (exit != null)
+			else
 			{
-				exit.accept();
+				JMLog.error(out -> out.print(JMLog.SWITCH_TO_UNDEFINED_STATE_BY_CLASS, machineTag, stateTag.getSimpleName(), nextState.getSimpleName(), signal.getClass().getSimpleName() + "." + signal, nextState.getSimpleName()));
+				return null;
 			}
-			
-			return nextState.apply(switchRule.get(signal.getClass()));
 		}
 		else
 		{
@@ -202,33 +230,51 @@ class JMStateImpl implements JMState
 	}
 	
 	@Override
-	public Object runExitFunction(String signal, JMFunction<Class<?>, Object> nextState)
+	public Object runExitFunction(final String signal, final JMPredicate<Class> hasState, final JMFunction<Class, Object> nextEnter)
 	{
 		if (switchRule.containsKey(signal))
 		{
-			if (exitMap.containsKey(signal))
+			final Class nextState = switchRule.get(signal);
+			if (hasState.test(nextState))
 			{
-				exitMap.get(signal).stringFunc.accept(signal);
+				if (exitMap.containsKey(signal))
+				{
+					exitMap.get(signal).stringFunc.accept(signal);
+				}
+				else if (exit != null)
+				{
+					exit.accept();
+				}
+				
+				return nextEnter.apply(nextState);
 			}
-			else if (exit != null)
+			else
 			{
-				exit.accept();
+				JMLog.error(out -> out.print(JMLog.SWITCH_TO_UNDEFINED_STATE_BY_STRING, machineTag, stateTag.getSimpleName(), nextState.getSimpleName(), signal, nextState.getSimpleName()));
+				return null;
 			}
-			
-			return nextState.apply(switchRule.get(signal));
 		}
 		else if (switchRule.containsKey(signal.getClass()))
 		{
-			if (exitMap.containsKey(signal.getClass()))
+			final Class nextState = switchRule.get(signal.getClass());
+			if (hasState.test(nextState))
 			{
-				exitMap.get(signal.getClass()).classFunc.accept(signal);
+				if (exitMap.containsKey(signal.getClass()))
+				{
+					exitMap.get(signal.getClass()).classFunc.accept(signal);
+				}
+				else if (exit != null)
+				{
+					exit.accept();
+				}
+				
+				return nextEnter.apply(nextState);
 			}
-			else if (exit != null)
+			else
 			{
-				exit.accept();
+				JMLog.error(out -> out.print(JMLog.SWITCH_TO_UNDEFINED_STATE_BY_CLASS, machineTag, stateTag.getSimpleName(), nextState.getSimpleName(), signal, nextState.getSimpleName()));
+				return null;
 			}
-			
-			return nextState.apply(switchRule.get(signal.getClass()));
 		}
 		else
 		{
@@ -237,11 +283,11 @@ class JMStateImpl implements JMState
 	}
 	
 	@Override
-	public void putEnterFunction(JMSupplier<Object> func)
+	public void putEnterFunction(final JMSupplier<Object> func)
 	{
 		if (enter != null)
 		{
-			JMLog.error(JMLog.ENTER_FUNC_DUPLICATED, machineTag, stateTag.getSimpleName());
+			JMLog.error(out -> out.print(JMLog.ENTER_FUNC_DUPLICATED, machineTag, stateTag.getSimpleName()));
 		}
 		
 		enter = func;
@@ -249,11 +295,11 @@ class JMStateImpl implements JMState
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public void putEnterFunction(Class<?> signal, JMFunction<? super Object, Object> func)
+	public void putEnterFunction(final Class signal, final JMFunction<? super Object, Object> func)
 	{
 		if (enterMap.containsKey(signal))
 		{
-			JMLog.error(JMLog.ENTER_BY_CLASS_FUNC_DUPLICATED, machineTag, signal.getSimpleName(), stateTag.getSimpleName());
+			JMLog.error(out -> out.print(JMLog.ENTER_BY_CLASS_FUNC_DUPLICATED, machineTag, signal.getSimpleName(), stateTag.getSimpleName()));
 		}
 		
 		enterMap.put(signal, new FuncSet<>().setClassFunc(func));
@@ -261,11 +307,11 @@ class JMStateImpl implements JMState
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public void putEnterFunction(Enum<?> signal, JMFunction<Enum<?>, Object> func)
+	public void putEnterFunction(final Enum signal, final JMFunction<Enum, Object> func)
 	{
 		if (enterMap.containsKey(signal))
 		{
-			JMLog.error(JMLog.ENTER_BY_CLASS_FUNC_DUPLICATED, machineTag, signal.name(), stateTag.getSimpleName());
+			JMLog.error(out -> out.print(JMLog.ENTER_BY_CLASS_FUNC_DUPLICATED, machineTag, signal.name(), stateTag.getSimpleName()));
 		}
 		
 		enterMap.put(signal, new FuncSet<>().setEnumFunc(func));
@@ -273,22 +319,22 @@ class JMStateImpl implements JMState
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public void putEnterFunction(String signal, JMFunction<String, Object> func)
+	public void putEnterFunction(final String signal, final JMFunction<String, Object> func)
 	{
 		if (enterMap.containsKey(signal))
 		{
-			JMLog.error(JMLog.ENTER_BY_STRING_FUNC_DUPLICATED, machineTag, signal, stateTag.getSimpleName());
+			JMLog.error(out -> out.print(JMLog.ENTER_BY_STRING_FUNC_DUPLICATED, machineTag, signal, stateTag.getSimpleName()));
 		}
 		
 		enterMap.put(signal, new FuncSet<>().setStringFunc(func));
 	}
 	
 	@Override
-	public void putExitFunction(JMVoidConsumer func)
+	public void putExitFunction(final JMVoidConsumer func)
 	{
 		if (exit != null)
 		{
-			JMLog.error(JMLog.EXIT_FUNC_DUPLICATED, machineTag, stateTag.getSimpleName());
+			JMLog.error(out -> out.print(JMLog.EXIT_FUNC_DUPLICATED, machineTag, stateTag.getSimpleName()));
 		}
 		
 		exit = func;
@@ -296,11 +342,11 @@ class JMStateImpl implements JMState
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public void putExitFunction(Class<?> signal, JMConsumer<? super Object> func)
+	public void putExitFunction(final Class signal, final JMConsumer<? super Object> func)
 	{
 		if (exitMap.containsKey(signal))
 		{
-			JMLog.error(JMLog.EXIT_BY_CLASS_FUNC_DUPLICATED, machineTag, signal.getSimpleName(), stateTag.getSimpleName());
+			JMLog.error(out -> out.print(JMLog.EXIT_BY_CLASS_FUNC_DUPLICATED, machineTag, signal.getSimpleName(), stateTag.getSimpleName()));
 		}
 		
 		exitMap.put(signal, new FuncSet<>().setClassFunc(func));
@@ -308,11 +354,11 @@ class JMStateImpl implements JMState
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public void putExitFunction(Enum<?> signal, JMConsumer<Enum<?>> func)
+	public void putExitFunction(final Enum signal, final JMConsumer<Enum> func)
 	{
 		if (exitMap.containsKey(signal))
 		{
-			JMLog.error(JMLog.EXIT_BY_CLASS_FUNC_DUPLICATED, machineTag, signal.name(), stateTag.getSimpleName());
+			JMLog.error(out -> out.print(JMLog.EXIT_BY_CLASS_FUNC_DUPLICATED, machineTag, signal.name(), stateTag.getSimpleName()));
 		}
 		
 		exitMap.put(signal, new FuncSet<>().setEnumFunc(func));
@@ -320,44 +366,44 @@ class JMStateImpl implements JMState
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public void putExitFunction(String signal, JMConsumer<String> func)
+	public void putExitFunction(final String signal, final JMConsumer<String> func)
 	{
 		if (exitMap.containsKey(signal))
 		{
-			JMLog.error(JMLog.EXIT_BY_STRING_FUNC_DUPLICATED, machineTag, signal, stateTag.getSimpleName());
+			JMLog.error(out -> out.print(JMLog.EXIT_BY_STRING_FUNC_DUPLICATED, machineTag, signal, stateTag.getSimpleName()));
 		}
 		
 		exitMap.put(signal, new FuncSet<>().setStringFunc(func));
 	}
 	
 	@Override
-	public void putSwitchRule(Class<?> signal, Class<?> stateTag)
+	public void putSwitchRule(final Class signal, final Class stateTag)
 	{
 		if (switchRule.containsKey(signal))
 		{
-			JMLog.error(JMLog.SWITCH_RULE_BY_CLASS_DUPLICATED, machineTag, signal.getSimpleName(), stateTag.getSimpleName());
+			JMLog.error(out -> out.print(JMLog.SWITCH_RULE_BY_CLASS_DUPLICATED, machineTag, signal.getSimpleName(), stateTag.getSimpleName()));
 		}
 		
 		switchRule.put(signal, stateTag);
 	}
 	
 	@Override
-	public void putSwitchRule(Enum<?> signal, Class<?> stateTag)
+	public void putSwitchRule(final Enum signal, final Class stateTag)
 	{
 		if (switchRule.containsKey(signal))
 		{
-			JMLog.error(JMLog.SWITCH_RULE_BY_CLASS_DUPLICATED, machineTag, signal.name(), stateTag.getSimpleName());
+			JMLog.error(out -> out.print(JMLog.SWITCH_RULE_BY_CLASS_DUPLICATED, machineTag, signal.name(), stateTag.getSimpleName()));
 		}
 		
 		switchRule.put(signal, stateTag);
 	}
 	
 	@Override
-	public void putSwitchRule(String signal, Class<?> stateTag)
+	public void putSwitchRule(final String signal, final Class stateTag)
 	{
 		if (switchRule.containsKey(signal))
 		{
-			JMLog.error(JMLog.SWITCH_RULE_BY_STRING_DUPLICATED, machineTag, signal, stateTag.getSimpleName());
+			JMLog.error(out -> out.print(JMLog.SWITCH_RULE_BY_STRING_DUPLICATED, machineTag, signal, stateTag.getSimpleName()));
 		}
 		
 		switchRule.put(signal, stateTag);

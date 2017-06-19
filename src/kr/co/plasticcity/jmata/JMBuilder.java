@@ -7,28 +7,33 @@ import kr.co.plasticcity.jmata.function.JMVoidConsumer;
 
 public interface JMBuilder
 {
+	interface Builder extends JMBuilder
+	{
+		/* dummy interface */
+	}
+	
 	class Constructor
 	{
-		static JMBuilder getNew(final Object machineTag, final boolean isPresent, final JMConsumer<JMMachine> registrator)
+		static Builder getNew(final Object machineTag, final boolean isPresent, final JMConsumer<JMMachine> registrator)
 		{
 			return new JMBuilderImpl(machineTag, isPresent, registrator);
 		}
 	}
 	
-	void ifPresentThenIgnoreThis(final JMConsumer<StartStateDefiner> definer);
+	void ifPresentThenIgnoreThis(final JMConsumer<Definer> definer);
 	
-	void ifPresentThenReplaceWithThis(final JMConsumer<StartStateDefiner> definer);
+	void ifPresentThenReplaceWithThis(final JMConsumer<Definer> definer);
 	
-	interface StartStateDefiner
+	interface Definer
 	{
-		StateBuilder defineStartState(final Class<?> stateTag);
+		StateBuilder defineStartState(final Class stateTag);
 	}
 	
 	interface MachineBuilder
 	{
-		StateBuilder defineState(final Class<?> stateTag);
+		StateBuilder defineState(final Class stateTag);
 		
-		MachineBuilder defineTerminateWork(final JMVoidConsumer work);
+		MachineBuilder whenTerminate(final JMVoidConsumer work);
 		
 		void build();
 		
@@ -58,7 +63,7 @@ public interface JMBuilder
 		/* ===================================== input ===================================== */
 		<S> WhenInput<S> whenInput(final Class<S> signal);
 		
-		WhenInputClasses whenInput(final Class<?>... signals);
+		WhenInputClasses whenInput(final Class... signals);
 		
 		<S extends Enum<S>> WhenInputPrimitive<S> whenInput(final Enum<S> signal);
 		
@@ -111,7 +116,7 @@ public interface JMBuilder
 		{
 			StateBuilder switchToSelf();
 			
-			StateBuilder switchTo(final Class<?> stateTag);
+			StateBuilder switchTo(final Class stateTag);
 		}
 	}
 }
