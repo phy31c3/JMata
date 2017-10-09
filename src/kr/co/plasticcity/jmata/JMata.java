@@ -1,7 +1,6 @@
 package kr.co.plasticcity.jmata;
 
-import kr.co.plasticcity.jmata.function.JMConsumer;
-import kr.co.plasticcity.jmata.function.JMVoidConsumer;
+import java.util.function.Consumer;
 
 public class JMata
 {
@@ -13,7 +12,7 @@ public class JMata
 	/**
 	 * @param debugLogger nullable
 	 */
-	public static void initialize(final JMConsumer<String> debugLogger)
+	public static void initialize(final Consumer<String> debugLogger)
 	{
 		JMataImpl.initialize(debugLogger, null);
 	}
@@ -22,7 +21,7 @@ public class JMata
 	 * @param debugLogger nullable
 	 * @param errorLogger nullable
 	 */
-	public static void initialize(final JMConsumer<String> debugLogger, final JMConsumer<String> errorLogger)
+	public static void initialize(final Consumer<String> debugLogger, final Consumer<String> errorLogger)
 	{
 		JMataImpl.initialize(debugLogger, errorLogger);
 	}
@@ -32,12 +31,12 @@ public class JMata
 		JMataImpl.release(null);
 	}
 	
-	public static void release(final JMVoidConsumer releaseWork)
+	public static void release(final Runnable releaseWork)
 	{
 		JMataImpl.release(releaseWork);
 	}
 	
-	public static void buildMachine(final Object machineTag, final JMConsumer<JMBuilder.Builder> builder)
+	public static void buildMachine(final Object machineTag, final Consumer<JMBuilder.Builder> builder)
 	{
 		JMataImpl.post(jmata -> jmata.buildMachine(machineTag, builder));
 	}

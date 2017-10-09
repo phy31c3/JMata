@@ -5,8 +5,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import kr.co.plasticcity.jmata.function.JMVoidConsumer;
-
 class JMMachineImpl implements JMMachine
 {
 	enum COND
@@ -17,13 +15,13 @@ class JMMachineImpl implements JMMachine
 	private final String machineName;
 	private final Class startState;
 	private final Map<Class, ? extends JMState> stateMap;
-	private final JMVoidConsumer terminateWork;
+	private final Runnable terminateWork;
 	
 	private volatile ExecutorService machineQue;
 	private volatile Class curState;
 	private volatile COND cond;
 	
-	JMMachineImpl(final Object tag, final Class startState, final Map<Class, ? extends JMState> stateMap, final JMVoidConsumer terminateWork)
+	JMMachineImpl(final Object tag, final Class startState, final Map<Class, ? extends JMState> stateMap, final Runnable terminateWork)
 	{
 		this.machineName = tag.toString().substring(tag.toString().lastIndexOf(".") + 1);
 		this.startState = startState;
@@ -89,7 +87,7 @@ class JMMachineImpl implements JMMachine
 			stateMap.get(curState).runExitFunction();
 			if (terminateWork != null)
 			{
-				terminateWork.accept();
+				terminateWork.run();
 			}
 		}
 		else if (cond != COND.TERMINATED)
@@ -103,7 +101,7 @@ class JMMachineImpl implements JMMachine
 					stateMap.get(curState).runExitFunction();
 					if (terminateWork != null)
 					{
-						terminateWork.accept();
+						terminateWork.run();
 					}
 				}
 				else

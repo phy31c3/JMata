@@ -7,9 +7,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import kr.co.plasticcity.jmata.function.JMConsumer;
-import kr.co.plasticcity.jmata.function.JMVoidConsumer;
+import java.util.function.Consumer;
 
 class JMataImpl
 {
@@ -26,7 +24,7 @@ class JMataImpl
 		NOT_INIT, RUNNING, RELEASED
 	}
 	
-	static void initialize(final JMConsumer<String> debugLogger, final JMConsumer<String> errorLogger)
+	static void initialize(final Consumer<String> debugLogger, final Consumer<String> errorLogger)
 	{
 		writeLock.lock();
 		
@@ -46,7 +44,7 @@ class JMataImpl
 		}
 	}
 	
-	static void release(final JMVoidConsumer releaseWork)
+	static void release(final Runnable releaseWork)
 	{
 		if (state == STATE.RUNNING)
 		{
@@ -66,7 +64,7 @@ class JMataImpl
 		}
 	}
 	
-	static void post(final JMConsumer<JMataImpl> func)
+	static void post(final Consumer<JMataImpl> func)
 	{
 		try
 		{
@@ -125,7 +123,7 @@ class JMataImpl
 		});
 	}
 	
-	private void destroy(final JMVoidConsumer releaseWork)
+	private void destroy(final Runnable releaseWork)
 	{
 		globalQue.execute(() ->
 		{
@@ -142,7 +140,7 @@ class JMataImpl
 				
 				if (releaseWork != null)
 				{
-					releaseWork.accept();
+					releaseWork.run();
 				}
 				
 				instance.globalQue.shutdownNow();
@@ -158,7 +156,7 @@ class JMataImpl
 		});
 	}
 	
-	void buildMachine(final Object machineTag, final JMConsumer<JMBuilder.Builder> builder)
+	void buildMachine(final Object machineTag, final Consumer<JMBuilder.Builder> builder)
 	{
 		globalQue.execute(() ->
 		{

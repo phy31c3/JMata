@@ -1,9 +1,8 @@
 package kr.co.plasticcity.jmata;
 
-import kr.co.plasticcity.jmata.function.JMConsumer;
-import kr.co.plasticcity.jmata.function.JMFunction;
-import kr.co.plasticcity.jmata.function.JMSupplier;
-import kr.co.plasticcity.jmata.function.JMVoidConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public interface JMBuilder
 {
@@ -14,15 +13,15 @@ public interface JMBuilder
 	
 	class Constructor
 	{
-		static Builder getNew(final Object machineTag, final boolean isPresent, final JMConsumer<JMMachine> registrator)
+		static Builder getNew(final Object machineTag, final boolean isPresent, final Consumer<JMMachine> registrator)
 		{
 			return new JMBuilderImpl(machineTag, isPresent, registrator);
 		}
 	}
 	
-	void ifPresentThenIgnoreThis(final JMConsumer<Definer> definer);
+	void ifPresentThenIgnoreThis(final Consumer<Definer> definer);
 	
-	void ifPresentThenReplaceWithThis(final JMConsumer<Definer> definer);
+	void ifPresentThenReplaceWithThis(final Consumer<Definer> definer);
 	
 	interface Definer
 	{
@@ -33,7 +32,7 @@ public interface JMBuilder
 	{
 		StateBuilder defineState(final Class stateTag);
 		
-		MachineBuilder whenTerminate(final JMVoidConsumer work);
+		MachineBuilder whenTerminate(final Runnable work);
 		
 		void build();
 		
@@ -43,11 +42,11 @@ public interface JMBuilder
 	interface StateBuilder
 	{
 		/* ================================== enter & exit ================================== */
-		StateBuilder whenEnter(final JMVoidConsumer defaultWork);
+		StateBuilder whenEnter(final Runnable defaultWork);
 		
-		StateBuilder whenEnter(final JMSupplier<Object> defaultWork);
+		StateBuilder whenEnter(final Supplier<Object> defaultWork);
 		
-		StateBuilder whenExit(final JMVoidConsumer defaultWork);
+		StateBuilder whenExit(final Runnable defaultWork);
 		
 		<S> WhenEnter<S> whenEnterBy(final Class<S> signal);
 		
@@ -79,30 +78,30 @@ public interface JMBuilder
 		
 		interface WhenEnter<S>
 		{
-			StateBuilder doThis(final JMConsumer<S> workOnEnter);
+			StateBuilder doThis(final Consumer<S> workOnEnter);
 			
-			StateBuilder doThis(final JMFunction<S, Object> workOnEnter);
+			StateBuilder doThis(final Function<S, Object> workOnEnter);
 			
 			StateBuilder doNothing();
 		}
 		
 		interface WhenEnterPrimitive<S> extends WhenEnter<S>
 		{
-			StateBuilder doThis(final JMVoidConsumer workOnEnter);
+			StateBuilder doThis(final Runnable workOnEnter);
 			
-			StateBuilder doThis(final JMSupplier<Object> workOnEnter);
+			StateBuilder doThis(final Supplier<Object> workOnEnter);
 		}
 		
 		interface WhenInput<S> extends SwitchTo
 		{
-			SwitchTo doThis(final JMConsumer<S> workOnExit);
+			SwitchTo doThis(final Consumer<S> workOnExit);
 			
 			SwitchTo doNothing();
 		}
 		
 		interface WhenInputClasses extends SwitchTo
 		{
-			SwitchTo doThis(final JMVoidConsumer workOnExit);
+			SwitchTo doThis(final Runnable workOnExit);
 			
 			SwitchTo doNothing();
 		}

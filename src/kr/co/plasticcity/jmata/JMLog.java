@@ -1,6 +1,6 @@
 package kr.co.plasticcity.jmata;
 
-import kr.co.plasticcity.jmata.function.JMConsumer;
+import java.util.function.Consumer;
 
 class JMLog
 {
@@ -39,21 +39,21 @@ class JMLog
 	static final String SWITCH_TO_UNDEFINED_STATE_BY_CLASS = "[%s] tried to switch from [%s] to [%s] by [%s], but machine has no definition for [%s]";
 	static final String SWITCH_TO_UNDEFINED_STATE_BY_STRING = "[%s] tried to switch from [%s] to [%s] by [\"%s\"], but machine has no definition for [%s]";
 	
-	private static JMConsumer<String> debug;
-	private static JMConsumer<String> error;
+	private static Consumer<String> debug;
+	private static Consumer<String> error;
 	
 	private JMLog()
 	{
 		/* do nothing */
 	}
 	
-	static void setLogger(final JMConsumer<String> debugLogger, final JMConsumer<String> errorLogger)
+	static void setLogger(final Consumer<String> debugLogger, final Consumer<String> errorLogger)
 	{
 		JMLog.debug = debugLogger;
 		JMLog.error = errorLogger;
 	}
 	
-	static void debug(JMConsumer<Out> consumer)
+	static void debug(Consumer<Out> consumer)
 	{
 		if (debug != null)
 		{
@@ -61,7 +61,7 @@ class JMLog
 		}
 	}
 	
-	static void error(JMConsumer<Out> consumer)
+	static void error(Consumer<Out> consumer)
 	{
 		if (error != null)
 		{
