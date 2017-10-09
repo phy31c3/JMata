@@ -1,6 +1,6 @@
 package kr.co.plasticcity.jmata;
 
-import kr.co.plasticcity.jmata.function.JMConsumer;
+import java.util.function.Consumer;
 
 class JMLog
 {
@@ -17,43 +17,43 @@ class JMLog
 	/* log in JMBuilderImpl */
 	static final String IGNORE_MACHINE_BUILD = "[%s] machine already exists, ignoring build";
 	static final String REPLACE_MACHINE = "[%s] machine already exists and will be replaced with a new machine";
-	static final String STATE_DEFINITION_DUPLICATED = "[%s] machine : Definition of state [%s] duplicated";
+	static final String STATE_DEFINITION_DUPLICATED = "[%s] definition of state [%s] duplicated";
 	
 	/* log in JMMachineImpl */
 	static final String MACHINE_BUILT = "[%s] machine has been built";
 	static final String MACHINE_STATE_CHANGED = "[%s] machine state changed : [%s] -> [%s]";
-	static final String STATE_SWITCHED_BY_CLASS = "[%s] machine : Switched from [%s] to [%s] by [%s]";
-	static final String STATE_SWITCHED_BY_STRING = "[%s] machine : Switched from [%s] to [%s] by [\"%s\"]";
-	static final String TERMINATION_WORK_FAILED_AS_TIMEOUT = "[%s] machine : The termination work failed because the machine shutdown took too long (over 1 second)";
-	static final String TERMINATION_WORK_FAILED_AS_INTERRUPT = "[%s] machine : The termination work failed because this thread interrupted during termination";
-	static final String SWITCH_TO_UNDEFINED_STATE_BY_CLASS = "[%s] machine : Tried to switch from [%s] to [%s] by [%s], but machine has no definition for [%s]";
-	static final String SWITCH_TO_UNDEFINED_STATE_BY_STRING = "[%s] machine : Tried to switch from [%s] to [%s] by [\"%s\"], but machine has no definition for [%s]";
+	static final String STATE_SWITCHED_BY_CLASS = "[%s] switched from [%s] to [%s] by [%s]";
+	static final String STATE_SWITCHED_BY_STRING = "[%s] switched from [%s] to [%s] by [\"%s\"]";
+	static final String TERMINATION_WORK_FAILED_AS_TIMEOUT = "[%s] termination work failed because the machine shutdown took too long (over 1 second)";
+	static final String TERMINATION_WORK_FAILED_AS_INTERRUPT = "[%s] termination work failed because this thread interrupted during termination";
 	
 	/* log in JMStateImpl */
-	static final String ENTER_FUNC_DUPLICATED = "[%s] machine : Definition of default entry function duplicated in state [%s]";
-	static final String ENTER_BY_CLASS_FUNC_DUPLICATED = "[%s] machine : Definition of entry function for input [%s] duplicated in state [%s]";
-	static final String ENTER_BY_STRING_FUNC_DUPLICATED = "[%s] machine : Definition of entry function for input [\"%s\"] duplicated in state [%s]";
-	static final String EXIT_FUNC_DUPLICATED = "[%s] machine : Definition of default exit function duplicated in state [%s]";
-	static final String EXIT_BY_CLASS_FUNC_DUPLICATED = "[%s] machine : Definition of exit function for input [%s] duplicated in state [%s]";
-	static final String EXIT_BY_STRING_FUNC_DUPLICATED = "[%s] machine : Definition of exit function for input [\"%s\"] duplicated in state [%s]";
-	static final String SWITCH_RULE_BY_CLASS_DUPLICATED = "[%s] machine : Definition of switch rule for input [%s] duplicated in state [%s]";
-	static final String SWITCH_RULE_BY_STRING_DUPLICATED = "[%s] machine : Definition of switch rule for input [\"%s\"] duplicated in state [%s]";
+	static final String ENTER_FUNC_DUPLICATED = "[%s] definition of default entry function duplicated in state [%s]";
+	static final String ENTER_BY_CLASS_FUNC_DUPLICATED = "[%s] definition of entry function for input [%s] duplicated in state [%s]";
+	static final String ENTER_BY_STRING_FUNC_DUPLICATED = "[%s] definition of entry function for input [\"%s\"] duplicated in state [%s]";
+	static final String EXIT_FUNC_DUPLICATED = "[%s] definition of default exit function duplicated in state [%s]";
+	static final String EXIT_BY_CLASS_FUNC_DUPLICATED = "[%s] definition of exit function for input [%s] duplicated in state [%s]";
+	static final String EXIT_BY_STRING_FUNC_DUPLICATED = "[%s] definition of exit function for input [\"%s\"] duplicated in state [%s]";
+	static final String SWITCH_RULE_BY_CLASS_DUPLICATED = "[%s] definition of switch rule for input [%s] duplicated in state [%s]";
+	static final String SWITCH_RULE_BY_STRING_DUPLICATED = "[%s] definition of switch rule for input [\"%s\"] duplicated in state [%s]";
+	static final String SWITCH_TO_UNDEFINED_STATE_BY_CLASS = "[%s] tried to switch from [%s] to [%s] by [%s], but machine has no definition for [%s]";
+	static final String SWITCH_TO_UNDEFINED_STATE_BY_STRING = "[%s] tried to switch from [%s] to [%s] by [\"%s\"], but machine has no definition for [%s]";
 	
-	private static JMConsumer<String> debug;
-	private static JMConsumer<String> error;
+	private static Consumer<String> debug;
+	private static Consumer<String> error;
 	
 	private JMLog()
 	{
 		/* do nothing */
 	}
 	
-	static void setLogger(final JMConsumer<String> debugLogger, final JMConsumer<String> errorLogger)
+	static void setLogger(final Consumer<String> debugLogger, final Consumer<String> errorLogger)
 	{
 		JMLog.debug = debugLogger;
 		JMLog.error = errorLogger;
 	}
 	
-	static void debug(JMConsumer<Out> consumer)
+	static void debug(Consumer<Out> consumer)
 	{
 		if (debug != null)
 		{
@@ -61,12 +61,20 @@ class JMLog
 		}
 	}
 	
-	static void error(JMConsumer<Out> consumer)
+	static void error(Consumer<Out> consumer)
 	{
 		if (error != null)
 		{
 			consumer.accept((format, args) -> error.accept(String.format(format, args)));
 		}
+	}
+	
+	/**
+	 * for printing the log cleanly
+	 */
+	static String getPackagelessName(final Object object)
+	{
+		return object.toString().substring(object.toString().lastIndexOf(".") + 1);
 	}
 	
 	@FunctionalInterface

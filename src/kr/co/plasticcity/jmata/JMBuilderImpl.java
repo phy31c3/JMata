@@ -2,19 +2,17 @@ package kr.co.plasticcity.jmata;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import kr.co.plasticcity.jmata.function.JMConsumer;
-import kr.co.plasticcity.jmata.function.JMFunction;
-import kr.co.plasticcity.jmata.function.JMSupplier;
-import kr.co.plasticcity.jmata.function.JMVoidConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 class JMBuilderImpl implements JMBuilder.Builder
 {
 	private final Object machineTag;
 	private final boolean present;
-	private final JMConsumer<JMMachine> registrator;
+	private final Consumer<JMMachine> registrator;
 	
-	JMBuilderImpl(final Object machineTag, final boolean isPresent, final JMConsumer<JMMachine> registrator)
+	JMBuilderImpl(final Object machineTag, final boolean isPresent, final Consumer<JMMachine> registrator)
 	{
 		this.machineTag = machineTag;
 		this.present = isPresent;
@@ -22,11 +20,11 @@ class JMBuilderImpl implements JMBuilder.Builder
 	}
 	
 	@Override
-	public void ifPresentThenIgnoreThis(final JMConsumer<Definer> definer)
+	public void ifPresentThenIgnoreThis(final Consumer<Definer> definer)
 	{
 		if (present)
 		{
-			JMLog.debug(out -> out.print(JMLog.IGNORE_MACHINE_BUILD, machineTag));
+			JMLog.debug(out -> out.print(JMLog.IGNORE_MACHINE_BUILD, JMLog.getPackagelessName(machineTag)));
 		}
 		else
 		{
@@ -35,11 +33,11 @@ class JMBuilderImpl implements JMBuilder.Builder
 	}
 	
 	@Override
-	public void ifPresentThenReplaceWithThis(final JMConsumer<Definer> definer)
+	public void ifPresentThenReplaceWithThis(final Consumer<Definer> definer)
 	{
 		if (present)
 		{
-			JMLog.debug(out -> out.print(JMLog.REPLACE_MACHINE, machineTag));
+			JMLog.debug(out -> out.print(JMLog.REPLACE_MACHINE, JMLog.getPackagelessName(machineTag)));
 		}
 		definer.accept(new MachineBuilderImpl());
 	}
@@ -48,7 +46,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 	{
 		private final Map<Class, JMState> stateMap;
 		private Class startState;
-		private JMVoidConsumer terminateWork;
+		private Runnable terminateWork;
 		
 		private MachineBuilderImpl()
 		{
@@ -67,13 +65,13 @@ class JMBuilderImpl implements JMBuilder.Builder
 		{
 			if (stateMap.containsKey(stateTag))
 			{
-				JMLog.error(out -> out.print(JMLog.STATE_DEFINITION_DUPLICATED, machineTag, stateTag.getSimpleName()));
+				JMLog.error(out -> out.print(JMLog.STATE_DEFINITION_DUPLICATED, JMLog.getPackagelessName(machineTag), stateTag.getSimpleName()));
 			}
 			return new StateBuilderImpl(stateTag);
 		}
 		
 		@Override
-		public MachineBuilder whenTerminate(final JMVoidConsumer work)
+		public MachineBuilder whenTerminate(final Runnable work)
 		{
 			terminateWork = work;
 			return this;
@@ -105,25 +103,25 @@ class JMBuilderImpl implements JMBuilder.Builder
 			}
 			
 			@Override
-			public StateBuilder whenEnter(final JMVoidConsumer defaultWork)
+			public StateBuilder whenEnter(final Runnable defaultWork)
 			{
 				state.putEnterFunction(() ->
 				{
-					defaultWork.accept();
+					defaultWork.run();
 					return null;
 				});
 				return this;
 			}
 			
 			@Override
-			public StateBuilder whenEnter(final JMSupplier<Object> defaultWork)
+			public StateBuilder whenEnter(final Supplier<Object> defaultWork)
 			{
 				state.putEnterFunction(defaultWork);
 				return this;
 			}
 			
 			@Override
-			public StateBuilder whenExit(final JMVoidConsumer defaultWork)
+			public StateBuilder whenExit(final Runnable defaultWork)
 			{
 				state.putExitFunction(defaultWork);
 				return this;
@@ -230,14 +228,14 @@ class JMBuilderImpl implements JMBuilder.Builder
 				}
 				
 				@Override
-				public StateBuilder doThis(final JMVoidConsumer workOnEnter)
+				public StateBuilder doThis(final Runnable workOnEnter)
 				{
-					return doThis((S s) -> workOnEnter.accept());
+					return doThis((S s) -> workOnEnter.run());
 				}
 				
 				@Override
 				@SuppressWarnings("unchecked")
-				public StateBuilder doThis(final JMConsumer<S> workOnEnter)
+				public StateBuilder doThis(final Consumer<S> workOnEnter)
 				{
 					if (signalC != null)
 					{
@@ -273,31 +271,31 @@ class JMBuilderImpl implements JMBuilder.Builder
 				}
 				
 				@Override
-				public StateBuilder doThis(final JMSupplier<Object> workOnEnter)
+				public StateBuilder doThis(final Supplier<Object> workOnEnter)
 				{
 					return doThis((S s) -> workOnEnter.get());
 				}
 				
 				@Override
 				@SuppressWarnings("unchecked")
-				public StateBuilder doThis(final JMFunction<S, Object> workOnEnter)
+				public StateBuilder doThis(final Function<S, Object> workOnEnter)
 				{
 					if (signalC != null)
 					{
-						state.putEnterFunction(signalC, (JMFunction<Object, Object>)workOnEnter);
+						state.putEnterFunction(signalC, (Function<Object, Object>)workOnEnter);
 					}
 					else if (signalsE != null)
 					{
 						for (Enum signal : signalsE)
 						{
-							state.putEnterFunction(signal, (JMFunction<Enum, Object>)workOnEnter);
+							state.putEnterFunction(signal, (Function<Enum, Object>)workOnEnter);
 						}
 					}
 					else if (signalsS != null)
 					{
 						for (String signal : signalsS)
 						{
-							state.putEnterFunction(signal, (JMFunction<String, Object>)workOnEnter);
+							state.putEnterFunction(signal, (Function<String, Object>)workOnEnter);
 						}
 					}
 					return StateBuilderImpl.this;
@@ -346,20 +344,20 @@ class JMBuilderImpl implements JMBuilder.Builder
 				}
 				
 				@Override
-				public SwitchTo doThis(final JMVoidConsumer workOnExit)
+				public SwitchTo doThis(final Runnable workOnExit)
 				{
-					return doThis((S s) -> workOnExit.accept());
+					return doThis((S s) -> workOnExit.run());
 				}
 				
 				@Override
 				@SuppressWarnings("unchecked")
-				public SwitchTo doThis(final JMConsumer<S> workOnExit)
+				public SwitchTo doThis(final Consumer<S> workOnExit)
 				{
 					if (signalsC != null)
 					{
 						for (Class signal : signalsC)
 						{
-							state.putExitFunction(signal, (JMConsumer<Object>)workOnExit);
+							state.putExitFunction(signal, (Consumer<Object>)workOnExit);
 						}
 						return this;
 					}
@@ -367,7 +365,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 					{
 						for (Enum signal : signalsE)
 						{
-							state.putExitFunction(signal, (JMConsumer<Enum>)workOnExit);
+							state.putExitFunction(signal, (Consumer<Enum>)workOnExit);
 						}
 						return this;
 					}
@@ -375,7 +373,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 					{
 						for (String signal : signalsS)
 						{
-							state.putExitFunction(signal, (JMConsumer<String>)workOnExit);
+							state.putExitFunction(signal, (Consumer<String>)workOnExit);
 						}
 						return this;
 					}
