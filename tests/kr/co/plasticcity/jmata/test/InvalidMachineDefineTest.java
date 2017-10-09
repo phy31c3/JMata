@@ -1,3 +1,5 @@
+package kr.co.plasticcity.jmata.test;
+
 import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;

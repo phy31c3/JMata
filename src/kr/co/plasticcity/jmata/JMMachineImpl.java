@@ -14,7 +14,7 @@ class JMMachineImpl implements JMMachine
 		CREATED, RUNNING, STOPPED, TERMINATED
 	}
 	
-	private final Object machineTag;
+	private final String machineName;
 	private final Class startState;
 	private final Map<Class, ? extends JMState> stateMap;
 	private final JMVoidConsumer terminateWork;
@@ -25,14 +25,14 @@ class JMMachineImpl implements JMMachine
 	
 	JMMachineImpl(final Object tag, final Class startState, final Map<Class, ? extends JMState> stateMap, final JMVoidConsumer terminateWork)
 	{
-		this.machineTag = tag;
+		this.machineName = tag.toString().substring(tag.toString().lastIndexOf(".") + 1);
 		this.startState = startState;
 		this.stateMap = stateMap;
 		this.terminateWork = terminateWork;
 		this.curState = startState;
 		this.cond = COND.CREATED;
 		
-		JMLog.debug(out -> out.print(JMLog.MACHINE_BUILT, tag));
+		JMLog.debug(out -> out.print(JMLog.MACHINE_BUILT, machineName));
 	}
 	
 	@Override
@@ -45,7 +45,7 @@ class JMMachineImpl implements JMMachine
 			{
 				final Thread t = Executors.defaultThreadFactory().newThread(r);
 				t.setDaemon(true);
-				t.setName(String.format("JMataMachineThread-%s", machineTag));
+				t.setName(String.format("JMataMachineThread-%s", machineName));
 				return t;
 			});
 			machineQue.execute(() ->
@@ -64,7 +64,7 @@ class JMMachineImpl implements JMMachine
 			{
 				final Thread t = Executors.defaultThreadFactory().newThread(r);
 				t.setDaemon(true);
-				t.setName(String.format("JMataMachineThread-%s", machineTag));
+				t.setName(String.format("JMataMachineThread-%s", machineName));
 				return t;
 			});
 		}
@@ -108,12 +108,12 @@ class JMMachineImpl implements JMMachine
 				}
 				else
 				{
-					JMLog.error(out -> out.print(JMLog.TERMINATION_WORK_FAILED_AS_TIMEOUT, machineTag));
+					JMLog.error(out -> out.print(JMLog.TERMINATION_WORK_FAILED_AS_TIMEOUT, machineName));
 				}
 			}
 			catch (InterruptedException e)
 			{
-				JMLog.error(out -> out.print(JMLog.TERMINATION_WORK_FAILED_AS_INTERRUPT, machineTag));
+				JMLog.error(out -> out.print(JMLog.TERMINATION_WORK_FAILED_AS_INTERRUPT, machineName));
 				Thread.currentThread().interrupt();
 			}
 		}
@@ -145,7 +145,7 @@ class JMMachineImpl implements JMMachine
 				{
 					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
-						JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_STRING, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal));
+						JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_STRING, machineName, curState.getSimpleName(), nextState.getSimpleName(), signal));
 						curState = nextState;
 						return stateMap.get(nextState).runEnterFunction((String)signal);
 					}
@@ -161,7 +161,7 @@ class JMMachineImpl implements JMMachine
 				{
 					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
-						JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal.getClass().getSimpleName() + "." + signal));
+						JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), nextState.getSimpleName(), signal.getClass().getSimpleName() + "." + JMLog.getPackagelessName(signal)));
 						curState = nextState;
 						return stateMap.get(nextState).runEnterFunction((Enum)signal);
 					}
@@ -177,7 +177,7 @@ class JMMachineImpl implements JMMachine
 				{
 					if (cond == COND.RUNNING && !Thread.interrupted())
 					{
-						JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineTag, curState.getSimpleName(), nextState.getSimpleName(), signal));
+						JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), nextState.getSimpleName(), JMLog.getPackagelessName(signal)));
 						curState = nextState;
 						return stateMap.get(nextState).runEnterFunctionC(signal);
 					}
@@ -198,6 +198,6 @@ class JMMachineImpl implements JMMachine
 	{
 		final COND prev = cond;
 		this.cond = next;
-		JMLog.debug(out -> out.print(JMLog.MACHINE_STATE_CHANGED, machineTag, prev.name(), next.name()));
+		JMLog.debug(out -> out.print(JMLog.MACHINE_STATE_CHANGED, machineName, prev.name(), next.name()));
 	}
 }

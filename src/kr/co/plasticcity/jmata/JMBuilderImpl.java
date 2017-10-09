@@ -26,7 +26,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 	{
 		if (present)
 		{
-			JMLog.debug(out -> out.print(JMLog.IGNORE_MACHINE_BUILD, machineTag));
+			JMLog.debug(out -> out.print(JMLog.IGNORE_MACHINE_BUILD, JMLog.getPackagelessName(machineTag)));
 		}
 		else
 		{
@@ -39,7 +39,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 	{
 		if (present)
 		{
-			JMLog.debug(out -> out.print(JMLog.REPLACE_MACHINE, machineTag));
+			JMLog.debug(out -> out.print(JMLog.REPLACE_MACHINE, JMLog.getPackagelessName(machineTag)));
 		}
 		definer.accept(new MachineBuilderImpl());
 	}
@@ -67,7 +67,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 		{
 			if (stateMap.containsKey(stateTag))
 			{
-				JMLog.error(out -> out.print(JMLog.STATE_DEFINITION_DUPLICATED, machineTag, stateTag.getSimpleName()));
+				JMLog.error(out -> out.print(JMLog.STATE_DEFINITION_DUPLICATED, JMLog.getPackagelessName(machineTag), stateTag.getSimpleName()));
 			}
 			return new StateBuilderImpl(stateTag);
 		}

@@ -162,7 +162,7 @@ class JMataImpl
 	{
 		globalQue.execute(() ->
 		{
-			JMLog.debug(out -> out.print(JMLog.MACHINE_BUILD_STARTED, machineTag));
+			JMLog.debug(out -> out.print(JMLog.MACHINE_BUILD_STARTED, JMLog.getPackagelessName(machineTag)));
 			builder.accept(JMBuilder.Constructor.getNew(machineTag, machineMap.containsKey(machineTag), machine ->
 			{
 				final JMMachine oldMachine = machineMap.put(machineTag, machine);
