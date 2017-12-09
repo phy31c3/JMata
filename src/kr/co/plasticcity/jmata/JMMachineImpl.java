@@ -23,7 +23,7 @@ class JMMachineImpl implements JMMachine
 	
 	JMMachineImpl(final Object tag, final Class startState, final Map<Class, ? extends JMState> stateMap, final Runnable terminateWork)
 	{
-		this.machineName = tag.toString().substring(tag.toString().lastIndexOf(".") + 1);
+		this.machineName = JMLog.getPackagelessName(tag);
 		this.startState = startState;
 		this.stateMap = stateMap;
 		this.terminateWork = terminateWork;
@@ -34,11 +34,10 @@ class JMMachineImpl implements JMMachine
 	}
 	
 	@Override
-	public synchronized void run()
+	public void run()
 	{
-		if (cond == COND.CREATED)
+		if (ifThisToNext(COND.CREATED, COND.RUNNING))
 		{
-			switchCond(COND.RUNNING);
 			machineQue = Executors.newSingleThreadExecutor(r ->
 			{
 				final Thread t = Executors.defaultThreadFactory().newThread(r);
@@ -55,9 +54,8 @@ class JMMachineImpl implements JMMachine
 				}
 			});
 		}
-		else if (cond == COND.STOPPED)
+		else if (ifThisToNext(COND.STOPPED, COND.RUNNING))
 		{
-			switchCond(COND.RUNNING);
 			machineQue = Executors.newSingleThreadExecutor(r ->
 			{
 				final Thread t = Executors.defaultThreadFactory().newThread(r);
@@ -69,30 +67,27 @@ class JMMachineImpl implements JMMachine
 	}
 	
 	@Override
-	public synchronized void stop()
+	public void stop()
 	{
-		if (cond == COND.RUNNING)
+		if (ifThisToNext(COND.RUNNING, COND.STOPPED))
 		{
-			switchCond(COND.STOPPED);
 			machineQue.shutdownNow();
 		}
 	}
 	
 	@Override
-	public synchronized void terminate()
+	public void terminate()
 	{
-		if (cond == COND.CREATED)
+		if (ifThisToNext(COND.CREATED, COND.TERMINATED))
 		{
-			switchCond(COND.TERMINATED);
 			stateMap.get(curState).runExitFunction();
 			if (terminateWork != null)
 			{
 				terminateWork.run();
 			}
 		}
-		else if (cond != COND.TERMINATED)
+		else if (ifNotThisToThis(COND.TERMINATED))
 		{
-			switchCond(COND.TERMINATED);
 			machineQue.shutdownNow();
 			try
 			{
@@ -118,9 +113,9 @@ class JMMachineImpl implements JMMachine
 	}
 	
 	@Override
-	public synchronized <S> void input(final S signal)
+	public <S> void input(final S signal)
 	{
-		if (cond == COND.RUNNING)
+		if (is(COND.RUNNING))
 		{
 			machineQue.execute(() ->
 			{
@@ -135,13 +130,13 @@ class JMMachineImpl implements JMMachine
 	
 	private <S> Object doInput(final S signal)
 	{
-		if (cond == COND.RUNNING && !Thread.interrupted())
+		if (is(COND.RUNNING) && !Thread.interrupted())
 		{
 			if (signal instanceof String)
 			{
 				return stateMap.get(curState).runExitFunction((String)signal, stateMap::containsKey, nextState ->
 				{
-					if (cond == COND.RUNNING && !Thread.interrupted())
+					if (is(COND.RUNNING) && !Thread.interrupted())
 					{
 						JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_STRING, machineName, curState.getSimpleName(), nextState.getSimpleName(), signal));
 						curState = nextState;
@@ -157,7 +152,7 @@ class JMMachineImpl implements JMMachine
 			{
 				return stateMap.get(curState).runExitFunction((Enum)signal, stateMap::containsKey, nextState ->
 				{
-					if (cond == COND.RUNNING && !Thread.interrupted())
+					if (is(COND.RUNNING) && !Thread.interrupted())
 					{
 						JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), nextState.getSimpleName(), signal.getClass().getSimpleName() + "." + JMLog.getPackagelessName(signal)));
 						curState = nextState;
@@ -173,7 +168,7 @@ class JMMachineImpl implements JMMachine
 			{
 				return stateMap.get(curState).runExitFunctionC(signal, stateMap::containsKey, nextState ->
 				{
-					if (cond == COND.RUNNING && !Thread.interrupted())
+					if (is(COND.RUNNING) && !Thread.interrupted())
 					{
 						JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), nextState.getSimpleName(), JMLog.getPackagelessName(signal)));
 						curState = nextState;
@@ -189,6 +184,57 @@ class JMMachineImpl implements JMMachine
 		else
 		{
 			return null;
+		}
+	}
+	
+	private synchronized boolean is(final COND cond)
+	{
+		return this.cond == cond;
+	}
+	
+	private synchronized boolean is(final COND... conds)
+	{
+		for (COND cond : conds)
+		{
+			if (this.cond == cond)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private synchronized boolean ifThisToNext(final COND thiz, final COND next)
+	{
+		if (this.cond == thiz)
+		{
+			switchCond(next);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	private synchronized boolean ifNotThisToThis(final COND thiz)
+	{
+		if (this.cond != thiz)
+		{
+			switchCond(thiz);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	private synchronized void ifThisDoWork(final COND thiz, final Runnable work)
+	{
+		if (this.cond == thiz)
+		{
+			work.run();
 		}
 	}
 	

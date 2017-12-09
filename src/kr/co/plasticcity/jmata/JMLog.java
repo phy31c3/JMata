@@ -53,7 +53,7 @@ class JMLog
 		JMLog.error = errorLogger;
 	}
 	
-	static void debug(Consumer<Out> consumer)
+	static void debug(final Consumer<Out> consumer)
 	{
 		if (debug != null)
 		{
@@ -61,7 +61,7 @@ class JMLog
 		}
 	}
 	
-	static void error(Consumer<Out> consumer)
+	static void error(final Consumer<Out> consumer)
 	{
 		if (error != null)
 		{
@@ -80,6 +80,6 @@ class JMLog
 	@FunctionalInterface
 	interface Out
 	{
-		void print(String format, Object... args);
+		void print(final String format, final Object... args);
 	}
 }
