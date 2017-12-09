@@ -26,10 +26,10 @@ public class BasicTest
 		new TestMachine();
 		while (!isFinish)
 		{
-			JMata.input(TestMachine.class, getNoiseInput());
 			try
 			{
-				Thread.sleep((long)(Math.random() * 900) + 100);
+				JMata.input(TestMachine.class, getNoiseInput());
+				Thread.sleep(0, (int)(Math.random() * 50) + 50);
 			}
 			catch (InterruptedException e)
 			{
@@ -39,13 +39,22 @@ public class BasicTest
 		System.out.println("- 테스트 끝 -");
 	}
 	
-	private Object getNoiseInput()
+	private Object getNoiseInput() throws InterruptedException
 	{
-		int rand = (int)(Math.random() * 2);
+		int rand = (int)(Math.random() * 3);
 		switch (rand)
 		{
 		case 0:
 			return new Noise();
+		case 1:
+			JMata.pauseMachine(TestMachine.class);
+			System.out.println("(PAUSE)");
+			Thread.sleep(100);
+			return null;
+		case 2:
+			JMata.runMachine(TestMachine.class);
+			System.out.println("(RESUME)");
+			return null;
 		default:
 			return null;
 		}
@@ -534,7 +543,7 @@ public class BasicTest
 					}
 					catch (InterruptedException e)
 					{
-					/* do nothing */
+						/* do nothing */
 					}
 					finally
 					{

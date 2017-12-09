@@ -183,6 +183,17 @@ class JMataImpl
 		});
 	}
 	
+	void pauseMachine(final Object machineTag)
+	{
+		globalQue.execute(() ->
+		{
+			if (machineMap.containsKey(machineTag))
+			{
+				machineMap.get(machineTag).pause();
+			}
+		});
+	}
+	
 	void stopMachine(final Object machineTag)
 	{
 		globalQue.execute(() ->

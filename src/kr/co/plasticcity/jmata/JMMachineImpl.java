@@ -9,7 +9,7 @@ class JMMachineImpl implements JMMachine
 {
 	enum COND
 	{
-		CREATED, RUNNING, STOPPED, TERMINATED
+		CREATED, RUNNING, PAUSED, STOPPED, TERMINATED
 	}
 	
 	private final String machineName;
@@ -38,31 +38,34 @@ class JMMachineImpl implements JMMachine
 	{
 		if (ifThisToNext(COND.CREATED, COND.RUNNING))
 		{
-			machineQue = Executors.newSingleThreadExecutor(r ->
-			{
-				final Thread t = Executors.defaultThreadFactory().newThread(r);
-				t.setDaemon(true);
-				t.setName(String.format("JMataMachineThread-%s", machineName));
-				return t;
-			});
-			machineQue.execute(() ->
-			{
-				Object nextSignal = stateMap.get(startState).runEnterFunction();
-				while (nextSignal != null)
-				{
-					nextSignal = doInput(nextSignal);
-				}
-			});
+			machineQue = newMachineQue();
+			startUp();
 		}
 		else if (ifThisToNext(COND.STOPPED, COND.RUNNING))
 		{
-			machineQue = Executors.newSingleThreadExecutor(r ->
-			{
-				final Thread t = Executors.defaultThreadFactory().newThread(r);
-				t.setDaemon(true);
-				t.setName(String.format("JMataMachineThread-%s", machineName));
-				return t;
-			});
+			machineQue = newMachineQue();
+		}
+		else
+		{
+			ifPauseThenResume();
+		}
+	}
+	
+	@Override
+	public void pause()
+	{
+		if (ifThisToNext(COND.CREATED, COND.PAUSED))
+		{
+			machineQue = newMachineQue();
+			startUp();
+		}
+		else if (ifThisToNext(COND.RUNNING, COND.PAUSED))
+		{
+			/* do nothing */
+		}
+		else if (ifThisToNext(COND.STOPPED, COND.PAUSED))
+		{
+			machineQue = newMachineQue();
 		}
 	}
 	
@@ -70,6 +73,10 @@ class JMMachineImpl implements JMMachine
 	public void stop()
 	{
 		if (ifThisToNext(COND.RUNNING, COND.STOPPED))
+		{
+			machineQue.shutdownNow();
+		}
+		else if (ifThisToNext(COND.PAUSED, COND.STOPPED))
 		{
 			machineQue.shutdownNow();
 		}
@@ -115,14 +122,16 @@ class JMMachineImpl implements JMMachine
 	@Override
 	public <S> void input(final S signal)
 	{
-		if (is(COND.RUNNING))
+		if (is(COND.RUNNING, COND.PAUSED))
 		{
 			machineQue.execute(() ->
 			{
+				ifPauseThenAwait();
 				Object nextSignal = signal;
-				while (nextSignal != null)
+				while (nextSignal != null && is(COND.RUNNING, COND.PAUSED))
 				{
 					nextSignal = doInput(nextSignal);
+					ifPauseThenAwait();
 				}
 			});
 		}
@@ -130,66 +139,58 @@ class JMMachineImpl implements JMMachine
 	
 	private <S> Object doInput(final S signal)
 	{
-		if (is(COND.RUNNING) && !Thread.interrupted())
+		if (signal instanceof String)
 		{
-			if (signal instanceof String)
+			return stateMap.get(curState).runExitFunction((String)signal, stateMap::containsKey, nextState ->
 			{
-				return stateMap.get(curState).runExitFunction((String)signal, stateMap::containsKey, nextState ->
-				{
-					if (is(COND.RUNNING) && !Thread.interrupted())
-					{
-						JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_STRING, machineName, curState.getSimpleName(), nextState.getSimpleName(), signal));
-						curState = nextState;
-						return stateMap.get(nextState).runEnterFunction((String)signal);
-					}
-					else
-					{
-						return null;
-					}
-				});
-			}
-			else if (signal instanceof Enum)
+				JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_STRING, machineName, curState.getSimpleName(), nextState.getSimpleName(), signal));
+				curState = nextState;
+				return stateMap.get(nextState).runEnterFunction((String)signal);
+			});
+		}
+		else if (signal instanceof Enum)
+		{
+			return stateMap.get(curState).runExitFunction((Enum)signal, stateMap::containsKey, nextState ->
 			{
-				return stateMap.get(curState).runExitFunction((Enum)signal, stateMap::containsKey, nextState ->
-				{
-					if (is(COND.RUNNING) && !Thread.interrupted())
-					{
-						JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), nextState.getSimpleName(), signal.getClass().getSimpleName() + "." + JMLog.getPackagelessName(signal)));
-						curState = nextState;
-						return stateMap.get(nextState).runEnterFunction((Enum)signal);
-					}
-					else
-					{
-						return null;
-					}
-				});
-			}
-			else
-			{
-				return stateMap.get(curState).runExitFunctionC(signal, stateMap::containsKey, nextState ->
-				{
-					if (is(COND.RUNNING) && !Thread.interrupted())
-					{
-						JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), nextState.getSimpleName(), JMLog.getPackagelessName(signal)));
-						curState = nextState;
-						return stateMap.get(nextState).runEnterFunctionC(signal);
-					}
-					else
-					{
-						return null;
-					}
-				});
-			}
+				JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), nextState.getSimpleName(), signal.getClass().getSimpleName() + "." + JMLog.getPackagelessName(signal)));
+				curState = nextState;
+				return stateMap.get(nextState).runEnterFunction((Enum)signal);
+			});
 		}
 		else
 		{
-			return null;
+			return stateMap.get(curState).runExitFunctionC(signal, stateMap::containsKey, nextState ->
+			{
+				JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), nextState.getSimpleName(), JMLog.getPackagelessName(signal)));
+				curState = nextState;
+				return stateMap.get(nextState).runEnterFunctionC(signal);
+			});
 		}
 	}
 	
-	private synchronized boolean is(final COND cond)
+	private ExecutorService newMachineQue()
 	{
-		return this.cond == cond;
+		return Executors.newSingleThreadExecutor(r ->
+		{
+			final Thread t = Executors.defaultThreadFactory().newThread(r);
+			t.setDaemon(true);
+			t.setName(String.format("JMataMachineThread-%s", machineName));
+			return t;
+		});
+	}
+	
+	private void startUp()
+	{
+		machineQue.execute(() ->
+		{
+			ifPauseThenAwait();
+			Object nextSignal = stateMap.get(startState).runEnterFunction();
+			while (nextSignal != null && is(COND.RUNNING, COND.PAUSED))
+			{
+				nextSignal = doInput(nextSignal);
+				ifPauseThenAwait();
+			}
+		});
 	}
 	
 	private synchronized boolean is(final COND... conds)
@@ -230,11 +231,27 @@ class JMMachineImpl implements JMMachine
 		}
 	}
 	
-	private synchronized void ifThisDoWork(final COND thiz, final Runnable work)
+	private synchronized void ifPauseThenAwait()
 	{
-		if (this.cond == thiz)
+		if (this.cond == COND.PAUSED)
 		{
-			work.run();
+			try
+			{
+				wait();
+			}
+			catch (InterruptedException e)
+			{
+				/* do nothing */
+			}
+		}
+	}
+	
+	private synchronized void ifPauseThenResume()
+	{
+		if (this.cond == COND.PAUSED)
+		{
+			switchCond(COND.RUNNING);
+			notify();
 		}
 	}
 	

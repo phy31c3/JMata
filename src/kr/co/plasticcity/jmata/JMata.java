@@ -46,6 +46,11 @@ public class JMata
 		JMataImpl.post(jmata -> jmata.runMachine(machineTag));
 	}
 	
+	public static void pauseMachine(final Object machineTag)
+	{
+		JMataImpl.post(jmata -> jmata.pauseMachine(machineTag));
+	}
+	
 	public static void stopMachine(final Object machineTag)
 	{
 		JMataImpl.post(jmata -> jmata.stopMachine(machineTag));
