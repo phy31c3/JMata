@@ -68,7 +68,7 @@ public class InvalidMachineDefineTest
 					       .whenEnter(Finish::enter)
 					       .apply()
 					
-					       .whenTerminate(InvalidMachineDefineTest::onTerminate)
+					       .onTerminate(InvalidMachineDefineTest::onTerminate)
 					
 					       .buildAndRun();
 				});

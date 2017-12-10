@@ -32,11 +32,23 @@ public interface JMBuilder
 	{
 		StateBuilder defineState(final Class stateTag);
 		
-		MachineBuilder whenTerminate(final Runnable work);
+		MachineBuilder onCreate(final Runnable work);
+		
+		MachineBuilder onPause(final Runnable work);
+		
+		MachineBuilder onResume(final Runnable work);
+		
+		MachineBuilder onStop(final Runnable work);
+		
+		MachineBuilder onRestart(final Runnable work);
+		
+		MachineBuilder onTerminate(final Runnable work);
 		
 		void build();
 		
 		void buildAndRun();
+		
+		void buildAndPause();
 	}
 	
 	interface StateBuilder

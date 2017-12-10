@@ -46,7 +46,12 @@ class JMBuilderImpl implements JMBuilder.Builder
 	{
 		private final Map<Class, JMState> stateMap;
 		private Class startState;
-		private Runnable terminateWork;
+		private Runnable onCreate;
+		private Runnable onPause;
+		private Runnable onResume;
+		private Runnable onStop;
+		private Runnable onRestart;
+		private Runnable onTerminate;
 		
 		private MachineBuilderImpl()
 		{
@@ -71,24 +76,79 @@ class JMBuilderImpl implements JMBuilder.Builder
 		}
 		
 		@Override
-		public MachineBuilder whenTerminate(final Runnable work)
+		public MachineBuilder onCreate(final Runnable work)
 		{
-			terminateWork = work;
+			onCreate = work;
+			return this;
+		}
+		
+		@Override
+		public MachineBuilder onPause(final Runnable work)
+		{
+			onPause = work;
+			return this;
+		}
+		
+		@Override
+		public MachineBuilder onResume(final Runnable work)
+		{
+			onResume = work;
+			return this;
+		}
+		
+		@Override
+		public MachineBuilder onStop(final Runnable work)
+		{
+			onStop = work;
+			return this;
+		}
+		
+		@Override
+		public MachineBuilder onRestart(final Runnable work)
+		{
+			onRestart = work;
+			return this;
+		}
+		
+		@Override
+		public MachineBuilder onTerminate(final Runnable work)
+		{
+			onTerminate = work;
 			return this;
 		}
 		
 		@Override
 		public void build()
 		{
-			registrator.accept(JMMachine.Constructor.getNew(machineTag, startState, stateMap, terminateWork));
+			registrator.accept(JMMachine.Constructor.getNew(machineTag, startState, stateMap, onPause, onResume, onStop, onRestart, onTerminate));
+			if (onCreate != null)
+			{
+				onCreate.run();
+			}
 		}
 		
 		@Override
 		public void buildAndRun()
 		{
-			final JMMachine machine = JMMachine.Constructor.getNew(machineTag, startState, stateMap, terminateWork);
+			final JMMachine machine = JMMachine.Constructor.getNew(machineTag, startState, stateMap, onPause, onResume, onStop, onRestart, onTerminate);
 			registrator.accept(machine);
+			if (onCreate != null)
+			{
+				onCreate.run();
+			}
 			machine.run();
+		}
+		
+		@Override
+		public void buildAndPause()
+		{
+			final JMMachine machine = JMMachine.Constructor.getNew(machineTag, startState, stateMap, onPause, onResume, onStop, onRestart, onTerminate);
+			registrator.accept(machine);
+			if (onCreate != null)
+			{
+				onCreate.run();
+			}
+			machine.pause();
 		}
 		
 		private class StateBuilderImpl implements StateBuilder
