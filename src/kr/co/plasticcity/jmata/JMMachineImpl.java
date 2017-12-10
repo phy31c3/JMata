@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 class JMMachineImpl implements JMMachine
 {
-	enum COND
+	private enum COND
 	{
 		CREATED, RUNNING, PAUSED, STOPPED, TERMINATED
 	}
@@ -19,6 +19,7 @@ class JMMachineImpl implements JMMachine
 	
 	private volatile ExecutorService machineQue;
 	private volatile Class curState;
+	private volatile Object savedSignal;
 	private volatile COND cond;
 	
 	JMMachineImpl(final Object tag, final Class startState, final Map<Class, ? extends JMState> stateMap, final Runnable terminateWork)
@@ -28,6 +29,7 @@ class JMMachineImpl implements JMMachine
 		this.stateMap = stateMap;
 		this.terminateWork = terminateWork;
 		this.curState = startState;
+		this.savedSignal = COND.CREATED;
 		this.cond = COND.CREATED;
 		
 		JMLog.debug(out -> out.print(JMLog.MACHINE_BUILT, machineName));
@@ -36,14 +38,17 @@ class JMMachineImpl implements JMMachine
 	@Override
 	public void run()
 	{
-		if (ifThisToNext(COND.CREATED, COND.RUNNING))
+		if (ifNextsToThis(COND.RUNNING, COND.CREATED, COND.STOPPED))
 		{
 			machineQue = newMachineQue();
-			startUp();
-		}
-		else if (ifThisToNext(COND.STOPPED, COND.RUNNING))
-		{
-			machineQue = newMachineQue();
+			if (!isStarted())
+			{
+				startUp();
+			}
+			else
+			{
+				input(savedSignal);
+			}
 		}
 		else
 		{
@@ -54,40 +59,54 @@ class JMMachineImpl implements JMMachine
 	@Override
 	public void pause()
 	{
-		if (ifThisToNext(COND.CREATED, COND.PAUSED))
+		if (ifNextsToThis(COND.PAUSED, COND.CREATED, COND.STOPPED))
 		{
 			machineQue = newMachineQue();
-			startUp();
+			if (!isStarted())
+			{
+				startUp();
+			}
+			else
+			{
+				input(savedSignal);
+			}
 		}
-		else if (ifThisToNext(COND.RUNNING, COND.PAUSED))
+		else
 		{
-			/* do nothing */
-		}
-		else if (ifThisToNext(COND.STOPPED, COND.PAUSED))
-		{
-			machineQue = newMachineQue();
+			ifThisToNext(COND.RUNNING, COND.PAUSED);
 		}
 	}
 	
 	@Override
 	public void stop()
 	{
-		if (ifThisToNext(COND.RUNNING, COND.STOPPED))
+		if (ifNextsToThis(COND.STOPPED, COND.RUNNING, COND.PAUSED))
 		{
-			machineQue.shutdownNow();
-		}
-		else if (ifThisToNext(COND.PAUSED, COND.STOPPED))
-		{
-			machineQue.shutdownNow();
+			try
+			{
+				machineQue.shutdownNow();
+				if (!machineQue.awaitTermination(5, TimeUnit.SECONDS))
+				{
+					JMLog.error(out -> out.print(JMLog.MACHINE_SHUTDOWN_FAILED_AS_TIMEOUT, machineName));
+				}
+			}
+			catch (InterruptedException e) // Unknown os level interrupt
+			{
+				JMLog.error(out -> out.print(JMLog.MACHINE_SHUTDOWN_FAILED_AS_INTERRUPT, machineName));
+				Thread.currentThread().interrupt();
+			}
 		}
 	}
 	
 	@Override
 	public void terminate()
 	{
-		if (ifThisToNext(COND.CREATED, COND.TERMINATED))
+		if (ifNextsToThis(COND.TERMINATED, COND.CREATED, COND.STOPPED))
 		{
-			stateMap.get(curState).runExitFunction();
+			if (isStarted())
+			{
+				stateMap.get(curState).runExitFunction();
+			}
 			if (terminateWork != null)
 			{
 				terminateWork.run();
@@ -95,25 +114,25 @@ class JMMachineImpl implements JMMachine
 		}
 		else if (ifNotThisToThis(COND.TERMINATED))
 		{
-			machineQue.shutdownNow();
 			try
 			{
-				if (machineQue.awaitTermination(1, TimeUnit.SECONDS))
+				machineQue.shutdownNow();
+				if (!machineQue.awaitTermination(5, TimeUnit.SECONDS))
+				{
+					JMLog.error(out -> out.print(JMLog.MACHINE_SHUTDOWN_FAILED_AS_TIMEOUT, machineName));
+				}
+				if (isStarted())
 				{
 					stateMap.get(curState).runExitFunction();
-					if (terminateWork != null)
-					{
-						terminateWork.run();
-					}
 				}
-				else
+				if (terminateWork != null)
 				{
-					JMLog.error(out -> out.print(JMLog.TERMINATION_WORK_FAILED_AS_TIMEOUT, machineName));
+					terminateWork.run();
 				}
 			}
-			catch (InterruptedException e)
+			catch (InterruptedException e) // Unknown os level interrupt
 			{
-				JMLog.error(out -> out.print(JMLog.TERMINATION_WORK_FAILED_AS_INTERRUPT, machineName));
+				JMLog.error(out -> out.print(JMLog.MACHINE_SHUTDOWN_FAILED_AS_INTERRUPT, machineName));
 				Thread.currentThread().interrupt();
 			}
 		}
@@ -122,19 +141,49 @@ class JMMachineImpl implements JMMachine
 	@Override
 	public <S> void input(final S signal)
 	{
-		if (is(COND.RUNNING, COND.PAUSED))
+		if (signal != null && is(COND.RUNNING, COND.PAUSED))
 		{
 			machineQue.execute(() ->
 			{
-				ifPauseThenAwait();
 				Object nextSignal = signal;
-				while (nextSignal != null && is(COND.RUNNING, COND.PAUSED))
+				while (nextSignal != null && !Thread.interrupted())
 				{
-					nextSignal = doInput(nextSignal);
-					ifPauseThenAwait();
+					if (ifPauseThenAwait())
+					{
+						return;
+					}
+					else
+					{
+						nextSignal = doInput(nextSignal);
+						savedSignal = nextSignal;
+					}
 				}
 			});
 		}
+	}
+	
+	private void startUp()
+	{
+		machineQue.execute(() ->
+		{
+			if (!ifPauseThenAwait())
+			{
+				Object nextSignal = stateMap.get(startState).runEnterFunction();
+				savedSignal = nextSignal;
+				while (nextSignal != null && !Thread.interrupted())
+				{
+					if (ifPauseThenAwait())
+					{
+						return;
+					}
+					else
+					{
+						nextSignal = doInput(nextSignal);
+						savedSignal = nextSignal;
+					}
+				}
+			}
+		});
 	}
 	
 	private <S> Object doInput(final S signal)
@@ -179,18 +228,9 @@ class JMMachineImpl implements JMMachine
 		});
 	}
 	
-	private void startUp()
+	private boolean isStarted()
 	{
-		machineQue.execute(() ->
-		{
-			ifPauseThenAwait();
-			Object nextSignal = stateMap.get(startState).runEnterFunction();
-			while (nextSignal != null && is(COND.RUNNING, COND.PAUSED))
-			{
-				nextSignal = doInput(nextSignal);
-				ifPauseThenAwait();
-			}
-		});
+		return !COND.CREATED.equals(savedSignal);
 	}
 	
 	private synchronized boolean is(final COND... conds)
@@ -205,16 +245,11 @@ class JMMachineImpl implements JMMachine
 		return false;
 	}
 	
-	private synchronized boolean ifThisToNext(final COND thiz, final COND next)
+	private synchronized void ifThisToNext(final COND thiz, final COND next)
 	{
 		if (this.cond == thiz)
 		{
 			switchCond(next);
-			return true;
-		}
-		else
-		{
-			return false;
 		}
 	}
 	
@@ -231,18 +266,40 @@ class JMMachineImpl implements JMMachine
 		}
 	}
 	
-	private synchronized void ifPauseThenAwait()
+	private synchronized boolean ifNextsToThis(final COND thiz, final COND... nexts)
+	{
+		for (COND cond : nexts)
+		{
+			if (this.cond == cond)
+			{
+				switchCond(thiz);
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * @return true == interrupted. It means machine was STOPPED or TERMINATED.
+	 */
+	private synchronized boolean ifPauseThenAwait()
 	{
 		if (this.cond == COND.PAUSED)
 		{
 			try
 			{
 				wait();
+				return false;
 			}
 			catch (InterruptedException e)
 			{
-				/* do nothing */
+				Thread.currentThread().interrupt();
+				return true;
 			}
+		}
+		else
+		{
+			return false;
 		}
 	}
 	
