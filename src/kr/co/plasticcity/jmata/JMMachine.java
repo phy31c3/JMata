@@ -14,6 +14,8 @@ interface JMMachine
 	
 	void run();
 	
+	void pause();
+	
 	void stop();
 	
 	void terminate();

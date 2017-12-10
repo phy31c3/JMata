@@ -54,7 +54,7 @@ class JMStateImpl implements JMState
 	
 	JMStateImpl(final Object machineTag, final Class stateTag)
 	{
-		this.machineName = machineTag.toString().substring(machineTag.toString().lastIndexOf(".") + 1);
+		this.machineName = JMLog.getPackagelessName(machineTag);
 		this.stateTag = stateTag;
 		
 		this.enterMap = new HashMap<>();

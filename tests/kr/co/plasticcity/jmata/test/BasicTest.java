@@ -22,14 +22,14 @@ public class BasicTest
 	@Test
 	public void testMain()
 	{
-		JMata.initialize(null, System.err::println);
+		JMata.initialize(System.out::println, System.err::println);
 		new TestMachine();
 		while (!isFinish)
 		{
-			JMata.input(TestMachine.class, getNoiseInput());
 			try
 			{
-				Thread.sleep((long)(Math.random() * 900) + 100);
+				Thread.sleep(0, (int)(Math.random() * 50) + 50);
+				JMata.input(TestMachine.class, getNoiseInput());
 			}
 			catch (InterruptedException e)
 			{
@@ -39,13 +39,27 @@ public class BasicTest
 		System.out.println("- 테스트 끝 -");
 	}
 	
-	private Object getNoiseInput()
+	private Object getNoiseInput() throws InterruptedException
 	{
-		int rand = (int)(Math.random() * 2);
+		int rand = (int)(Math.random() * 3);
 		switch (rand)
 		{
 		case 0:
 			return new Noise();
+		case 1:
+			JMata.runMachine(TestMachine.class);
+			System.out.println("(RUN)");
+			return null;
+		case 2:
+			JMata.pauseMachine(TestMachine.class);
+			System.out.println("(PAUSE)");
+			Thread.sleep(100);
+			return null;
+		case 3:
+			JMata.stopMachine(TestMachine.class);
+			System.out.println("(STOP)");
+			Thread.sleep(300);
+			return null;
 		default:
 			return null;
 		}
@@ -534,7 +548,7 @@ public class BasicTest
 					}
 					catch (InterruptedException e)
 					{
-					/* do nothing */
+						/* do nothing */
 					}
 					finally
 					{
