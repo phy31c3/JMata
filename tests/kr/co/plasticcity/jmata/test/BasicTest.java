@@ -48,16 +48,13 @@ public class BasicTest
 			return new Noise();
 		case 1:
 			JMata.runMachine(TestMachine.class);
-			System.out.println("(RUN)");
 			return null;
 		case 2:
 			JMata.pauseMachine(TestMachine.class);
-			System.out.println("(PAUSE)");
 			Thread.sleep(100);
 			return null;
 		case 3:
 			JMata.stopMachine(TestMachine.class);
-			System.out.println("(STOP)");
 			Thread.sleep(300);
 			return null;
 		default:
@@ -178,9 +175,14 @@ public class BasicTest
 					       .whenExit(Finish::exit)
 					       .apply()
 					
-					       .whenTerminate(BasicTest::onTerminate)
+					       .onCreate(() -> System.out.println("////////////////////////// [머신이 생성 됨] //////////////////////////"))
+					       .onPause(() -> System.out.println("////////////////////////// [머신이 일시 정지 됨] //////////////////////////"))
+					       .onResume(() -> System.out.println("////////////////////////// [머신이 재개 됨] //////////////////////////"))
+					       .onStop(() -> System.out.println("////////////////////////// [머신이 정지 됨] //////////////////////////"))
+					       .onRestart(() -> System.out.println("////////////////////////// [머신이 재시작 됨] //////////////////////////"))
+					       .onTerminate(BasicTest::onTerminate)
 					
-					       .buildAndRun();
+					       .build();
 				});
 			});
 		}
@@ -189,7 +191,7 @@ public class BasicTest
 	@Terminate
 	public static void onTerminate()
 	{
-		System.out.println("머신이 종료 됨");
+		System.out.println("////////////////////////// [머신이 종료 됨] //////////////////////////");
 		JMata.release(() ->
 		{
 			System.out.println("JMata 해제 됨");

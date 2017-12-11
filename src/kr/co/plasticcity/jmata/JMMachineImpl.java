@@ -15,19 +15,28 @@ class JMMachineImpl implements JMMachine
 	private final String machineName;
 	private final Class startState;
 	private final Map<Class, ? extends JMState> stateMap;
-	private final Runnable terminateWork;
+	private final Runnable onPause;
+	private final Runnable onResume;
+	private final Runnable onStop;
+	private final Runnable onRestart;
+	private final Runnable onTerminate;
 	
 	private volatile ExecutorService machineQue;
 	private volatile Class curState;
 	private volatile Object savedSignal;
 	private volatile COND cond;
 	
-	JMMachineImpl(final Object tag, final Class startState, final Map<Class, ? extends JMState> stateMap, final Runnable terminateWork)
+	JMMachineImpl(final Object tag, final Class startState, final Map<Class, ? extends JMState> stateMap,
+	              final Runnable onPause, final Runnable onResume, final Runnable onStop, final Runnable onRestart, final Runnable onTerminate)
 	{
 		this.machineName = JMLog.getPackagelessName(tag);
 		this.startState = startState;
 		this.stateMap = stateMap;
-		this.terminateWork = terminateWork;
+		this.onPause = onPause;
+		this.onResume = onResume;
+		this.onStop = onStop;
+		this.onRestart = onRestart;
+		this.onTerminate = onTerminate;
 		this.curState = startState;
 		this.savedSignal = COND.CREATED;
 		this.cond = COND.CREATED;
@@ -38,8 +47,17 @@ class JMMachineImpl implements JMMachine
 	@Override
 	public void run()
 	{
-		if (ifNextsToThis(COND.RUNNING, COND.CREATED, COND.STOPPED))
+		if (ifThisToNext(COND.CREATED, COND.RUNNING))
 		{
+			machineQue = newMachineQue();
+			startUp();
+		}
+		else if (ifThisToNext(COND.STOPPED, COND.RUNNING))
+		{
+			if (onRestart != null)
+			{
+				onRestart.run();
+			}
 			machineQue = newMachineQue();
 			if (!isStarted())
 			{
@@ -59,8 +77,17 @@ class JMMachineImpl implements JMMachine
 	@Override
 	public void pause()
 	{
-		if (ifNextsToThis(COND.PAUSED, COND.CREATED, COND.STOPPED))
+		if (ifThisToNext(COND.CREATED, COND.PAUSED))
 		{
+			machineQue = newMachineQue();
+			startUp();
+		}
+		else if (ifThisToNext(COND.STOPPED, COND.PAUSED))
+		{
+			if (onRestart != null)
+			{
+				onRestart.run();
+			}
 			machineQue = newMachineQue();
 			if (!isStarted())
 			{
@@ -89,6 +116,10 @@ class JMMachineImpl implements JMMachine
 				{
 					JMLog.error(out -> out.print(JMLog.MACHINE_SHUTDOWN_FAILED_AS_TIMEOUT, machineName));
 				}
+				if (onStop != null)
+				{
+					onStop.run();
+				}
 			}
 			catch (InterruptedException e) // Unknown os level interrupt
 			{
@@ -107,9 +138,9 @@ class JMMachineImpl implements JMMachine
 			{
 				stateMap.get(curState).runExitFunction();
 			}
-			if (terminateWork != null)
+			if (onTerminate != null)
 			{
-				terminateWork.run();
+				onTerminate.run();
 			}
 		}
 		else if (ifNotThisToThis(COND.TERMINATED))
@@ -125,9 +156,9 @@ class JMMachineImpl implements JMMachine
 				{
 					stateMap.get(curState).runExitFunction();
 				}
-				if (terminateWork != null)
+				if (onTerminate != null)
 				{
-					terminateWork.run();
+					onTerminate.run();
 				}
 			}
 			catch (InterruptedException e) // Unknown os level interrupt
@@ -245,11 +276,16 @@ class JMMachineImpl implements JMMachine
 		return false;
 	}
 	
-	private synchronized void ifThisToNext(final COND thiz, final COND next)
+	private synchronized boolean ifThisToNext(final COND thiz, final COND next)
 	{
 		if (this.cond == thiz)
 		{
 			switchCond(next);
+			return true;
+		}
+		else
+		{
+			return false;
 		}
 	}
 	
@@ -288,7 +324,15 @@ class JMMachineImpl implements JMMachine
 		{
 			try
 			{
+				if (onPause != null)
+				{
+					onPause.run();
+				}
 				wait();
+				if (onResume != null)
+				{
+					onResume.run();
+				}
 				return false;
 			}
 			catch (InterruptedException e)
