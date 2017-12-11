@@ -379,7 +379,7 @@ class JMStateImpl implements JMState
 	{
 		if (switchRule.containsKey(signal))
 		{
-			JMLog.error(out -> out.print(JMLog.SWITCH_RULE_BY_CLASS_DUPLICATED, machineName, signal.getSimpleName(), stateTag.getSimpleName()));
+			JMLog.error(out -> out.print(JMLog.SWITCH_RULE_BY_CLASS_DUPLICATED, machineName, signal.getSimpleName(), stateTag != null ? stateTag.getSimpleName() : "null"));
 		}
 		
 		switchRule.put(signal, stateTag);
@@ -390,7 +390,7 @@ class JMStateImpl implements JMState
 	{
 		if (switchRule.containsKey(signal))
 		{
-			JMLog.error(out -> out.print(JMLog.SWITCH_RULE_BY_CLASS_DUPLICATED, machineName, signal.name(), stateTag.getSimpleName()));
+			JMLog.error(out -> out.print(JMLog.SWITCH_RULE_BY_CLASS_DUPLICATED, machineName, signal.name(), stateTag != null ? stateTag.getSimpleName() : "null"));
 		}
 		
 		switchRule.put(signal, stateTag);
@@ -401,7 +401,7 @@ class JMStateImpl implements JMState
 	{
 		if (switchRule.containsKey(signal))
 		{
-			JMLog.error(out -> out.print(JMLog.SWITCH_RULE_BY_STRING_DUPLICATED, machineName, signal, stateTag.getSimpleName()));
+			JMLog.error(out -> out.print(JMLog.SWITCH_RULE_BY_STRING_DUPLICATED, machineName, signal, stateTag != null ? stateTag.getSimpleName() : "null"));
 		}
 		
 		switchRule.put(signal, stateTag);
