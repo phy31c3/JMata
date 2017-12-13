@@ -56,6 +56,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 		private MachineBuilderImpl()
 		{
 			this.stateMap = new HashMap<>();
+			this.stateMap.put(null, null); // for dontSwitch()
 		}
 		
 		@Override
@@ -404,14 +405,14 @@ class JMBuilderImpl implements JMBuilder.Builder
 				}
 				
 				@Override
-				public SwitchTo doThis(final Runnable workOnExit)
+				public SwitchOrNot doThis(final Runnable workOnExit)
 				{
 					return doThis((S s) -> workOnExit.run());
 				}
 				
 				@Override
 				@SuppressWarnings("unchecked")
-				public SwitchTo doThis(final Consumer<S> workOnExit)
+				public SwitchOrNot doThis(final Consumer<S> workOnExit)
 				{
 					if (signalsC != null)
 					{
@@ -478,7 +479,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 				}
 			}
 			
-			private class SwitchToImpl implements SwitchTo
+			private class SwitchToImpl implements SwitchOrNot
 			{
 				final Class[] signalsC;
 				final Enum[] signalsE;
@@ -506,12 +507,6 @@ class JMBuilderImpl implements JMBuilder.Builder
 				}
 				
 				@Override
-				public StateBuilder switchToSelf()
-				{
-					return switchTo(stateTag);
-				}
-				
-				@Override
 				public StateBuilder switchTo(final Class stateTag)
 				{
 					if (signalsC != null)
@@ -536,6 +531,18 @@ class JMBuilderImpl implements JMBuilder.Builder
 						}
 					}
 					return StateBuilderImpl.this;
+				}
+				
+				@Override
+				public StateBuilder switchToSelf()
+				{
+					return switchTo(stateTag);
+				}
+				
+				@Override
+				public StateBuilder dontSwitch()
+				{
+					return switchTo(null);
 				}
 			}
 		}

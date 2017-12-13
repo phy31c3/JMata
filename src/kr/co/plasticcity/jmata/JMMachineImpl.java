@@ -223,27 +223,51 @@ class JMMachineImpl implements JMMachine
 		{
 			return stateMap.get(curState).runExitFunction((String)signal, stateMap::containsKey, nextState ->
 			{
-				JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_STRING, machineName, curState.getSimpleName(), nextState.getSimpleName(), signal));
-				curState = nextState;
-				return stateMap.get(nextState).runEnterFunction((String)signal);
+				if (nextState != null)
+				{
+					JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_STRING, machineName, curState.getSimpleName(), nextState.getSimpleName(), signal));
+					curState = nextState;
+					return stateMap.get(nextState).runEnterFunction((String)signal);
+				}
+				else
+				{
+					JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_STRING, machineName, curState.getSimpleName(), "null", signal));
+					return null;
+				}
 			});
 		}
 		else if (signal instanceof Enum)
 		{
 			return stateMap.get(curState).runExitFunction((Enum)signal, stateMap::containsKey, nextState ->
 			{
-				JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), nextState.getSimpleName(), signal.getClass().getSimpleName() + "." + JMLog.getPackagelessName(signal)));
-				curState = nextState;
-				return stateMap.get(nextState).runEnterFunction((Enum)signal);
+				if (nextState != null)
+				{
+					JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), nextState.getSimpleName(), signal.getClass().getSimpleName() + "." + JMLog.getPackagelessName(signal)));
+					curState = nextState;
+					return stateMap.get(nextState).runEnterFunction((Enum)signal);
+				}
+				else
+				{
+					JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), "null", signal.getClass().getSimpleName() + "." + JMLog.getPackagelessName(signal)));
+					return null;
+				}
 			});
 		}
 		else
 		{
 			return stateMap.get(curState).runExitFunctionC(signal, stateMap::containsKey, nextState ->
 			{
-				JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), nextState.getSimpleName(), JMLog.getPackagelessName(signal)));
-				curState = nextState;
-				return stateMap.get(nextState).runEnterFunctionC(signal);
+				if (nextState != null)
+				{
+					JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), nextState.getSimpleName(), JMLog.getPackagelessName(signal)));
+					curState = nextState;
+					return stateMap.get(nextState).runEnterFunctionC(signal);
+				}
+				else
+				{
+					JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), "null", JMLog.getPackagelessName(signal)));
+					return null;
+				}
 			});
 		}
 	}

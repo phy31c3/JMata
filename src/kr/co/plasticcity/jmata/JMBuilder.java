@@ -106,14 +106,14 @@ public interface JMBuilder
 		
 		interface WhenInput<S> extends SwitchTo
 		{
-			SwitchTo doThis(final Consumer<S> workOnExit);
+			SwitchOrNot doThis(final Consumer<S> workOnExit);
 			
 			SwitchTo doNothing();
 		}
 		
 		interface WhenInputClasses extends SwitchTo
 		{
-			SwitchTo doThis(final Runnable workOnExit);
+			SwitchOrNot doThis(final Runnable workOnExit);
 			
 			SwitchTo doNothing();
 		}
@@ -125,9 +125,14 @@ public interface JMBuilder
 		
 		interface SwitchTo
 		{
-			StateBuilder switchToSelf();
-			
 			StateBuilder switchTo(final Class stateTag);
+			
+			StateBuilder switchToSelf();
+		}
+		
+		interface SwitchOrNot extends SwitchTo
+		{
+			StateBuilder dontSwitch();
 		}
 	}
 }
