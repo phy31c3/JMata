@@ -156,12 +156,12 @@ class JMataImpl
 		});
 	}
 	
-	void buildMachine(final Object machineTag, final Consumer<JMBuilder.Builder> builder)
+	void buildMachine(final Object machineTag, final String machineName, final Consumer<JMBuilder.Builder> builder)
 	{
 		globalQue.execute(() ->
 		{
-			JMLog.debug(out -> out.print(JMLog.MACHINE_BUILD_STARTED, JMLog.getPackagelessName(machineTag)));
-			builder.accept(JMBuilder.Constructor.getNew(machineTag, machineMap.containsKey(machineTag), machine ->
+			JMLog.debug(out -> out.print(JMLog.MACHINE_BUILD_STARTED, machineName));
+			builder.accept(JMBuilder.Constructor.getNew(machineName, machineMap.containsKey(machineTag), machine ->
 			{
 				final JMMachine oldMachine = machineMap.put(machineTag, machine);
 				if (oldMachine != null)

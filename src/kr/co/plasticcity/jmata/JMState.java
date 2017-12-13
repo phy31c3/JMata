@@ -9,9 +9,9 @@ interface JMState
 {
 	class Constructor
 	{
-		static JMState getNew(final Object machineTag, final Class stateTag)
+		static JMState getNew(final String machineName, final Class stateTag)
 		{
-			return new JMStateImpl(machineTag, stateTag);
+			return new JMStateImpl(machineName, stateTag);
 		}
 	}
 	

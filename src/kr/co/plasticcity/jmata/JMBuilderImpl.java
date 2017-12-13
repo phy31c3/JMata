@@ -8,13 +8,13 @@ import java.util.function.Supplier;
 
 class JMBuilderImpl implements JMBuilder.Builder
 {
-	private final Object machineTag;
+	private final String machineName;
 	private final boolean present;
 	private final Consumer<JMMachine> registrator;
 	
-	JMBuilderImpl(final Object machineTag, final boolean isPresent, final Consumer<JMMachine> registrator)
+	JMBuilderImpl(final String machineName, final boolean isPresent, final Consumer<JMMachine> registrator)
 	{
-		this.machineTag = machineTag;
+		this.machineName = machineName;
 		this.present = isPresent;
 		this.registrator = registrator;
 	}
@@ -24,7 +24,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 	{
 		if (present)
 		{
-			JMLog.debug(out -> out.print(JMLog.IGNORE_MACHINE_BUILD, JMLog.getPackagelessName(machineTag)));
+			JMLog.debug(out -> out.print(JMLog.IGNORE_MACHINE_BUILD, machineName));
 		}
 		else
 		{
@@ -37,7 +37,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 	{
 		if (present)
 		{
-			JMLog.debug(out -> out.print(JMLog.REPLACE_MACHINE, JMLog.getPackagelessName(machineTag)));
+			JMLog.debug(out -> out.print(JMLog.REPLACE_MACHINE, machineName));
 		}
 		definer.accept(new MachineBuilderImpl());
 	}
@@ -71,7 +71,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 		{
 			if (stateMap.containsKey(stateTag))
 			{
-				JMLog.error(out -> out.print(JMLog.STATE_DEFINITION_DUPLICATED, JMLog.getPackagelessName(machineTag), stateTag.getSimpleName()));
+				JMLog.error(out -> out.print(JMLog.STATE_DEFINITION_DUPLICATED, machineName, stateTag.getSimpleName()));
 			}
 			return new StateBuilderImpl(stateTag);
 		}
@@ -121,7 +121,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 		@Override
 		public void build()
 		{
-			registrator.accept(JMMachine.Constructor.getNew(machineTag, startState, stateMap, onPause, onResume, onStop, onRestart, onTerminate));
+			registrator.accept(JMMachine.Constructor.getNew(machineName, startState, stateMap, onPause, onResume, onStop, onRestart, onTerminate));
 			if (onCreate != null)
 			{
 				onCreate.run();
@@ -131,7 +131,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 		@Override
 		public void buildAndRun()
 		{
-			final JMMachine machine = JMMachine.Constructor.getNew(machineTag, startState, stateMap, onPause, onResume, onStop, onRestart, onTerminate);
+			final JMMachine machine = JMMachine.Constructor.getNew(machineName, startState, stateMap, onPause, onResume, onStop, onRestart, onTerminate);
 			registrator.accept(machine);
 			if (onCreate != null)
 			{
@@ -143,7 +143,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 		@Override
 		public void buildAndPause()
 		{
-			final JMMachine machine = JMMachine.Constructor.getNew(machineTag, startState, stateMap, onPause, onResume, onStop, onRestart, onTerminate);
+			final JMMachine machine = JMMachine.Constructor.getNew(machineName, startState, stateMap, onPause, onResume, onStop, onRestart, onTerminate);
 			registrator.accept(machine);
 			if (onCreate != null)
 			{
@@ -160,7 +160,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 			private StateBuilderImpl(final Class stateTag)
 			{
 				this.stateTag = stateTag;
-				this.state = JMState.Constructor.getNew(machineTag, stateTag);
+				this.state = JMState.Constructor.getNew(machineName, stateTag);
 			}
 			
 			@Override

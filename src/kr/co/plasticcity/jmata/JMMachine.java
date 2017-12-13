@@ -6,10 +6,10 @@ interface JMMachine
 {
 	class Constructor
 	{
-		static JMMachine getNew(final Object tag, final Class startState, final Map<Class, ? extends JMState> stateMap,
+		static JMMachine getNew(final String name, final Class startState, final Map<Class, ? extends JMState> stateMap,
 		                        final Runnable onPause, final Runnable onResume, final Runnable onStop, final Runnable onRestart, final Runnable onTerminate)
 		{
-			return new JMMachineImpl(tag, startState, stateMap, onPause, onResume, onStop, onRestart, onTerminate);
+			return new JMMachineImpl(name, startState, stateMap, onPause, onResume, onStop, onRestart, onTerminate);
 		}
 	}
 	

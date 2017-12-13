@@ -52,9 +52,9 @@ class JMStateImpl implements JMState
 	
 	private final Map<Object, Class> switchRule;
 	
-	JMStateImpl(final Object machineTag, final Class stateTag)
+	JMStateImpl(final String machineName, final Class stateTag)
 	{
-		this.machineName = JMLog.getPackagelessName(machineTag);
+		this.machineName = machineName;
 		this.stateTag = stateTag;
 		
 		this.enterMap = new HashMap<>();

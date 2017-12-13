@@ -26,10 +26,10 @@ class JMMachineImpl implements JMMachine
 	private volatile Object savedSignal;
 	private volatile COND cond;
 	
-	JMMachineImpl(final Object tag, final Class startState, final Map<Class, ? extends JMState> stateMap,
+	JMMachineImpl(final String name, final Class startState, final Map<Class, ? extends JMState> stateMap,
 	              final Runnable onPause, final Runnable onResume, final Runnable onStop, final Runnable onRestart, final Runnable onTerminate)
 	{
-		this.machineName = JMLog.getPackagelessName(tag);
+		this.machineName = name;
 		this.startState = startState;
 		this.stateMap = stateMap;
 		this.onPause = onPause;
