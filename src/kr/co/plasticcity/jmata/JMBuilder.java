@@ -19,9 +19,14 @@ public interface JMBuilder
 		}
 	}
 	
-	void ifPresentThenIgnoreThis(final Consumer<Definer> definer);
+	AndDo ifPresentThenIgnoreThis(final Consumer<Definer> definer);
 	
-	void ifPresentThenReplaceWithThis(final Consumer<Definer> definer);
+	AndDo ifPresentThenReplaceWithThis(final Consumer<Definer> definer);
+	
+	interface AndDo
+	{
+		void andDo(final Runnable work);
+	}
 	
 	interface Definer
 	{

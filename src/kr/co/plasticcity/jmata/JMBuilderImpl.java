@@ -20,7 +20,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 	}
 	
 	@Override
-	public void ifPresentThenIgnoreThis(final Consumer<Definer> definer)
+	public AndDo ifPresentThenIgnoreThis(final Consumer<Definer> definer)
 	{
 		if (present)
 		{
@@ -30,19 +30,33 @@ class JMBuilderImpl implements JMBuilder.Builder
 		{
 			definer.accept(new MachineBuilderImpl());
 		}
+		return new AndDoImpl();
 	}
 	
 	@Override
-	public void ifPresentThenReplaceWithThis(final Consumer<Definer> definer)
+	public AndDo ifPresentThenReplaceWithThis(final Consumer<Definer> definer)
 	{
 		if (present)
 		{
 			JMLog.debug(out -> out.print(JMLog.REPLACE_MACHINE, machineName));
 		}
 		definer.accept(new MachineBuilderImpl());
+		return new AndDoImpl();
 	}
 	
-	private class MachineBuilderImpl implements MachineBuilder, Definer
+	private class AndDoImpl implements AndDo
+	{
+		@Override
+		public void andDo(final Runnable work)
+		{
+			if (present)
+			{
+				work.run();
+			}
+		}
+	}
+	
+	private class MachineBuilderImpl implements Definer, MachineBuilder
 	{
 		private final Map<Class, JMState> stateMap;
 		private Class startState;

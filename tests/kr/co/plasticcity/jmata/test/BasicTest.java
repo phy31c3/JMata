@@ -24,6 +24,7 @@ public class BasicTest
 	{
 		JMata.initialize(System.out::println, System.err::println);
 		new TestMachine();
+		new TestMachine();
 		while (!isFinish)
 		{
 			try
@@ -183,6 +184,9 @@ public class BasicTest
 					       .onTerminate(BasicTest::onTerminate)
 					
 					       .build();
+				}).andDo(() ->
+				{
+					System.out.println("////////////////////////// [머신이 이미 존재함] //////////////////////////");
 				});
 			});
 		}
