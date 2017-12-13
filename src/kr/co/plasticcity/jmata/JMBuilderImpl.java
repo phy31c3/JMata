@@ -56,7 +56,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 		private MachineBuilderImpl()
 		{
 			this.stateMap = new HashMap<>();
-			this.stateMap.put(null, null); // for notSwitch()
+			this.stateMap.put(null, null); // for dontSwitch()
 		}
 		
 		@Override
@@ -540,7 +540,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 				}
 				
 				@Override
-				public StateBuilder notSwitch()
+				public StateBuilder dontSwitch()
 				{
 					return switchTo(null);
 				}

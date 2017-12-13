@@ -132,7 +132,7 @@ public interface JMBuilder
 		
 		interface SwitchOrNot extends SwitchTo
 		{
-			StateBuilder notSwitch();
+			StateBuilder dontSwitch();
 		}
 	}
 }
