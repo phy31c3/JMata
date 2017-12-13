@@ -74,7 +74,7 @@ public class BasicTest
 	{
 		public TestMachine()
 		{
-			JMata.buildMachine(TestMachine.class, builder ->
+			JMata.buildMachine(TestMachine.class, "TestMachine", builder ->
 			{
 				builder.ifPresentThenIgnoreThis(definer ->
 				{

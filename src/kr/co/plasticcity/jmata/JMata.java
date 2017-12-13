@@ -38,7 +38,12 @@ public class JMata
 	
 	public static void buildMachine(final Object machineTag, final Consumer<JMBuilder.Builder> builder)
 	{
-		JMataImpl.post(jmata -> jmata.buildMachine(machineTag, builder));
+		JMataImpl.post(jmata -> jmata.buildMachine(machineTag, JMLog.getPackagelessName(machineTag), builder));
+	}
+	
+	public static void buildMachine(final Object machineTag, final String machineName, final Consumer<JMBuilder.Builder> builder)
+	{
+		JMataImpl.post(jmata -> jmata.buildMachine(machineTag, machineName, builder));
 	}
 	
 	public static void runMachine(final Object machineTag)

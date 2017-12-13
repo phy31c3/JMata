@@ -13,9 +13,9 @@ public interface JMBuilder
 	
 	class Constructor
 	{
-		static Builder getNew(final Object machineTag, final boolean isPresent, final Consumer<JMMachine> registrator)
+		static Builder getNew(final String machineName, final boolean isPresent, final Consumer<JMMachine> registrator)
 		{
-			return new JMBuilderImpl(machineTag, isPresent, registrator);
+			return new JMBuilderImpl(machineName, isPresent, registrator);
 		}
 	}
 	
