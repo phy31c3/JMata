@@ -160,7 +160,6 @@ class JMataImpl
 	{
 		globalQue.execute(() ->
 		{
-			JMLog.debug(out -> out.print(JMLog.MACHINE_BUILD_STARTED, machineName));
 			builder.accept(JMBuilder.Constructor.getNew(machineName, machineMap.containsKey(machineTag), machine ->
 			{
 				final JMMachine oldMachine = machineMap.put(machineTag, machine);
@@ -227,6 +226,17 @@ class JMataImpl
 			if (machineMap.containsKey(machineTag))
 			{
 				machineMap.get(machineTag).input(signal);
+			}
+		});
+	}
+	
+	void setMachineLogEnabled(final Object machineTag, final boolean enabled)
+	{
+		globalQue.execute(() ->
+		{
+			if (machineMap.containsKey(machineTag))
+			{
+				machineMap.get(machineTag).setLogEnabled(enabled);
 			}
 		});
 	}

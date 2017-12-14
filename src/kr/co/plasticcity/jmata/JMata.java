@@ -70,4 +70,9 @@ public class JMata
 	{
 		JMataImpl.post(jmata -> jmata.input(machineTag, signal));
 	}
+	
+	public static void setMachineLogEnabled(final Object machineTag, final boolean enabled)
+	{
+		JMataImpl.post(jmata -> jmata.setMachineLogEnabled(machineTag, enabled));
+	}
 }
