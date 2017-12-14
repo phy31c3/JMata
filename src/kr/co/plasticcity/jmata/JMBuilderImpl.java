@@ -8,49 +8,72 @@ import java.util.function.Supplier;
 
 class JMBuilderImpl implements JMBuilder.Builder
 {
-	private final Object machineTag;
+	private final String machineName;
 	private final boolean present;
 	private final Consumer<JMMachine> registrator;
 	
-	JMBuilderImpl(final Object machineTag, final boolean isPresent, final Consumer<JMMachine> registrator)
+	JMBuilderImpl(final String machineName, final boolean isPresent, final Consumer<JMMachine> registrator)
 	{
-		this.machineTag = machineTag;
+		JMLog.debug(out -> out.print(JMLog.MACHINE_BUILD_STARTED, machineName));
+		this.machineName = machineName;
 		this.present = isPresent;
 		this.registrator = registrator;
 	}
 	
 	@Override
-	public void ifPresentThenIgnoreThis(final Consumer<Definer> definer)
+	public AndDo ifPresentThenIgnoreThis(final Consumer<Definer> definer)
 	{
 		if (present)
 		{
-			JMLog.debug(out -> out.print(JMLog.IGNORE_MACHINE_BUILD, JMLog.getPackagelessName(machineTag)));
+			JMLog.debug(out -> out.print(JMLog.IGNORE_MACHINE_BUILD, machineName));
 		}
 		else
 		{
 			definer.accept(new MachineBuilderImpl());
 		}
+		return new AndDoImpl();
 	}
 	
 	@Override
-	public void ifPresentThenReplaceWithThis(final Consumer<Definer> definer)
+	public AndDo ifPresentThenReplaceWithThis(final Consumer<Definer> definer)
 	{
 		if (present)
 		{
-			JMLog.debug(out -> out.print(JMLog.REPLACE_MACHINE, JMLog.getPackagelessName(machineTag)));
+			JMLog.debug(out -> out.print(JMLog.REPLACE_MACHINE, machineName));
 		}
 		definer.accept(new MachineBuilderImpl());
+		return new AndDoImpl();
 	}
 	
-	private class MachineBuilderImpl implements MachineBuilder, Definer
+	private class AndDoImpl implements AndDo
+	{
+		@Override
+		public void andDo(final Runnable work)
+		{
+			if (present)
+			{
+				work.run();
+			}
+		}
+	}
+	
+	private class MachineBuilderImpl implements Definer, MachineBuilder
 	{
 		private final Map<Class, JMState> stateMap;
 		private Class startState;
-		private Runnable terminateWork;
+		private Runnable onCreate;
+		private Runnable onPause;
+		private Runnable onResume;
+		private Runnable onStop;
+		private Runnable onRestart;
+		private Runnable onTerminate;
+		private boolean isLogEnabled;
 		
 		private MachineBuilderImpl()
 		{
 			this.stateMap = new HashMap<>();
+			this.stateMap.put(null, null); // for dontSwitch()
+			this.isLogEnabled = true;
 		}
 		
 		@Override
@@ -65,30 +88,89 @@ class JMBuilderImpl implements JMBuilder.Builder
 		{
 			if (stateMap.containsKey(stateTag))
 			{
-				JMLog.error(out -> out.print(JMLog.STATE_DEFINITION_DUPLICATED, JMLog.getPackagelessName(machineTag), stateTag.getSimpleName()));
+				JMLog.error(out -> out.print(JMLog.STATE_DEFINITION_DUPLICATED, machineName, stateTag.getSimpleName()));
 			}
 			return new StateBuilderImpl(stateTag);
 		}
 		
 		@Override
-		public MachineBuilder whenTerminate(final Runnable work)
+		public MachineBuilder onCreate(final Runnable work)
 		{
-			terminateWork = work;
+			onCreate = work;
+			return this;
+		}
+		
+		@Override
+		public MachineBuilder onPause(final Runnable work)
+		{
+			onPause = work;
+			return this;
+		}
+		
+		@Override
+		public MachineBuilder onResume(final Runnable work)
+		{
+			onResume = work;
+			return this;
+		}
+		
+		@Override
+		public MachineBuilder onStop(final Runnable work)
+		{
+			onStop = work;
+			return this;
+		}
+		
+		@Override
+		public MachineBuilder onRestart(final Runnable work)
+		{
+			onRestart = work;
+			return this;
+		}
+		
+		@Override
+		public MachineBuilder onTerminate(final Runnable work)
+		{
+			onTerminate = work;
+			return this;
+		}
+		
+		@Override
+		public MachineBuilder setLogEnabled(final boolean enabled)
+		{
+			isLogEnabled = enabled;
 			return this;
 		}
 		
 		@Override
 		public void build()
 		{
-			registrator.accept(JMMachine.Constructor.getNew(machineTag, startState, stateMap, terminateWork));
+			buildMachine();
 		}
 		
 		@Override
 		public void buildAndRun()
 		{
-			final JMMachine machine = JMMachine.Constructor.getNew(machineTag, startState, stateMap, terminateWork);
+			buildMachine().run();
+		}
+		
+		@Override
+		public void buildAndPause()
+		{
+			buildMachine().pause();
+		}
+		
+		private JMMachine buildMachine()
+		{
+			final JMMachine machine = JMMachine.Constructor.getNew(machineName, startState, stateMap, onPause, onResume, onStop, onRestart, onTerminate);
+			machine.setLogEnabled(isLogEnabled);
+			JMLog.debug(out -> out.print(JMLog.MACHINE_BUILT, machineName));
 			registrator.accept(machine);
-			machine.run();
+			if (onCreate != null)
+			{
+				onCreate.run();
+			}
+			return machine;
 		}
 		
 		private class StateBuilderImpl implements StateBuilder
@@ -99,7 +181,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 			private StateBuilderImpl(final Class stateTag)
 			{
 				this.stateTag = stateTag;
-				this.state = JMState.Constructor.getNew(machineTag, stateTag);
+				this.state = JMState.Constructor.getNew(machineName, stateTag);
 			}
 			
 			@Override
@@ -344,14 +426,14 @@ class JMBuilderImpl implements JMBuilder.Builder
 				}
 				
 				@Override
-				public SwitchTo doThis(final Runnable workOnExit)
+				public SwitchOrNot doThis(final Runnable workOnExit)
 				{
 					return doThis((S s) -> workOnExit.run());
 				}
 				
 				@Override
 				@SuppressWarnings("unchecked")
-				public SwitchTo doThis(final Consumer<S> workOnExit)
+				public SwitchOrNot doThis(final Consumer<S> workOnExit)
 				{
 					if (signalsC != null)
 					{
@@ -418,7 +500,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 				}
 			}
 			
-			private class SwitchToImpl implements SwitchTo
+			private class SwitchToImpl implements SwitchOrNot
 			{
 				final Class[] signalsC;
 				final Enum[] signalsE;
@@ -446,12 +528,6 @@ class JMBuilderImpl implements JMBuilder.Builder
 				}
 				
 				@Override
-				public StateBuilder switchToSelf()
-				{
-					return switchTo(stateTag);
-				}
-				
-				@Override
 				public StateBuilder switchTo(final Class stateTag)
 				{
 					if (signalsC != null)
@@ -476,6 +552,18 @@ class JMBuilderImpl implements JMBuilder.Builder
 						}
 					}
 					return StateBuilderImpl.this;
+				}
+				
+				@Override
+				public StateBuilder switchToSelf()
+				{
+					return switchTo(stateTag);
+				}
+				
+				@Override
+				public StateBuilder dontSwitch()
+				{
+					return switchTo(null);
 				}
 			}
 		}

@@ -13,15 +13,20 @@ public interface JMBuilder
 	
 	class Constructor
 	{
-		static Builder getNew(final Object machineTag, final boolean isPresent, final Consumer<JMMachine> registrator)
+		static Builder getNew(final String machineName, final boolean isPresent, final Consumer<JMMachine> registrator)
 		{
-			return new JMBuilderImpl(machineTag, isPresent, registrator);
+			return new JMBuilderImpl(machineName, isPresent, registrator);
 		}
 	}
 	
-	void ifPresentThenIgnoreThis(final Consumer<Definer> definer);
+	AndDo ifPresentThenIgnoreThis(final Consumer<Definer> definer);
 	
-	void ifPresentThenReplaceWithThis(final Consumer<Definer> definer);
+	AndDo ifPresentThenReplaceWithThis(final Consumer<Definer> definer);
+	
+	interface AndDo
+	{
+		void andDo(final Runnable work);
+	}
 	
 	interface Definer
 	{
@@ -32,11 +37,28 @@ public interface JMBuilder
 	{
 		StateBuilder defineState(final Class stateTag);
 		
-		MachineBuilder whenTerminate(final Runnable work);
+		MachineBuilder onCreate(final Runnable work);
+		
+		MachineBuilder onPause(final Runnable work);
+		
+		MachineBuilder onResume(final Runnable work);
+		
+		MachineBuilder onStop(final Runnable work);
+		
+		MachineBuilder onRestart(final Runnable work);
+		
+		MachineBuilder onTerminate(final Runnable work);
+		
+		/**
+		 * default is true
+		 */
+		MachineBuilder setLogEnabled(final boolean enabled);
 		
 		void build();
 		
 		void buildAndRun();
+		
+		void buildAndPause();
 	}
 	
 	interface StateBuilder
@@ -94,14 +116,14 @@ public interface JMBuilder
 		
 		interface WhenInput<S> extends SwitchTo
 		{
-			SwitchTo doThis(final Consumer<S> workOnExit);
+			SwitchOrNot doThis(final Consumer<S> workOnExit);
 			
 			SwitchTo doNothing();
 		}
 		
 		interface WhenInputClasses extends SwitchTo
 		{
-			SwitchTo doThis(final Runnable workOnExit);
+			SwitchOrNot doThis(final Runnable workOnExit);
 			
 			SwitchTo doNothing();
 		}
@@ -113,9 +135,14 @@ public interface JMBuilder
 		
 		interface SwitchTo
 		{
-			StateBuilder switchToSelf();
-			
 			StateBuilder switchTo(final Class stateTag);
+			
+			StateBuilder switchToSelf();
+		}
+		
+		interface SwitchOrNot extends SwitchTo
+		{
+			StateBuilder dontSwitch();
 		}
 	}
 }

@@ -156,12 +156,11 @@ class JMataImpl
 		});
 	}
 	
-	void buildMachine(final Object machineTag, final Consumer<JMBuilder.Builder> builder)
+	void buildMachine(final Object machineTag, final String machineName, final Consumer<JMBuilder.Builder> builder)
 	{
 		globalQue.execute(() ->
 		{
-			JMLog.debug(out -> out.print(JMLog.MACHINE_BUILD_STARTED, JMLog.getPackagelessName(machineTag)));
-			builder.accept(JMBuilder.Constructor.getNew(machineTag, machineMap.containsKey(machineTag), machine ->
+			builder.accept(JMBuilder.Constructor.getNew(machineName, machineMap.containsKey(machineTag), machine ->
 			{
 				final JMMachine oldMachine = machineMap.put(machineTag, machine);
 				if (oldMachine != null)
@@ -179,6 +178,17 @@ class JMataImpl
 			if (machineMap.containsKey(machineTag))
 			{
 				machineMap.get(machineTag).run();
+			}
+		});
+	}
+	
+	void pauseMachine(final Object machineTag)
+	{
+		globalQue.execute(() ->
+		{
+			if (machineMap.containsKey(machineTag))
+			{
+				machineMap.get(machineTag).pause();
 			}
 		});
 	}
@@ -216,6 +226,17 @@ class JMataImpl
 			if (machineMap.containsKey(machineTag))
 			{
 				machineMap.get(machineTag).input(signal);
+			}
+		});
+	}
+	
+	void setMachineLogEnabled(final Object machineTag, final boolean enabled)
+	{
+		globalQue.execute(() ->
+		{
+			if (machineMap.containsKey(machineTag))
+			{
+				machineMap.get(machineTag).setLogEnabled(enabled);
 			}
 		});
 	}
