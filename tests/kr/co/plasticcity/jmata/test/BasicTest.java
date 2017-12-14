@@ -22,14 +22,15 @@ public class BasicTest
 	@Test
 	public void testMain()
 	{
-		JMata.initialize(null, System.err::println);
+		JMata.initialize(System.out::println, System.err::println);
+		new TestMachine();
 		new TestMachine();
 		while (!isFinish)
 		{
-			JMata.input(TestMachine.class, getNoiseInput());
 			try
 			{
-				Thread.sleep((long)(Math.random() * 900) + 100);
+				Thread.sleep(0, (int)(Math.random() * 50) + 50);
+				JMata.input(TestMachine.class, getNoiseInput());
 			}
 			catch (InterruptedException e)
 			{
@@ -39,13 +40,32 @@ public class BasicTest
 		System.out.println("- 테스트 끝 -");
 	}
 	
-	private Object getNoiseInput()
+	private Object getNoiseInput() throws InterruptedException
 	{
-		int rand = (int)(Math.random() * 2);
+		int rand = (int)(Math.random() * 5);
 		switch (rand)
 		{
 		case 0:
 			return new Noise();
+		case 1:
+			JMata.setMachineLogEnabled(TestMachine.class, true);
+			System.out.println("로그 켜짐");
+			return null;
+		case 2:
+			JMata.setMachineLogEnabled(TestMachine.class, false);
+			System.out.println("로그 꺼짐");
+			return null;
+		case 3:
+			JMata.runMachine(TestMachine.class);
+			return null;
+		case 4:
+			JMata.pauseMachine(TestMachine.class);
+			Thread.sleep(100);
+			return null;
+		case 5:
+			JMata.stopMachine(TestMachine.class);
+			Thread.sleep(300);
+			return null;
 		default:
 			return null;
 		}
@@ -63,7 +83,7 @@ public class BasicTest
 	{
 		public TestMachine()
 		{
-			JMata.buildMachine(TestMachine.class, builder ->
+			JMata.buildMachine(TestMachine.class, "TestMachine", builder ->
 			{
 				builder.ifPresentThenIgnoreThis(definer ->
 				{
@@ -164,9 +184,19 @@ public class BasicTest
 					       .whenExit(Finish::exit)
 					       .apply()
 					
-					       .whenTerminate(BasicTest::onTerminate)
+					       .onCreate(() -> System.out.println("////////////////////////// [머신이 생성 됨] //////////////////////////"))
+					       .onPause(() -> System.out.println("////////////////////////// [머신이 일시 정지 됨] //////////////////////////"))
+					       .onResume(() -> System.out.println("////////////////////////// [머신이 재개 됨] //////////////////////////"))
+					       .onStop(() -> System.out.println("////////////////////////// [머신이 정지 됨] //////////////////////////"))
+					       .onRestart(() -> System.out.println("////////////////////////// [머신이 재시작 됨] //////////////////////////"))
+					       .onTerminate(BasicTest::onTerminate)
 					
-					       .buildAndRun();
+					       .setLogEnabled(true)
+					
+					       .build();
+				}).andDo(() ->
+				{
+					System.out.println("////////////////////////// [머신이 이미 존재함] //////////////////////////");
 				});
 			});
 		}
@@ -175,7 +205,7 @@ public class BasicTest
 	@Terminate
 	public static void onTerminate()
 	{
-		System.out.println("머신이 종료 됨");
+		System.out.println("////////////////////////// [머신이 종료 됨] //////////////////////////");
 		JMata.release(() ->
 		{
 			System.out.println("JMata 해제 됨");
@@ -534,7 +564,7 @@ public class BasicTest
 					}
 					catch (InterruptedException e)
 					{
-					/* do nothing */
+						/* do nothing */
 					}
 					finally
 					{

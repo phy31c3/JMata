@@ -7,188 +7,387 @@ import java.util.concurrent.TimeUnit;
 
 class JMMachineImpl implements JMMachine
 {
-	enum COND
+	private enum COND
 	{
-		CREATED, RUNNING, STOPPED, TERMINATED
+		CREATED, RUNNING, PAUSED, STOPPED, TERMINATED
 	}
 	
 	private final String machineName;
 	private final Class startState;
 	private final Map<Class, ? extends JMState> stateMap;
-	private final Runnable terminateWork;
+	private final Runnable onPause;
+	private final Runnable onResume;
+	private final Runnable onStop;
+	private final Runnable onRestart;
+	private final Runnable onTerminate;
 	
 	private volatile ExecutorService machineQue;
 	private volatile Class curState;
+	private volatile Object savedSignal;
 	private volatile COND cond;
+	private volatile boolean isLogEnabled;
 	
-	JMMachineImpl(final Object tag, final Class startState, final Map<Class, ? extends JMState> stateMap, final Runnable terminateWork)
+	JMMachineImpl(final String name, final Class startState, final Map<Class, ? extends JMState> stateMap,
+	              final Runnable onPause, final Runnable onResume, final Runnable onStop, final Runnable onRestart, final Runnable onTerminate)
 	{
-		this.machineName = tag.toString().substring(tag.toString().lastIndexOf(".") + 1);
+		this.machineName = name;
 		this.startState = startState;
 		this.stateMap = stateMap;
-		this.terminateWork = terminateWork;
+		this.onPause = onPause;
+		this.onResume = onResume;
+		this.onStop = onStop;
+		this.onRestart = onRestart;
+		this.onTerminate = onTerminate;
 		this.curState = startState;
+		this.savedSignal = COND.CREATED;
 		this.cond = COND.CREATED;
-		
-		JMLog.debug(out -> out.print(JMLog.MACHINE_BUILT, machineName));
 	}
 	
 	@Override
-	public synchronized void run()
+	public void setLogEnabled(final boolean enabled)
 	{
-		if (cond == COND.CREATED)
-		{
-			switchCond(COND.RUNNING);
-			machineQue = Executors.newSingleThreadExecutor(r ->
-			{
-				final Thread t = Executors.defaultThreadFactory().newThread(r);
-				t.setDaemon(true);
-				t.setName(String.format("JMataMachineThread-%s", machineName));
-				return t;
-			});
-			machineQue.execute(() ->
-			{
-				Object nextSignal = stateMap.get(startState).runEnterFunction();
-				while (nextSignal != null)
-				{
-					nextSignal = doInput(nextSignal);
-				}
-			});
-		}
-		else if (cond == COND.STOPPED)
-		{
-			switchCond(COND.RUNNING);
-			machineQue = Executors.newSingleThreadExecutor(r ->
-			{
-				final Thread t = Executors.defaultThreadFactory().newThread(r);
-				t.setDaemon(true);
-				t.setName(String.format("JMataMachineThread-%s", machineName));
-				return t;
-			});
-		}
+		isLogEnabled = enabled;
 	}
 	
 	@Override
-	public synchronized void stop()
+	public void run()
 	{
-		if (cond == COND.RUNNING)
+		if (ifThisToNext(COND.CREATED, COND.RUNNING))
 		{
-			switchCond(COND.STOPPED);
-			machineQue.shutdownNow();
+			machineQue = newMachineQue();
+			startUp();
 		}
-	}
-	
-	@Override
-	public synchronized void terminate()
-	{
-		if (cond == COND.CREATED)
+		else if (ifThisToNext(COND.STOPPED, COND.RUNNING))
 		{
-			switchCond(COND.TERMINATED);
-			stateMap.get(curState).runExitFunction();
-			if (terminateWork != null)
+			if (onRestart != null)
 			{
-				terminateWork.run();
+				onRestart.run();
+			}
+			machineQue = newMachineQue();
+			if (!isStarted())
+			{
+				startUp();
+			}
+			else
+			{
+				input(savedSignal);
 			}
 		}
-		else if (cond != COND.TERMINATED)
+		else
 		{
-			switchCond(COND.TERMINATED);
-			machineQue.shutdownNow();
+			ifPauseThenResume();
+		}
+	}
+	
+	@Override
+	public void pause()
+	{
+		if (ifThisToNext(COND.CREATED, COND.PAUSED))
+		{
+			machineQue = newMachineQue();
+			startUp();
+		}
+		else if (ifThisToNext(COND.STOPPED, COND.PAUSED))
+		{
+			if (onRestart != null)
+			{
+				onRestart.run();
+			}
+			machineQue = newMachineQue();
+			if (!isStarted())
+			{
+				startUp();
+			}
+			else
+			{
+				input(savedSignal);
+			}
+		}
+		else
+		{
+			ifThisToNext(COND.RUNNING, COND.PAUSED);
+		}
+	}
+	
+	@Override
+	public void stop()
+	{
+		if (ifNextsToThis(COND.STOPPED, COND.RUNNING, COND.PAUSED))
+		{
 			try
 			{
-				if (machineQue.awaitTermination(1, TimeUnit.SECONDS))
+				machineQue.shutdownNow();
+				if (!machineQue.awaitTermination(5, TimeUnit.SECONDS))
 				{
-					stateMap.get(curState).runExitFunction();
-					if (terminateWork != null)
-					{
-						terminateWork.run();
-					}
+					JMLog.error(out -> out.print(JMLog.MACHINE_SHUTDOWN_FAILED_AS_TIMEOUT, machineName));
 				}
-				else
+				if (onStop != null)
 				{
-					JMLog.error(out -> out.print(JMLog.TERMINATION_WORK_FAILED_AS_TIMEOUT, machineName));
+					onStop.run();
 				}
 			}
-			catch (InterruptedException e)
+			catch (InterruptedException e) // Unknown os level interrupt
 			{
-				JMLog.error(out -> out.print(JMLog.TERMINATION_WORK_FAILED_AS_INTERRUPT, machineName));
+				JMLog.error(out -> out.print(JMLog.MACHINE_SHUTDOWN_FAILED_AS_INTERRUPT, machineName));
 				Thread.currentThread().interrupt();
 			}
 		}
 	}
 	
 	@Override
-	public synchronized <S> void input(final S signal)
+	public void terminate()
 	{
-		if (cond == COND.RUNNING)
+		if (ifNextsToThis(COND.TERMINATED, COND.CREATED, COND.STOPPED))
+		{
+			if (isStarted())
+			{
+				stateMap.get(curState).runExitFunction();
+			}
+			if (onTerminate != null)
+			{
+				onTerminate.run();
+			}
+		}
+		else if (ifNotThisToThis(COND.TERMINATED))
+		{
+			try
+			{
+				machineQue.shutdownNow();
+				if (!machineQue.awaitTermination(5, TimeUnit.SECONDS))
+				{
+					JMLog.error(out -> out.print(JMLog.MACHINE_SHUTDOWN_FAILED_AS_TIMEOUT, machineName));
+				}
+				if (isStarted())
+				{
+					stateMap.get(curState).runExitFunction();
+				}
+				if (onTerminate != null)
+				{
+					onTerminate.run();
+				}
+			}
+			catch (InterruptedException e) // Unknown os level interrupt
+			{
+				JMLog.error(out -> out.print(JMLog.MACHINE_SHUTDOWN_FAILED_AS_INTERRUPT, machineName));
+				Thread.currentThread().interrupt();
+			}
+		}
+	}
+	
+	@Override
+	public <S> void input(final S signal)
+	{
+		if (signal != null && is(COND.RUNNING, COND.PAUSED))
 		{
 			machineQue.execute(() ->
 			{
 				Object nextSignal = signal;
-				while (nextSignal != null)
+				while (nextSignal != null && !Thread.interrupted())
 				{
-					nextSignal = doInput(nextSignal);
+					if (ifPauseThenAwait())
+					{
+						return;
+					}
+					else
+					{
+						nextSignal = doInput(nextSignal);
+						savedSignal = nextSignal;
+					}
 				}
 			});
 		}
 	}
 	
+	private void startUp()
+	{
+		machineQue.execute(() ->
+		{
+			if (!ifPauseThenAwait())
+			{
+				Object nextSignal = stateMap.get(startState).runEnterFunction();
+				savedSignal = nextSignal;
+				while (nextSignal != null && !Thread.interrupted())
+				{
+					if (ifPauseThenAwait())
+					{
+						return;
+					}
+					else
+					{
+						nextSignal = doInput(nextSignal);
+						savedSignal = nextSignal;
+					}
+				}
+			}
+		});
+	}
+	
 	private <S> Object doInput(final S signal)
 	{
-		if (cond == COND.RUNNING && !Thread.interrupted())
+		if (signal instanceof String)
 		{
-			if (signal instanceof String)
+			return stateMap.get(curState).runExitFunction((String)signal, stateMap::containsKey, nextState ->
 			{
-				return stateMap.get(curState).runExitFunction((String)signal, stateMap::containsKey, nextState ->
+				if (nextState != null)
 				{
-					if (cond == COND.RUNNING && !Thread.interrupted())
-					{
-						JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_STRING, machineName, curState.getSimpleName(), nextState.getSimpleName(), signal));
-						curState = nextState;
-						return stateMap.get(nextState).runEnterFunction((String)signal);
-					}
-					else
-					{
-						return null;
-					}
-				});
+					if (isLogEnabled)
+					{ JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_STRING, machineName, curState.getSimpleName(), nextState.getSimpleName(), signal)); }
+					curState = nextState;
+					return stateMap.get(nextState).runEnterFunction((String)signal);
+				}
+				else
+				{
+					if (isLogEnabled)
+					{ JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_STRING, machineName, curState.getSimpleName(), "null", signal)); }
+					return null;
+				}
+			});
+		}
+		else if (signal instanceof Enum)
+		{
+			return stateMap.get(curState).runExitFunction((Enum)signal, stateMap::containsKey, nextState ->
+			{
+				if (nextState != null)
+				{
+					if (isLogEnabled)
+					{ JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), nextState.getSimpleName(), signal.getClass().getSimpleName() + "." + JMLog.getPackagelessName(signal))); }
+					curState = nextState;
+					return stateMap.get(nextState).runEnterFunction((Enum)signal);
+				}
+				else
+				{
+					if (isLogEnabled)
+					{ JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), "null", signal.getClass().getSimpleName() + "." + JMLog.getPackagelessName(signal))); }
+					return null;
+				}
+			});
+		}
+		else
+		{
+			return stateMap.get(curState).runExitFunctionC(signal, stateMap::containsKey, nextState ->
+			{
+				if (nextState != null)
+				{
+					if (isLogEnabled)
+					{ JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), nextState.getSimpleName(), JMLog.getPackagelessName(signal))); }
+					curState = nextState;
+					return stateMap.get(nextState).runEnterFunctionC(signal);
+				}
+				else
+				{
+					if (isLogEnabled)
+					{ JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), "null", JMLog.getPackagelessName(signal))); }
+					return null;
+				}
+			});
+		}
+	}
+	
+	private ExecutorService newMachineQue()
+	{
+		return Executors.newSingleThreadExecutor(r ->
+		{
+			final Thread t = Executors.defaultThreadFactory().newThread(r);
+			t.setDaemon(true);
+			t.setName(String.format("JMataMachineThread-%s", machineName));
+			return t;
+		});
+	}
+	
+	private boolean isStarted()
+	{
+		return !COND.CREATED.equals(savedSignal);
+	}
+	
+	private synchronized boolean is(final COND... conds)
+	{
+		for (COND cond : conds)
+		{
+			if (this.cond == cond)
+			{
+				return true;
 			}
-			else if (signal instanceof Enum)
+		}
+		return false;
+	}
+	
+	private synchronized boolean ifThisToNext(final COND thiz, final COND next)
+	{
+		if (this.cond == thiz)
+		{
+			switchCond(next);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	private synchronized boolean ifNotThisToThis(final COND thiz)
+	{
+		if (this.cond != thiz)
+		{
+			switchCond(thiz);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	private synchronized boolean ifNextsToThis(final COND thiz, final COND... nexts)
+	{
+		for (COND cond : nexts)
+		{
+			if (this.cond == cond)
 			{
-				return stateMap.get(curState).runExitFunction((Enum)signal, stateMap::containsKey, nextState ->
-				{
-					if (cond == COND.RUNNING && !Thread.interrupted())
-					{
-						JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), nextState.getSimpleName(), signal.getClass().getSimpleName() + "." + JMLog.getPackagelessName(signal)));
-						curState = nextState;
-						return stateMap.get(nextState).runEnterFunction((Enum)signal);
-					}
-					else
-					{
-						return null;
-					}
-				});
+				switchCond(thiz);
+				return true;
 			}
-			else
+		}
+		return false;
+	}
+	
+	/**
+	 * @return true == interrupted. It means machine was STOPPED or TERMINATED.
+	 */
+	private synchronized boolean ifPauseThenAwait()
+	{
+		if (this.cond == COND.PAUSED)
+		{
+			try
 			{
-				return stateMap.get(curState).runExitFunctionC(signal, stateMap::containsKey, nextState ->
+				if (onPause != null)
 				{
-					if (cond == COND.RUNNING && !Thread.interrupted())
-					{
-						JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), nextState.getSimpleName(), JMLog.getPackagelessName(signal)));
-						curState = nextState;
-						return stateMap.get(nextState).runEnterFunctionC(signal);
-					}
-					else
-					{
-						return null;
-					}
-				});
+					onPause.run();
+				}
+				wait();
+				if (onResume != null)
+				{
+					onResume.run();
+				}
+				return false;
+			}
+			catch (InterruptedException e)
+			{
+				Thread.currentThread().interrupt();
+				return true;
 			}
 		}
 		else
 		{
-			return null;
+			return false;
+		}
+	}
+	
+	private synchronized void ifPauseThenResume()
+	{
+		if (this.cond == COND.PAUSED)
+		{
+			switchCond(COND.RUNNING);
+			notify();
 		}
 	}
 	
