@@ -42,19 +42,27 @@ public class BasicTest
 	
 	private Object getNoiseInput() throws InterruptedException
 	{
-		int rand = (int)(Math.random() * 3);
+		int rand = (int)(Math.random() * 5);
 		switch (rand)
 		{
 		case 0:
 			return new Noise();
 		case 1:
-			JMata.runMachine(TestMachine.class);
+			JMata.setMachineLogEnabled(TestMachine.class, true);
+			System.out.println("로그 켜짐");
 			return null;
 		case 2:
+			JMata.setMachineLogEnabled(TestMachine.class, false);
+			System.out.println("로그 꺼짐");
+			return null;
+		case 3:
+			JMata.runMachine(TestMachine.class);
+			return null;
+		case 4:
 			JMata.pauseMachine(TestMachine.class);
 			Thread.sleep(100);
 			return null;
-		case 3:
+		case 5:
 			JMata.stopMachine(TestMachine.class);
 			Thread.sleep(300);
 			return null;
@@ -182,6 +190,8 @@ public class BasicTest
 					       .onStop(() -> System.out.println("////////////////////////// [머신이 정지 됨] //////////////////////////"))
 					       .onRestart(() -> System.out.println("////////////////////////// [머신이 재시작 됨] //////////////////////////"))
 					       .onTerminate(BasicTest::onTerminate)
+					
+					       .setLogEnabled(true)
 					
 					       .build();
 				}).andDo(() ->

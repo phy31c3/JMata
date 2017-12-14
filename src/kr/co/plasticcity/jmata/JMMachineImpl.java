@@ -25,6 +25,7 @@ class JMMachineImpl implements JMMachine
 	private volatile Class curState;
 	private volatile Object savedSignal;
 	private volatile COND cond;
+	private volatile boolean isLogEnabled;
 	
 	JMMachineImpl(final String name, final Class startState, final Map<Class, ? extends JMState> stateMap,
 	              final Runnable onPause, final Runnable onResume, final Runnable onStop, final Runnable onRestart, final Runnable onTerminate)
@@ -40,8 +41,12 @@ class JMMachineImpl implements JMMachine
 		this.curState = startState;
 		this.savedSignal = COND.CREATED;
 		this.cond = COND.CREATED;
-		
-		JMLog.debug(out -> out.print(JMLog.MACHINE_BUILT, machineName));
+	}
+	
+	@Override
+	public void setLogEnabled(final boolean enabled)
+	{
+		isLogEnabled = enabled;
 	}
 	
 	@Override
@@ -225,13 +230,15 @@ class JMMachineImpl implements JMMachine
 			{
 				if (nextState != null)
 				{
-					JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_STRING, machineName, curState.getSimpleName(), nextState.getSimpleName(), signal));
+					if (isLogEnabled)
+					{ JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_STRING, machineName, curState.getSimpleName(), nextState.getSimpleName(), signal)); }
 					curState = nextState;
 					return stateMap.get(nextState).runEnterFunction((String)signal);
 				}
 				else
 				{
-					JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_STRING, machineName, curState.getSimpleName(), "null", signal));
+					if (isLogEnabled)
+					{ JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_STRING, machineName, curState.getSimpleName(), "null", signal)); }
 					return null;
 				}
 			});
@@ -242,13 +249,15 @@ class JMMachineImpl implements JMMachine
 			{
 				if (nextState != null)
 				{
-					JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), nextState.getSimpleName(), signal.getClass().getSimpleName() + "." + JMLog.getPackagelessName(signal)));
+					if (isLogEnabled)
+					{ JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), nextState.getSimpleName(), signal.getClass().getSimpleName() + "." + JMLog.getPackagelessName(signal))); }
 					curState = nextState;
 					return stateMap.get(nextState).runEnterFunction((Enum)signal);
 				}
 				else
 				{
-					JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), "null", signal.getClass().getSimpleName() + "." + JMLog.getPackagelessName(signal)));
+					if (isLogEnabled)
+					{ JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), "null", signal.getClass().getSimpleName() + "." + JMLog.getPackagelessName(signal))); }
 					return null;
 				}
 			});
@@ -259,13 +268,15 @@ class JMMachineImpl implements JMMachine
 			{
 				if (nextState != null)
 				{
-					JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), nextState.getSimpleName(), JMLog.getPackagelessName(signal)));
+					if (isLogEnabled)
+					{ JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), nextState.getSimpleName(), JMLog.getPackagelessName(signal))); }
 					curState = nextState;
 					return stateMap.get(nextState).runEnterFunctionC(signal);
 				}
 				else
 				{
-					JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), "null", JMLog.getPackagelessName(signal)));
+					if (isLogEnabled)
+					{ JMLog.debug(out -> out.print(JMLog.STATE_SWITCHED_BY_CLASS, machineName, curState.getSimpleName(), "null", JMLog.getPackagelessName(signal))); }
 					return null;
 				}
 			});

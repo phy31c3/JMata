@@ -12,15 +12,15 @@ class JMLog
 	static final String JMATA_ERROR_IN_RELEASED = "** JMata already released : JMata is released, but JMata command is called";
 	static final String JMATA_ERROR_IN_UNDEFINED = "** JMata undefined state : %s";
 	static final String JMATA_REJECTED_EXECUTION_EXCEPTION = "** JMata RejectedExecutionException occurred";
-	static final String MACHINE_BUILD_STARTED = "[%s] machine build started";
 	
 	/* log in JMBuilderImpl */
+	static final String MACHINE_BUILD_STARTED = "[%s] machine build started";
 	static final String IGNORE_MACHINE_BUILD = "[%s] machine already exists, ignoring build";
 	static final String REPLACE_MACHINE = "[%s] machine already exists and will be replaced with a new machine";
 	static final String STATE_DEFINITION_DUPLICATED = "[%s] definition of state [%s] duplicated";
+	static final String MACHINE_BUILT = "[%s] machine has been built";
 	
 	/* log in JMMachineImpl */
-	static final String MACHINE_BUILT = "[%s] machine has been built";
 	static final String MACHINE_STATE_CHANGED = "[%s] machine state changed : [%s] -> [%s]";
 	static final String STATE_SWITCHED_BY_CLASS = "[%s] switched from [%s] to [%s] by [%s]";
 	static final String STATE_SWITCHED_BY_STRING = "[%s] switched from [%s] to [%s] by [\"%s\"]";

@@ -49,6 +49,11 @@ public interface JMBuilder
 		
 		MachineBuilder onTerminate(final Runnable work);
 		
+		/**
+		 * default is true
+		 */
+		MachineBuilder setLogEnabled(final boolean enabled);
+		
 		void build();
 		
 		void buildAndRun();

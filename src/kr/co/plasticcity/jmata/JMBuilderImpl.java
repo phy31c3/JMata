@@ -14,6 +14,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 	
 	JMBuilderImpl(final String machineName, final boolean isPresent, final Consumer<JMMachine> registrator)
 	{
+		JMLog.debug(out -> out.print(JMLog.MACHINE_BUILD_STARTED, machineName));
 		this.machineName = machineName;
 		this.present = isPresent;
 		this.registrator = registrator;
@@ -66,11 +67,13 @@ class JMBuilderImpl implements JMBuilder.Builder
 		private Runnable onStop;
 		private Runnable onRestart;
 		private Runnable onTerminate;
+		private boolean isLogEnabled;
 		
 		private MachineBuilderImpl()
 		{
 			this.stateMap = new HashMap<>();
 			this.stateMap.put(null, null); // for dontSwitch()
+			this.isLogEnabled = true;
 		}
 		
 		@Override
@@ -133,37 +136,41 @@ class JMBuilderImpl implements JMBuilder.Builder
 		}
 		
 		@Override
+		public MachineBuilder setLogEnabled(final boolean enabled)
+		{
+			isLogEnabled = enabled;
+			return this;
+		}
+		
+		@Override
 		public void build()
 		{
-			registrator.accept(JMMachine.Constructor.getNew(machineName, startState, stateMap, onPause, onResume, onStop, onRestart, onTerminate));
-			if (onCreate != null)
-			{
-				onCreate.run();
-			}
+			buildMachine();
 		}
 		
 		@Override
 		public void buildAndRun()
 		{
-			final JMMachine machine = JMMachine.Constructor.getNew(machineName, startState, stateMap, onPause, onResume, onStop, onRestart, onTerminate);
-			registrator.accept(machine);
-			if (onCreate != null)
-			{
-				onCreate.run();
-			}
-			machine.run();
+			buildMachine().run();
 		}
 		
 		@Override
 		public void buildAndPause()
 		{
+			buildMachine().pause();
+		}
+		
+		private JMMachine buildMachine()
+		{
 			final JMMachine machine = JMMachine.Constructor.getNew(machineName, startState, stateMap, onPause, onResume, onStop, onRestart, onTerminate);
+			machine.setLogEnabled(isLogEnabled);
+			JMLog.debug(out -> out.print(JMLog.MACHINE_BUILT, machineName));
 			registrator.accept(machine);
 			if (onCreate != null)
 			{
 				onCreate.run();
 			}
-			machine.pause();
+			return machine;
 		}
 		
 		private class StateBuilderImpl implements StateBuilder

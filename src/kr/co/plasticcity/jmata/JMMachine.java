@@ -13,6 +13,8 @@ interface JMMachine
 		}
 	}
 	
+	void setLogEnabled(final boolean enabled);
+	
 	void run();
 	
 	void pause();
