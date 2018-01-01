@@ -161,7 +161,7 @@ class JMataImpl
 	{
 		globalQue.execute(() ->
 		{
-			builder.accept(JMBuilder.Constructor.getNew(machineName, machineMap.containsKey(machineTag), machine ->
+			builder.accept(new JMBuilderImpl(machineName, machineMap.containsKey(machineTag), machine ->
 			{
 				final JMMachine oldMachine = machineMap.put(machineTag, machine);
 				if (oldMachine != null)

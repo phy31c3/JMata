@@ -7,14 +7,6 @@ import kr.co.plasticcity.jmata.function.Supplier;
 
 interface JMState
 {
-	class Constructor
-	{
-		static JMState getNew(final String machineName, final Class stateTag)
-		{
-			return new JMStateImpl(machineName, stateTag);
-		}
-	}
-	
 	/*########################### basic operation ###########################*/
 	
 	/**

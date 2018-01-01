@@ -11,14 +11,6 @@ public interface JMBuilder
 		/* dummy interface */
 	}
 	
-	class Constructor
-	{
-		static Builder getNew(final String machineName, final boolean isPresent, final Consumer<JMMachine> registrator)
-		{
-			return new JMBuilderImpl(machineName, isPresent, registrator);
-		}
-	}
-	
 	AndDo ifPresentThenIgnoreThis(final Consumer<Definer> definer);
 	
 	AndDo ifPresentThenReplaceWithThis(final Consumer<Definer> definer);
