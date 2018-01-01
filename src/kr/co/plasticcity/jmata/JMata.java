@@ -1,6 +1,6 @@
 package kr.co.plasticcity.jmata;
 
-import java.util.function.Consumer;
+import kr.co.plasticcity.jmata.function.Consumer;
 
 public class JMata
 {
