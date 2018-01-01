@@ -1,20 +1,12 @@
 package kr.co.plasticcity.jmata;
 
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import kr.co.plasticcity.jmata.function.Consumer;
+import kr.co.plasticcity.jmata.function.Function;
+import kr.co.plasticcity.jmata.function.Predicate;
+import kr.co.plasticcity.jmata.function.Supplier;
 
 interface JMState
 {
-	class Constructor
-	{
-		static JMState getNew(final String machineName, final Class stateTag)
-		{
-			return new JMStateImpl(machineName, stateTag);
-		}
-	}
-	
 	/*########################### basic operation ###########################*/
 	
 	/**

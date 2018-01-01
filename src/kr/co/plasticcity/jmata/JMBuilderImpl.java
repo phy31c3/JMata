@@ -2,9 +2,10 @@ package kr.co.plasticcity.jmata;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+
+import kr.co.plasticcity.jmata.function.Consumer;
+import kr.co.plasticcity.jmata.function.Function;
+import kr.co.plasticcity.jmata.function.Supplier;
 
 class JMBuilderImpl implements JMBuilder.Builder
 {
@@ -162,7 +163,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 		
 		private JMMachine buildMachine()
 		{
-			final JMMachine machine = JMMachine.Constructor.getNew(machineName, startState, stateMap, onPause, onResume, onStop, onRestart, onTerminate);
+			final JMMachine machine = new JMMachineImpl(machineName, startState, stateMap, onPause, onResume, onStop, onRestart, onTerminate);
 			machine.setLogEnabled(isLogEnabled);
 			JMLog.debug(out -> out.print(JMLog.MACHINE_BUILT, machineName));
 			registrator.accept(machine);
@@ -181,7 +182,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 			private StateBuilderImpl(final Class stateTag)
 			{
 				this.stateTag = stateTag;
-				this.state = JMState.Constructor.getNew(machineName, stateTag);
+				this.state = new JMStateImpl(machineName, stateTag);
 			}
 			
 			@Override
@@ -451,12 +452,17 @@ class JMBuilderImpl implements JMBuilder.Builder
 						}
 						return this;
 					}
-					else
+					else if (signalsS != null)
 					{
 						for (String signal : signalsS)
 						{
 							state.putExitFunction(signal, (Consumer<String>)workOnExit);
 						}
+						return this;
+					}
+					else
+					{
+						/* Inaccessible block */
 						return this;
 					}
 				}
@@ -486,7 +492,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 						}
 						return this;
 					}
-					else
+					else if (signalsS != null)
 					{
 						for (String signal : signalsS)
 						{
@@ -495,6 +501,11 @@ class JMBuilderImpl implements JMBuilder.Builder
 								/* do nothing */
 							});
 						}
+						return this;
+					}
+					else
+					{
+						/* Inaccessible block */
 						return this;
 					}
 				}
