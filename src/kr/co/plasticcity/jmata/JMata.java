@@ -1,10 +1,10 @@
 package kr.co.plasticcity.jmata;
 
-import java.util.function.Consumer;
+import kr.co.plasticcity.jmata.function.Consumer;
 
-public class JMata
+public interface JMata
 {
-	public static void initialize()
+	static void initialize()
 	{
 		JMataImpl.initialize(null, null);
 	}
@@ -12,7 +12,7 @@ public class JMata
 	/**
 	 * @param debugLogger nullable
 	 */
-	public static void initialize(final Consumer<String> debugLogger)
+	static void initialize(final Consumer<String> debugLogger)
 	{
 		JMataImpl.initialize(debugLogger, null);
 	}
@@ -21,57 +21,57 @@ public class JMata
 	 * @param debugLogger nullable
 	 * @param errorLogger nullable
 	 */
-	public static void initialize(final Consumer<String> debugLogger, final Consumer<String> errorLogger)
+	static void initialize(final Consumer<String> debugLogger, final Consumer<String> errorLogger)
 	{
 		JMataImpl.initialize(debugLogger, errorLogger);
 	}
 	
-	public static void release()
+	static void release()
 	{
 		JMataImpl.release(null);
 	}
 	
-	public static void release(final Runnable releaseWork)
+	static void release(final Runnable releaseWork)
 	{
 		JMataImpl.release(releaseWork);
 	}
 	
-	public static void buildMachine(final Object machineTag, final Consumer<JMBuilder.Builder> builder)
+	static void buildMachine(final Object machineTag, final Consumer<JMBuilder.Builder> builder)
 	{
 		JMataImpl.post(jmata -> jmata.buildMachine(machineTag, JMLog.getPackagelessName(machineTag), builder));
 	}
 	
-	public static void buildMachine(final Object machineTag, final String machineName, final Consumer<JMBuilder.Builder> builder)
+	static void buildMachine(final Object machineTag, final String machineName, final Consumer<JMBuilder.Builder> builder)
 	{
 		JMataImpl.post(jmata -> jmata.buildMachine(machineTag, machineName, builder));
 	}
 	
-	public static void runMachine(final Object machineTag)
+	static void runMachine(final Object machineTag)
 	{
 		JMataImpl.post(jmata -> jmata.runMachine(machineTag));
 	}
 	
-	public static void pauseMachine(final Object machineTag)
+	static void pauseMachine(final Object machineTag)
 	{
 		JMataImpl.post(jmata -> jmata.pauseMachine(machineTag));
 	}
 	
-	public static void stopMachine(final Object machineTag)
+	static void stopMachine(final Object machineTag)
 	{
 		JMataImpl.post(jmata -> jmata.stopMachine(machineTag));
 	}
 	
-	public static void terminateMachine(final Object machineTag)
+	static void terminateMachine(final Object machineTag)
 	{
 		JMataImpl.post(jmata -> jmata.terminateMachine(machineTag));
 	}
 	
-	public static <S> void input(final Object machineTag, final S signal)
+	static <S> void input(final Object machineTag, final S signal)
 	{
 		JMataImpl.post(jmata -> jmata.input(machineTag, signal));
 	}
 	
-	public static void setMachineLogEnabled(final Object machineTag, final boolean enabled)
+	static void setMachineLogEnabled(final Object machineTag, final boolean enabled)
 	{
 		JMataImpl.post(jmata -> jmata.setMachineLogEnabled(machineTag, enabled));
 	}

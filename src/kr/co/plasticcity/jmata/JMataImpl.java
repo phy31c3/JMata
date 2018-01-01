@@ -7,7 +7,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Consumer;
+
+import kr.co.plasticcity.jmata.function.Consumer;
 
 class JMataImpl
 {
@@ -160,7 +161,7 @@ class JMataImpl
 	{
 		globalQue.execute(() ->
 		{
-			builder.accept(JMBuilder.Constructor.getNew(machineName, machineMap.containsKey(machineTag), machine ->
+			builder.accept(new JMBuilderImpl(machineName, machineMap.containsKey(machineTag), machine ->
 			{
 				final JMMachine oldMachine = machineMap.put(machineTag, machine);
 				if (oldMachine != null)
