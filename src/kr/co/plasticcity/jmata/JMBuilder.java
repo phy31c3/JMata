@@ -111,21 +111,21 @@ public interface JMBuilder
 			StateBuilder<R> doThis(final Supplier<Object> workOnEnter);
 		}
 		
-		interface WhenInput<S, R> extends SwitchTo<R>
+		interface WhenInput<S, R> extends SwitchOrNot<R>
 		{
 			SwitchOrNot<R> doThis(final Consumer<S> workOnExit);
 			
 			SwitchTo<R> doNothing();
 		}
 		
-		interface WhenInputClasses<R> extends SwitchTo<R>
+		interface WhenInputClasses<R> extends SwitchOrNot<R>
 		{
 			SwitchOrNot<R> doThis(final Runnable workOnExit);
 			
 			SwitchTo<R> doNothing();
 		}
 		
-		interface WhenInputPrimitive<S, R> extends WhenInput<S, R>, WhenInputClasses<R>, SwitchTo<R>
+		interface WhenInputPrimitive<S, R> extends WhenInput<S, R>, WhenInputClasses<R>
 		{
 			/* nothing */
 		}
