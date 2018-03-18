@@ -11,23 +11,28 @@ public interface JMBuilder
 		/* dummy interface */
 	}
 	
-	AndDo ifPresentThenIgnoreThis(final Consumer<Definer> definer);
+	AndDo ifPresentThenIgnoreThis(final Consumer<BaseDefiner> definer);
 	
-	AndDo ifPresentThenReplaceWithThis(final Consumer<Definer> definer);
+	AndDo ifPresentThenReplaceWithThis(final Consumer<BaseDefiner> definer);
 	
 	interface AndDo
 	{
 		void andDo(final Runnable work);
 	}
 	
-	interface Definer
+	interface BaseDefiner extends StartDefiner
 	{
-		StateBuilder defineStartState(final Class stateTag);
+		StateBuilder<StartDefiner> defineBaseRule();
+	}
+	
+	interface StartDefiner
+	{
+		StateBuilder<MachineBuilder> defineStartState(final Class stateTag);
 	}
 	
 	interface MachineBuilder
 	{
-		StateBuilder defineState(final Class stateTag);
+		StateBuilder<MachineBuilder> defineState(final Class stateTag);
 		
 		MachineBuilder onCreate(final Runnable work);
 		
@@ -53,88 +58,88 @@ public interface JMBuilder
 		void buildAndPause();
 	}
 	
-	interface StateBuilder
+	interface StateBuilder<R>
 	{
 		/* ================================== enter & exit ================================== */
-		StateBuilder whenEnter(final Runnable defaultWork);
+		StateBuilder<R> whenEnter(final Runnable defaultWork);
 		
-		StateBuilder whenEnter(final Supplier<Object> defaultWork);
+		StateBuilder<R> whenEnter(final Supplier<Object> defaultWork);
 		
-		StateBuilder whenExit(final Runnable defaultWork);
+		StateBuilder<R> whenExit(final Runnable defaultWork);
 		
-		<S> WhenEnter<S> whenEnterBy(final Class<S> signal);
+		<S> WhenEnter<S, R> whenEnterBy(final Class<S> signal);
 		
-		<S extends Enum<S>> WhenEnterPrimitive<S> whenEnterBy(final Enum<S> signal);
+		<S extends Enum<S>> WhenEnterPrimitive<S, R> whenEnterBy(final Enum<S> signal);
 		
 		@SuppressWarnings("unchecked")
-		<S extends Enum<S>> WhenEnterPrimitive<S> whenEnterBy(final S... signals);
+		<S extends Enum<S>> WhenEnterPrimitive<S, R> whenEnterBy(final S... signals);
 		
-		WhenEnterPrimitive<String> whenEnterBy(final String signal);
+		WhenEnterPrimitive<String, R> whenEnterBy(final String signal);
 		
-		WhenEnterPrimitive<String> whenEnterBy(final String... signals);
+		WhenEnterPrimitive<String, R> whenEnterBy(final String... signals);
 		
 		/* ===================================== input ===================================== */
-		<S> WhenInput<S> whenInput(final Class<S> signal);
+		<S> WhenInput<S, R> whenInput(final Class<S> signal);
 		
-		WhenInputClasses whenInput(final Class... signals);
+		WhenInputClasses<R> whenInput(final Class... signals);
 		
-		<S extends Enum<S>> WhenInputPrimitive<S> whenInput(final Enum<S> signal);
+		<S extends Enum<S>> WhenInputPrimitive<S, R> whenInput(final Enum<S> signal);
 		
 		@SuppressWarnings("unchecked")
-		<S extends Enum<S>> WhenInputPrimitive<S> whenInput(final S... signals);
+		<S extends Enum<S>> WhenInputPrimitive<S, R> whenInput(final S... signals);
 		
-		WhenInputPrimitive<String> whenInput(final String signal);
+		WhenInputPrimitive<String, R> whenInput(final String signal);
 		
-		WhenInputPrimitive<String> whenInput(final String... signals);
+		WhenInputPrimitive<String, R> whenInput(final String... signals);
 		
 		/* ====================================== etc ====================================== */
-		MachineBuilder apply();
+		R apply();
 		
-		interface WhenEnter<S>
+		interface WhenEnter<S, R>
 		{
-			StateBuilder doThis(final Consumer<S> workOnEnter);
+			StateBuilder<R> doThis(final Consumer<S> workOnEnter);
 			
-			StateBuilder doThis(final Function<S, Object> workOnEnter);
+			StateBuilder<R> doThis(final Function<S, Object> workOnEnter);
 			
-			StateBuilder doNothing();
+			StateBuilder<R> doNothing();
 		}
 		
-		interface WhenEnterPrimitive<S> extends WhenEnter<S>
+		interface WhenEnterPrimitive<S, R> extends WhenEnter<S, R>
 		{
-			StateBuilder doThis(final Runnable workOnEnter);
+			StateBuilder<R> doThis(final Runnable workOnEnter);
 			
-			StateBuilder doThis(final Supplier<Object> workOnEnter);
+			StateBuilder<R> doThis(final Supplier<Object> workOnEnter);
 		}
 		
-		interface WhenInput<S> extends SwitchTo
+		interface WhenInput<S, R> extends SwitchTo<R>
 		{
-			SwitchOrNot doThis(final Consumer<S> workOnExit);
+			SwitchOrNot<R> doThis(final Consumer<S> workOnExit);
 			
-			SwitchTo doNothing();
+			SwitchTo<R> doNothing();
 		}
 		
-		interface WhenInputClasses extends SwitchTo
+		interface WhenInputClasses<R> extends SwitchTo<R>
 		{
-			SwitchOrNot doThis(final Runnable workOnExit);
+			SwitchOrNot<R> doThis(final Runnable workOnExit);
 			
-			SwitchTo doNothing();
+			SwitchTo<R> doNothing();
 		}
 		
-		interface WhenInputPrimitive<S> extends WhenInput<S>, WhenInputClasses, SwitchTo
+		interface WhenInputPrimitive<S, R> extends WhenInput<S, R>, WhenInputClasses<R>, SwitchTo<R>
 		{
 			/* nothing */
 		}
 		
-		interface SwitchTo
+		interface SwitchTo<R>
 		{
-			StateBuilder switchTo(final Class stateTag);
+			StateBuilder<R> switchTo(final Class stateTag);
 			
-			StateBuilder switchToSelf();
+			StateBuilder<R> switchToSelf();
 		}
 		
-		interface SwitchOrNot extends SwitchTo
+		interface SwitchOrNot<R> extends SwitchTo<R>
 		{
-			StateBuilder dontSwitch();
+			StateBuilder<R> dontSwitch();
 		}
 	}
 }

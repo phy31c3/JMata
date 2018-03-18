@@ -54,4 +54,6 @@ interface JMState
 	void putSwitchRule(final Enum signal, final Class stateTag);
 	
 	void putSwitchRule(final String signal, final Class stateTag);
+	
+	void copyFrom(final JMState state);
 }
