@@ -407,4 +407,36 @@ class JMStateImpl implements JMState
 		
 		switchRule.put(signal, stateTag);
 	}
+	
+	@Override
+	public void copyFrom(final JMState state)
+	{
+		final JMStateImpl from = (JMStateImpl)state;
+		if (enter == null)
+		{
+			enter = from.enter;
+		}
+		if (exit == null)
+		{
+			exit = from.exit;
+		}
+		for (final Object signal : from.enterMap.keySet())
+		{
+			if (!enterMap.containsKey(signal))
+			{
+				enterMap.put(signal, from.enterMap.get(signal));
+			}
+		}
+		for (final Object signal : from.switchRule.keySet())
+		{
+			if (!switchRule.containsKey(signal))
+			{
+				switchRule.put(signal, from.switchRule.get(signal));
+				if (from.exitMap.containsKey(signal))
+				{
+					exitMap.put(signal, from.exitMap.get(signal));
+				}
+			}
+		}
+	}
 }

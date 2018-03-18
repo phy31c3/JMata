@@ -71,6 +71,31 @@ public class BasicTest
 		}
 	}
 	
+	private static void onNoise(final Noise noise)
+	{
+		System.out.println("노이즈가...");
+	}
+	
+	@Enter
+	private static void enterBase(final String s)
+	{
+		if (s.equals("It's base"))
+		{
+			System.out.println("28. Base Rule에 걸려야 되는 상황 확인");
+			input("complete");
+		}
+		else
+		{
+			System.err.println("여기 들어오면 안되는데..");
+		}
+	}
+	
+	@Exit
+	private static void exitBase(final String s)
+	{
+		System.err.println("여기 들어오면 안되는데..");
+	}
+	
 	private static void input(Object s)
 	{
 		JMata.input(TestMachine.class, s);
@@ -87,7 +112,13 @@ public class BasicTest
 			{
 				builder.ifPresentThenIgnoreThis(definer ->
 				{
-					definer.defineStartState(Start.class)
+					definer.defineBaseRule()
+					       .whenInput(Noise.class).doThis(BasicTest::onNoise).dontSwitch()
+					       .whenEnterBy("It's base").doThis(BasicTest::enterBase)
+					       .whenInput("It's base").doThis(BasicTest::exitBase).switchToSelf()
+					       .apply()
+					
+					       .defineStartState(Start.class)
 					       .whenEnter(Start::enter)
 					       .whenInput("start").switchTo(EnumTest.class)
 					       .apply()
@@ -175,8 +206,17 @@ public class BasicTest
 					       .whenInput(EnumSignal.SIGNAL).doNothing().switchToSelf()
 					       .whenInput("string").doNothing().switchToSelf()
 					       .whenInput("complete").doNothing().switchToSelf()
-					       .whenInput("do nothing test finished").doNothing().switchTo(Finish.class)
+					       .whenInput("do nothing test finished").doNothing().switchTo(DefineBaseTest.class)
 					       .whenExit(DoNothingTest::defaultExit)
+					       .apply()
+					
+					       .defineState(DefineBaseTest.class)
+					       .whenEnter(DefineBaseTest::enter)
+					       .whenEnterBy("do nothing test finished").doThis(DefineBaseTest::enter)
+					       .whenEnterBy(String.class).doThis(DefineBaseTest::dontComeIn)
+					       .whenInput(String.class).doThis(DefineBaseTest::dontComeIn).switchToSelf()
+					       .whenInput("It's base").doThis(DefineBaseTest::exit).switchToSelf()
+					       .whenInput("complete").switchTo(Finish.class)
 					       .apply()
 					
 					       .defineState(Finish.class)
@@ -536,13 +576,35 @@ public class BasicTest
 		@Enter
 		static void defaultEnter()
 		{
-			System.out.println("실행되면 안되는 진입동작!!");
+			System.err.println("실행되면 안되는 진입동작!!");
 		}
 		
 		@Exit
 		static void defaultExit()
 		{
-			System.out.println("실행되면 안되는 퇴장동작!!");
+			System.err.println("실행되면 안되는 퇴장동작!!");
+		}
+	}
+	
+	@State
+	private static class DefineBaseTest
+	{
+		@Enter
+		static void enter()
+		{
+			input("It's base");
+		}
+		
+		@Enter
+		static void dontComeIn(String s)
+		{
+			System.err.println("여기 들어오면 안되는데...");
+		}
+		
+		@Exit
+		static void exit()
+		{
+			System.out.println("27. Base Rule 덮어쓰기 확인");
 		}
 	}
 	
