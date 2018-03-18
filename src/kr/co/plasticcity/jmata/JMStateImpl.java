@@ -156,7 +156,7 @@ class JMStateImpl implements JMState
 				{
 					exitMap.get(signal.getClass()).classFunc.accept(signal);
 				}
-				else if (exit != null)
+				else if (exit != null && nextState != null)
 				{
 					exit.run();
 				}
@@ -187,7 +187,7 @@ class JMStateImpl implements JMState
 				{
 					exitMap.get(signal).enumFunc.accept(signal);
 				}
-				else if (exit != null)
+				else if (exit != null && nextState != null)
 				{
 					exit.run();
 				}
@@ -209,7 +209,7 @@ class JMStateImpl implements JMState
 				{
 					exitMap.get(signal.getClass()).classFunc.accept(signal);
 				}
-				else if (exit != null)
+				else if (exit != null && nextState != null)
 				{
 					exit.run();
 				}
@@ -240,7 +240,7 @@ class JMStateImpl implements JMState
 				{
 					exitMap.get(signal).stringFunc.accept(signal);
 				}
-				else if (exit != null)
+				else if (exit != null && nextState != null)
 				{
 					exit.run();
 				}
@@ -262,7 +262,7 @@ class JMStateImpl implements JMState
 				{
 					exitMap.get(signal.getClass()).classFunc.accept(signal);
 				}
-				else if (exit != null)
+				else if (exit != null && nextState != null)
 				{
 					exit.run();
 				}
