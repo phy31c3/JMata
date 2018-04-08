@@ -1,6 +1,6 @@
 package kr.co.plasticcity.jmata;
 
-interface JMMachine
+interface JMMachine extends JMInstantMachine
 {
 	void setLogEnabled(final boolean enabled);
 	
