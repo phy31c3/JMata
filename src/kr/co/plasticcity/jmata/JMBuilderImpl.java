@@ -168,6 +168,12 @@ class JMBuilderImpl implements JMBuilder.Builder
 			buildMachine().pause();
 		}
 		
+		@Override
+		public void buildAndStop()
+		{
+			buildMachine().stop();
+		}
+		
 		private JMMachine buildMachine()
 		{
 			applyBaseRule();

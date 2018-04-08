@@ -112,7 +112,14 @@ class JMMachineImpl implements JMMachine
 	@Override
 	public void stop()
 	{
-		if (ifNextsToThis(COND.STOPPED, COND.RUNNING, COND.PAUSED))
+		if (ifThisToNext(COND.CREATED, COND.STOPPED))
+		{
+			if (onStop != null)
+			{
+				onStop.run();
+			}
+		}
+		else if (ifNextsToThis(COND.STOPPED, COND.RUNNING, COND.PAUSED))
 		{
 			try
 			{
