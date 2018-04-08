@@ -1,11 +1,10 @@
 package kr.co.plasticcity.jmata;
 
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
-class JMMachineImpl implements JMMachine
+class JMMachineInstantImpl implements JMMachine
 {
 	private enum COND
 	{
@@ -21,14 +20,14 @@ class JMMachineImpl implements JMMachine
 	private final Runnable onRestart;
 	private final Runnable onTerminate;
 	
-	private volatile ExecutorService machineQue;
+	private volatile Deque<Object> signalQue;
 	private volatile Class curState;
 	private volatile Object savedSignal;
 	private volatile COND cond;
 	private volatile boolean isLogEnabled;
 	
-	JMMachineImpl(final String name, final Class startState, final Map<Class, ? extends JMState> stateMap,
-	              final Runnable onPause, final Runnable onResume, final Runnable onStop, final Runnable onRestart, final Runnable onTerminate)
+	JMMachineInstantImpl(final String name, final Class startState, final Map<Class, ? extends JMState> stateMap,
+	                     final Runnable onPause, final Runnable onResume, final Runnable onStop, final Runnable onRestart, final Runnable onTerminate)
 	{
 		this.machineName = name;
 		this.startState = startState;
@@ -54,16 +53,12 @@ class JMMachineImpl implements JMMachine
 	{
 		if (ifThisToNext(COND.CREATED, COND.RUNNING))
 		{
-			machineQue = newMachineQue();
+			signalQue = newSignalQue();
 			startUp();
 		}
 		else if (ifThisToNext(COND.STOPPED, COND.RUNNING))
 		{
-			if (onRestart != null)
-			{
-				onRestart.run();
-			}
-			machineQue = newMachineQue();
+			signalQue = newSignalQue();
 			if (!isStarted())
 			{
 				startUp();
@@ -72,10 +67,26 @@ class JMMachineImpl implements JMMachine
 			{
 				input(savedSignal);
 			}
+			if (onRestart != null)
+			{
+				onRestart.run();
+			}
 		}
-		else
+		else if (is(COND.PAUSED))
 		{
-			ifPauseThenResume();
+			if (onResume != null)
+			{
+				onResume.run();
+			}
+			ifThisToNext(COND.PAUSED, COND.RUNNING);
+			if (!isStarted())
+			{
+				startUp();
+			}
+			else
+			{
+				doLoop();
+			}
 		}
 	}
 	
@@ -84,28 +95,34 @@ class JMMachineImpl implements JMMachine
 	{
 		if (ifThisToNext(COND.CREATED, COND.PAUSED))
 		{
-			machineQue = newMachineQue();
-			startUp();
+			signalQue = newSignalQue();
+			if (onPause != null)
+			{
+				onPause.run();
+			}
 		}
 		else if (ifThisToNext(COND.STOPPED, COND.PAUSED))
 		{
+			signalQue = newSignalQue();
+			if (isStarted())
+			{
+				input(savedSignal);
+			}
 			if (onRestart != null)
 			{
 				onRestart.run();
 			}
-			machineQue = newMachineQue();
-			if (!isStarted())
+			if (onPause != null)
 			{
-				startUp();
-			}
-			else
-			{
-				input(savedSignal);
+				onPause.run();
 			}
 		}
-		else
+		else if (ifThisToNext(COND.RUNNING, COND.PAUSED))
 		{
-			ifThisToNext(COND.RUNNING, COND.PAUSED);
+			if (onPause != null)
+			{
+				onPause.run();
+			}
 		}
 	}
 	
@@ -121,22 +138,10 @@ class JMMachineImpl implements JMMachine
 		}
 		else if (ifNextsToThis(COND.STOPPED, COND.RUNNING, COND.PAUSED))
 		{
-			try
+			signalQue.clear();
+			if (onStop != null)
 			{
-				machineQue.shutdownNow();
-				if (!machineQue.awaitTermination(5, TimeUnit.SECONDS))
-				{
-					JMLog.error(out -> out.print(JMLog.MACHINE_SHUTDOWN_FAILED_AS_TIMEOUT, machineName));
-				}
-				if (onStop != null)
-				{
-					onStop.run();
-				}
-			}
-			catch (InterruptedException e) // Unknown os level interrupt
-			{
-				JMLog.error(out -> out.print(JMLog.MACHINE_SHUTDOWN_FAILED_AS_INTERRUPT, machineName));
-				Thread.currentThread().interrupt();
+				onStop.run();
 			}
 		}
 	}
@@ -157,26 +162,14 @@ class JMMachineImpl implements JMMachine
 		}
 		else if (ifNotThisToThis(COND.TERMINATED))
 		{
-			try
+			signalQue.clear();
+			if (isStarted())
 			{
-				machineQue.shutdownNow();
-				if (!machineQue.awaitTermination(5, TimeUnit.SECONDS))
-				{
-					JMLog.error(out -> out.print(JMLog.MACHINE_SHUTDOWN_FAILED_AS_TIMEOUT, machineName));
-				}
-				if (isStarted())
-				{
-					stateMap.get(curState).runExitFunction();
-				}
-				if (onTerminate != null)
-				{
-					onTerminate.run();
-				}
+				stateMap.get(curState).runExitFunction();
 			}
-			catch (InterruptedException e) // Unknown os level interrupt
+			if (onTerminate != null)
 			{
-				JMLog.error(out -> out.print(JMLog.MACHINE_SHUTDOWN_FAILED_AS_INTERRUPT, machineName));
-				Thread.currentThread().interrupt();
+				onTerminate.run();
 			}
 		}
 	}
@@ -186,47 +179,47 @@ class JMMachineImpl implements JMMachine
 	{
 		if (signal != null && is(COND.RUNNING, COND.PAUSED))
 		{
-			machineQue.execute(() ->
+			signalQue.addLast(signal);
+			if (signalQue.size() == 1)
 			{
-				Object nextSignal = signal;
-				while (nextSignal != null && !Thread.interrupted())
-				{
-					if (ifPauseThenAwait())
-					{
-						return;
-					}
-					else
-					{
-						nextSignal = doInput(nextSignal);
-						savedSignal = nextSignal;
-					}
-				}
-			});
+				doLoop();
+			}
 		}
 	}
 	
 	private void startUp()
 	{
-		machineQue.execute(() ->
+		signalQue.addFirst(savedSignal);
+		savedSignal = stateMap.get(startState).runEnterFunction();
+		if (is(COND.RUNNING, COND.PAUSED))
 		{
-			if (!ifPauseThenAwait())
+			signalQue.pollFirst();
+			if (savedSignal != null)
 			{
-				Object nextSignal = stateMap.get(startState).runEnterFunction();
-				savedSignal = nextSignal;
-				while (nextSignal != null && !Thread.interrupted())
+				signalQue.addFirst(savedSignal);
+			}
+			doLoop();
+		}
+	}
+	
+	private void doLoop()
+	{
+		while (!signalQue.isEmpty() && is(COND.RUNNING))
+		{
+			savedSignal = doInput(signalQue.getFirst());
+			if (is(COND.RUNNING, COND.PAUSED))
+			{
+				signalQue.pollFirst();
+				if (savedSignal != null)
 				{
-					if (ifPauseThenAwait())
-					{
-						return;
-					}
-					else
-					{
-						nextSignal = doInput(nextSignal);
-						savedSignal = nextSignal;
-					}
+					signalQue.addFirst(savedSignal);
 				}
 			}
-		});
+			else
+			{
+				return;
+			}
+		}
 	}
 	
 	private <S> Object doInput(final S signal)
@@ -290,15 +283,9 @@ class JMMachineImpl implements JMMachine
 		}
 	}
 	
-	private ExecutorService newMachineQue()
+	private Deque<Object> newSignalQue()
 	{
-		return Executors.newSingleThreadExecutor(r ->
-		{
-			final Thread t = Executors.defaultThreadFactory().newThread(r);
-			t.setDaemon(true);
-			t.setName(String.format("JMataMachineThread-%s", machineName));
-			return t;
-		});
+		return new LinkedList<>();
 	}
 	
 	private boolean isStarted()
@@ -355,47 +342,6 @@ class JMMachineImpl implements JMMachine
 			}
 		}
 		return false;
-	}
-	
-	/**
-	 * @return true == interrupted. It means machine was STOPPED or TERMINATED.
-	 */
-	private synchronized boolean ifPauseThenAwait()
-	{
-		if (this.cond == COND.PAUSED)
-		{
-			try
-			{
-				if (onPause != null)
-				{
-					onPause.run();
-				}
-				wait();
-				if (onResume != null)
-				{
-					onResume.run();
-				}
-				return false;
-			}
-			catch (InterruptedException e)
-			{
-				Thread.currentThread().interrupt();
-				return true;
-			}
-		}
-		else
-		{
-			return false;
-		}
-	}
-	
-	private synchronized void ifPauseThenResume()
-	{
-		if (this.cond == COND.PAUSED)
-		{
-			switchCond(COND.RUNNING);
-			notify();
-		}
 	}
 	
 	private void switchCond(final COND next)
