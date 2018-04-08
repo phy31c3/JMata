@@ -56,6 +56,8 @@ public interface JMBuilder
 		void buildAndRun();
 		
 		void buildAndPause();
+		
+		void buildAndStop();
 	}
 	
 	interface StateBuilder<R>

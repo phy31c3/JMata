@@ -15,7 +15,6 @@ class JMBuilderImpl implements JMBuilder.Builder
 	
 	JMBuilderImpl(final String machineName, final boolean isPresent, final Consumer<JMMachine> registrator)
 	{
-		JMLog.debug(out -> out.print(JMLog.MACHINE_BUILD_STARTED, machineName));
 		this.machineName = machineName;
 		this.present = isPresent;
 		this.registrator = registrator;
@@ -30,7 +29,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 		}
 		else
 		{
-			definer.accept(new MachineBuilderImpl());
+			definer.accept(new MachineBuilderImpl(JMMachineImpl::new));
 		}
 		return new AndDoImpl();
 	}
@@ -42,7 +41,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 		{
 			JMLog.debug(out -> out.print(JMLog.REPLACE_MACHINE, machineName));
 		}
-		definer.accept(new MachineBuilderImpl());
+		definer.accept(new MachineBuilderImpl(JMMachineImpl::new));
 		return new AndDoImpl();
 	}
 	
@@ -60,6 +59,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 	
 	private class MachineBuilderImpl implements BaseDefiner, MachineBuilder
 	{
+		private final MachineSupplier machineSupplier;
 		private final Map<Class, JMState> stateMap;
 		private Class startState;
 		private Runnable onCreate;
@@ -70,8 +70,10 @@ class JMBuilderImpl implements JMBuilder.Builder
 		private Runnable onTerminate;
 		private boolean isLogEnabled;
 		
-		private MachineBuilderImpl()
+		private MachineBuilderImpl(final MachineSupplier machineSupplier)
 		{
+			JMLog.debug(out -> out.print(JMLog.MACHINE_BUILD_STARTED, machineName));
+			this.machineSupplier = machineSupplier;
 			this.stateMap = new HashMap<>();
 			this.isLogEnabled = true;
 		}
@@ -166,10 +168,16 @@ class JMBuilderImpl implements JMBuilder.Builder
 			buildMachine().pause();
 		}
 		
+		@Override
+		public void buildAndStop()
+		{
+			buildMachine().stop();
+		}
+		
 		private JMMachine buildMachine()
 		{
 			applyBaseRule();
-			final JMMachine machine = new JMMachineImpl(machineName, startState, stateMap, onPause, onResume, onStop, onRestart, onTerminate);
+			final JMMachine machine = machineSupplier.createMachine(machineName, startState, stateMap, onPause, onResume, onStop, onRestart, onTerminate);
 			machine.setLogEnabled(isLogEnabled);
 			JMLog.debug(out -> out.print(JMLog.MACHINE_BUILT, machineName));
 			registrator.accept(machine);
@@ -607,6 +615,30 @@ class JMBuilderImpl implements JMBuilder.Builder
 					return switchTo(null);
 				}
 			}
+		}
+	}
+	
+	@FunctionalInterface
+	private interface MachineSupplier
+	{
+		JMMachine createMachine(final String name, final Class startState, final Map<Class, ? extends JMState> stateMap,
+		                        final Runnable onPause, final Runnable onResume, final Runnable onStop, final Runnable onRestart, final Runnable onTerminate);
+	}
+	
+	/* ================================== Instant Builder ================================== */
+	
+	static class InstantBuilderImpl extends JMBuilderImpl
+	{
+		InstantBuilderImpl(final String machineName, final Consumer<JMMachine> registrator)
+		{
+			super(machineName, false, registrator);
+		}
+		
+		@Override
+		public AndDo ifPresentThenIgnoreThis(final Consumer<BaseDefiner> definer)
+		{
+			definer.accept(new MachineBuilderImpl(JMMachineInstantImpl::new));
+			return null;
 		}
 	}
 }

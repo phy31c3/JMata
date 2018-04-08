@@ -233,7 +233,7 @@ public class BasicTest
 					
 					       .setLogEnabled(true)
 					
-					       .build();
+					       .buildAndStop();
 				}).andDo(() ->
 				{
 					System.out.println("////////////////////////// [머신이 이미 존재함] //////////////////////////");
