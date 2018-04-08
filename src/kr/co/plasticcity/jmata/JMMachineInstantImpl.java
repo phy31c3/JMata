@@ -1,8 +1,10 @@
 package kr.co.plasticcity.jmata;
 
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.Map;
 
-class JMInstantMachineImpl implements JMMachine
+class JMMachineInstantImpl implements JMMachine
 {
 	private enum COND
 	{
@@ -18,12 +20,13 @@ class JMInstantMachineImpl implements JMMachine
 	private final Runnable onRestart;
 	private final Runnable onTerminate;
 	
+	private volatile Deque<Object> signalQue;
 	private volatile Class curState;
 	private volatile Object savedSignal;
 	private volatile COND cond;
 	private volatile boolean isLogEnabled;
 	
-	JMInstantMachineImpl(final String name, final Class startState, final Map<Class, ? extends JMState> stateMap,
+	JMMachineInstantImpl(final String name, final Class startState, final Map<Class, ? extends JMState> stateMap,
 	                     final Runnable onPause, final Runnable onResume, final Runnable onStop, final Runnable onRestart, final Runnable onTerminate)
 	{
 		this.machineName = name;
@@ -50,28 +53,39 @@ class JMInstantMachineImpl implements JMMachine
 	{
 		if (ifThisToNext(COND.CREATED, COND.RUNNING))
 		{
+			signalQue = newSignalQue();
 			startUp();
 		}
 		else if (ifThisToNext(COND.STOPPED, COND.RUNNING))
 		{
-			if (onRestart != null)
-			{
-				onRestart.run();
-			}
+			signalQue = newSignalQue();
 			if (!isStarted())
 			{
 				startUp();
 			}
+			else
+			{
+				input(savedSignal);
+			}
+			if (onRestart != null)
+			{
+				onRestart.run();
+			}
 		}
-		else if (ifThisToNext(COND.PAUSED, COND.RUNNING))
+		else if (is(COND.PAUSED))
 		{
 			if (onResume != null)
 			{
 				onResume.run();
 			}
+			ifThisToNext(COND.PAUSED, COND.RUNNING);
 			if (!isStarted())
 			{
 				startUp();
+			}
+			else
+			{
+				doLoop();
 			}
 		}
 	}
@@ -81,6 +95,7 @@ class JMInstantMachineImpl implements JMMachine
 	{
 		if (ifThisToNext(COND.CREATED, COND.PAUSED))
 		{
+			signalQue = newSignalQue();
 			if (onPause != null)
 			{
 				onPause.run();
@@ -88,6 +103,11 @@ class JMInstantMachineImpl implements JMMachine
 		}
 		else if (ifThisToNext(COND.STOPPED, COND.PAUSED))
 		{
+			signalQue = newSignalQue();
+			if (isStarted())
+			{
+				input(savedSignal);
+			}
 			if (onRestart != null)
 			{
 				onRestart.run();
@@ -109,8 +129,16 @@ class JMInstantMachineImpl implements JMMachine
 	@Override
 	public void stop()
 	{
-		if (ifNextsToThis(COND.STOPPED, COND.CREATED, COND.RUNNING, COND.PAUSED))
+		if (ifThisToNext(COND.CREATED, COND.STOPPED))
 		{
+			if (onStop != null)
+			{
+				onStop.run();
+			}
+		}
+		else if (ifNextsToThis(COND.STOPPED, COND.RUNNING, COND.PAUSED))
+		{
+			signalQue.clear();
 			if (onStop != null)
 			{
 				onStop.run();
@@ -134,6 +162,7 @@ class JMInstantMachineImpl implements JMMachine
 		}
 		else if (ifNotThisToThis(COND.TERMINATED))
 		{
+			signalQue.clear();
 			if (isStarted())
 			{
 				stateMap.get(curState).runExitFunction();
@@ -148,25 +177,48 @@ class JMInstantMachineImpl implements JMMachine
 	@Override
 	public <S> void input(final S signal)
 	{
-		if (signal != null && is(COND.RUNNING))
+		if (signal != null && is(COND.RUNNING, COND.PAUSED))
 		{
-			Object nextSignal = signal;
-			while (nextSignal != null)
+			signalQue.addLast(signal);
+			if (signalQue.size() == 1)
 			{
-				nextSignal = doInput(nextSignal);
-				savedSignal = nextSignal;
+				doLoop();
 			}
 		}
 	}
 	
 	private void startUp()
 	{
-		Object nextSignal = stateMap.get(startState).runEnterFunction();
-		savedSignal = nextSignal;
-		while (nextSignal != null)
+		signalQue.addFirst(savedSignal);
+		savedSignal = stateMap.get(startState).runEnterFunction();
+		if (is(COND.RUNNING, COND.PAUSED))
 		{
-			nextSignal = doInput(nextSignal);
-			savedSignal = nextSignal;
+			signalQue.pollFirst();
+			if (savedSignal != null)
+			{
+				signalQue.addFirst(savedSignal);
+			}
+			doLoop();
+		}
+	}
+	
+	private void doLoop()
+	{
+		while (!signalQue.isEmpty() && is(COND.RUNNING))
+		{
+			savedSignal = doInput(signalQue.getFirst());
+			if (is(COND.RUNNING, COND.PAUSED))
+			{
+				signalQue.pollFirst();
+				if (savedSignal != null)
+				{
+					signalQue.addFirst(savedSignal);
+				}
+			}
+			else
+			{
+				return;
+			}
 		}
 	}
 	
@@ -229,6 +281,11 @@ class JMInstantMachineImpl implements JMMachine
 				}
 			});
 		}
+	}
+	
+	private Deque<Object> newSignalQue()
+	{
+		return new LinkedList<>();
 	}
 	
 	private boolean isStarted()

@@ -2,7 +2,7 @@ package kr.co.plasticcity.jmata.test;
 
 import org.junit.Test;
 
-import kr.co.plasticcity.jmata.JMInstantMachine;
+import kr.co.plasticcity.jmata.JMMachine;
 import kr.co.plasticcity.jmata.JMata;
 import kr.co.plasticcity.jmata.annotation.Enter;
 import kr.co.plasticcity.jmata.annotation.Signal;
@@ -20,7 +20,7 @@ public class InstantMachineTest
 	public void testMain()
 	{
 		JMata.initialize(System.out::println, System.err::println);
-		final JMInstantMachine machine = JMata.buildInstantMachine("TestMachine", builder ->
+		final JMMachine machine = JMata.buildInstantMachine("TestMachine", builder ->
 		{
 			builder.defineStartState(A.class)
 			       .whenEnter(A::enter)
@@ -42,14 +42,10 @@ public class InstantMachineTest
 		});
 		
 		machine.input("B");
-		machine.stop();
+		machine.pause();
 		machine.input("B");
-		machine.run();
-		machine.input("B");
-		machine.stop();
 		machine.input(new Terminate(machine));
 		machine.run();
-		machine.input(new Terminate(machine));
 		System.out.println("- 테스트 끝 -");
 		
 		try
@@ -65,9 +61,9 @@ public class InstantMachineTest
 	@Signal
 	private static class Terminate
 	{
-		private final JMInstantMachine machine;
+		private final JMMachine machine;
 		
-		private Terminate(final JMInstantMachine machine)
+		private Terminate(final JMMachine machine)
 		{
 			this.machine = machine;
 		}

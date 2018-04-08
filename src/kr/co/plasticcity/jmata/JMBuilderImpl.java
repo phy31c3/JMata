@@ -637,7 +637,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 		@Override
 		public AndDo ifPresentThenIgnoreThis(final Consumer<BaseDefiner> definer)
 		{
-			definer.accept(new MachineBuilderImpl(JMInstantMachineImpl::new));
+			definer.accept(new MachineBuilderImpl(JMMachineInstantImpl::new));
 			return null;
 		}
 	}
