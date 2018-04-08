@@ -89,12 +89,12 @@ public interface JMata
 	
 	/* ================================== Instant Machine ================================== */
 	
-	static JMMachine buildInstantMachine(final Consumer<JMBuilder.BaseDefiner> builder)
+	static JMMachine buildInstantMachine(final Consumer<JMBuilder.Definer> builder)
 	{
-		return buildInstantMachine("Instant Machine#" + new Object().hashCode(), builder);
+		return buildInstantMachine("JMMachine#" + new Object().hashCode(), builder);
 	}
 	
-	static JMMachine buildInstantMachine(final String machineName, final Consumer<JMBuilder.BaseDefiner> builder)
+	static JMMachine buildInstantMachine(final String machineName, final Consumer<JMBuilder.Definer> builder)
 	{
 		final JMMachine[] m = new JMMachine[1];
 		final JMBuilder jmBuilder = new JMBuilderImpl.InstantBuilderImpl(machineName, machine -> m[0] = machine);

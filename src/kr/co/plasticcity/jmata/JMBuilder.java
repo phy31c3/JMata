@@ -11,16 +11,16 @@ public interface JMBuilder
 		/* dummy interface */
 	}
 	
-	AndDo ifPresentThenIgnoreThis(final Consumer<BaseDefiner> definer);
+	AndDo ifPresentThenIgnoreThis(final Consumer<Definer> definer);
 	
-	AndDo ifPresentThenReplaceWithThis(final Consumer<BaseDefiner> definer);
+	AndDo ifPresentThenReplaceWithThis(final Consumer<Definer> definer);
 	
 	interface AndDo
 	{
 		void andDo(final Runnable work);
 	}
 	
-	interface BaseDefiner extends StartDefiner
+	interface Definer extends StartDefiner
 	{
 		StateBuilder<StartDefiner> defineBaseRule();
 	}
