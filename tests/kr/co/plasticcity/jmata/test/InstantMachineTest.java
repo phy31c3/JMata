@@ -20,7 +20,7 @@ public class InstantMachineTest
 	public void testMain()
 	{
 		JMata.initialize(System.out::println, System.err::println);
-		final JMMachine machine = JMata.buildInstantMachine("TestMachine", builder ->
+		final JMMachine machine = JMata.buildInstantMachine(builder ->
 		{
 			builder.defineStartState(A.class)
 			       .whenEnter(A::enter)
