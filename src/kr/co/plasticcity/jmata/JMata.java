@@ -4,6 +4,8 @@ import kr.co.plasticcity.jmata.function.Consumer;
 
 public interface JMata
 {
+	/* ================================== Basic Machine ================================== */
+	
 	static void initialize()
 	{
 		JMataImpl.initialize(null, null);
@@ -36,11 +38,20 @@ public interface JMata
 		JMataImpl.release(releaseWork);
 	}
 	
+	/**
+	 * @param machineTag not null
+	 * @param builder    not null
+	 */
 	static void buildMachine(final Object machineTag, final Consumer<JMBuilder.Builder> builder)
 	{
 		JMataImpl.post(jmata -> jmata.buildMachine(machineTag, JMLog.getPackagelessName(machineTag), builder));
 	}
 	
+	/**
+	 * @param machineTag  not null
+	 * @param machineName not null
+	 * @param builder     not null
+	 */
 	static void buildMachine(final Object machineTag, final String machineName, final Consumer<JMBuilder.Builder> builder)
 	{
 		JMataImpl.post(jmata -> jmata.buildMachine(machineTag, machineName, builder));
@@ -74,5 +85,20 @@ public interface JMata
 	static void setMachineLogEnabled(final Object machineTag, final boolean enabled)
 	{
 		JMataImpl.post(jmata -> jmata.setMachineLogEnabled(machineTag, enabled));
+	}
+	
+	/* ================================== Instant Machine ================================== */
+	
+	static JMMachine buildInstantMachine(final Consumer<JMBuilder.BaseDefiner> builder)
+	{
+		return buildInstantMachine("Instant Machine#" + new Object().hashCode(), builder);
+	}
+	
+	static JMMachine buildInstantMachine(final String machineName, final Consumer<JMBuilder.BaseDefiner> builder)
+	{
+		final JMMachine[] m = new JMMachine[1];
+		final JMBuilder jmBuilder = new JMBuilderImpl.InstantBuilderImpl(machineName, machine -> m[0] = machine);
+		jmBuilder.ifPresentThenIgnoreThis(builder);
+		return m[0];
 	}
 }
