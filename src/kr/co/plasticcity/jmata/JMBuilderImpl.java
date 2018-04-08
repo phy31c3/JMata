@@ -21,7 +21,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 	}
 	
 	@Override
-	public AndDo ifPresentThenIgnoreThis(final Consumer<BaseDefiner> definer)
+	public AndDo ifPresentThenIgnoreThis(final Consumer<Definer> definer)
 	{
 		if (present)
 		{
@@ -35,7 +35,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 	}
 	
 	@Override
-	public AndDo ifPresentThenReplaceWithThis(final Consumer<BaseDefiner> definer)
+	public AndDo ifPresentThenReplaceWithThis(final Consumer<Definer> definer)
 	{
 		if (present)
 		{
@@ -57,7 +57,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 		}
 	}
 	
-	private class MachineBuilderImpl implements BaseDefiner, MachineBuilder
+	private class MachineBuilderImpl implements Definer, MachineBuilder
 	{
 		private final MachineSupplier machineSupplier;
 		private final Map<Class, JMState> stateMap;
@@ -81,7 +81,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 		@Override
 		public StateBuilder<StartDefiner> defineBaseRule()
 		{
-			return new StateBuilderImpl<>(this, BaseDefiner.class);
+			return new StateBuilderImpl<>(this, Definer.class);
 		}
 		
 		@Override
@@ -190,10 +190,10 @@ class JMBuilderImpl implements JMBuilder.Builder
 		
 		private void applyBaseRule()
 		{
-			if (stateMap.containsKey(BaseDefiner.class))
+			if (stateMap.containsKey(Definer.class))
 			{
-				final JMState base = stateMap.get(BaseDefiner.class);
-				stateMap.remove(BaseDefiner.class);
+				final JMState base = stateMap.get(Definer.class);
+				stateMap.remove(Definer.class);
 				for (final JMState state : stateMap.values())
 				{
 					state.copyFrom(base);
@@ -635,7 +635,7 @@ class JMBuilderImpl implements JMBuilder.Builder
 		}
 		
 		@Override
-		public AndDo ifPresentThenIgnoreThis(final Consumer<BaseDefiner> definer)
+		public AndDo ifPresentThenIgnoreThis(final Consumer<Definer> definer)
 		{
 			definer.accept(new MachineBuilderImpl(JMMachineInstantImpl::new));
 			return null;
